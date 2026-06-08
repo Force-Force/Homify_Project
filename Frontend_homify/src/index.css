@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-gray-950 text-white;
+    @apply bg-slate-50 text-slate-900;
   }
 }
 
@@ -16,13 +16,13 @@ input[type="range"] {
 }
 
 input[type="range"]::-webkit-slider-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.1);
   height: 0.5rem;
   border-radius: 0.5rem;
 }
 
 input[type="range"]::-moz-range-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.1);
   height: 0.5rem;
   border-radius: 0.5rem;
 }
@@ -53,17 +53,17 @@ input[type="range"]::-moz-range-thumb {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(15, 23, 42, 0.05);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(34, 211, 238, 0.3);
+  background: rgba(59, 130, 246, 0.3);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(34, 211, 238, 0.5);
+  background: rgba(59, 130, 246, 0.5);
 }
 
 .brightness-75 {

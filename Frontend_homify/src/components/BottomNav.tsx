@@ -40,27 +40,27 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
       </div>
 
       {/* Desktop left sidebar navigation */}
-     <div className="hidden md:fixed md:inset-y-0 md:left-0 md:w-64 md:flex md:flex-col md:pt-10 md:px-4 bg-gradient-to-b from-blue-400 to-blue-300 border-r shadow-lg gap-4 md:mr-2">
-  {navItems.map((item) => (
-    <button
-      key={item.name}
-      onClick={() => onTabChange(item.name)}
-      className={`
-        flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300
-        ${activeTab === item.name
-          ? 'bg-blue-900 text-white shadow-lg transform scale-105'
-          : 'text-gray-600 hover:bg-white hover:text-blue-900 hover:shadow-md'}
-      `}
-    >
-      <item.icon
-        className={`w-6 h-6 transition-colors duration-300 ${
-          activeTab === item.name ? 'text-white' : 'text-gray-500'
-        }`}
-      />
-      <span className="truncate">{item.name}</span>
-    </button>
-  ))}
-</div>
+      <div className="hidden md:fixed md:inset-y-0 md:left-0 md:w-64 md:flex md:flex-col md:pt-10 md:px-4 bg-blue-950 border-r border-blue-900 shadow-xl gap-4 md:mr-2">
+        {navItems.map((item) => (
+          <button
+            key={item.name}
+            onClick={() => onTabChange(item.name)}
+            className={`
+              flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300
+              ${activeTab === item.name
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 transform scale-102'
+                : 'text-slate-300 hover:bg-blue-900/50 hover:text-white'}
+            `}
+          >
+            <item.icon
+              className={`w-5 h-5 transition-colors duration-300 ${
+                activeTab === item.name ? 'text-white' : 'text-slate-400'
+              }`}
+            />
+            <span className="truncate">{item.name}</span>
+          </button>
+        ))}
+      </div>
 
     </>
   );

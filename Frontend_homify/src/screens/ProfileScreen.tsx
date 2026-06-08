@@ -13,7 +13,7 @@ export default function ProfileScreen() {
   });
 
   return (
-    <div className="px-4 pt-6 pb-24 animate-in slide-in-from-right-10 duration-300 bg-white min-h-screen">
+    <div className="px-4 pt-6 pb-24 animate-in slide-in-from-right-10 duration-300 bg-slate-50 min-h-screen">
       
       {/* Header */}
       <div className="flex items-center mb-8 relative">
@@ -29,11 +29,11 @@ export default function ProfileScreen() {
       <div className="flex justify-center mb-8">
         <div className="relative">
           <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
-             <img 
-               src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200" 
-               alt="Profile" 
-               className="w-full h-full object-cover" 
-             />
+              <img 
+                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200" 
+                alt="Profile" 
+                className="w-full h-full object-cover" 
+              />
           </div>
           {/* Bouton caméra (Edit) */}
           <button className="absolute bottom-1 right-1 bg-blue-900 p-2 rounded-full text-white border-2 border-white hover:bg-blue-800 transition">
@@ -43,50 +43,50 @@ export default function ProfileScreen() {
       </div>
 
       {/* Formulaire */}
-      <div className="space-y-5">
+      <div className="space-y-5 max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
         
         {/* Champ Name */}
         <div>
-          <label className="block text-sm font-bold text-gray-900 mb-2">Name</label>
+          <label className="block text-sm font-bold text-gray-700 mb-2">Name</label>
           <input
             type="text"
             value={formData.name}
             onChange={(e) => setFormData({...formData, name: e.target.value})}
-            className="w-full p-4 bg-gray-50 rounded-xl text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 transition"
+            className="w-full p-4 bg-white border border-slate-200 rounded-xl text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 transition"
           />
         </div>
 
         {/* Champ Email */}
         <div>
-          <label className="block text-sm font-bold text-gray-900 mb-2">Email</label>
+          <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
           <input
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="w-full p-4 bg-gray-50 rounded-xl text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 transition"
+            className="w-full p-4 bg-white border border-slate-200 rounded-xl text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 transition"
           />
         </div>
 
         {/* Champ Password */}
         <div>
-          <label className="block text-sm font-bold text-gray-900 mb-2">Password</label>
+          <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
           <input
             type="password"
             value={formData.password}
             onChange={(e) => setFormData({...formData, password: e.target.value})}
-            className="w-full p-4 bg-gray-50 rounded-xl text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 tracking-widest transition"
+            className="w-full p-4 bg-white border border-slate-200 rounded-xl text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 tracking-widest transition"
           />
         </div>
 
         {/* Champ Date of Birth (Select simulé) */}
         <div>
-          <label className="block text-sm font-bold text-gray-900 mb-2">Date of Birth</label>
+          <label className="block text-sm font-bold text-gray-700 mb-2">Date of Birth</label>
           <div className="relative cursor-pointer group">
              <input
               type="text"
               value={formData.dob}
               readOnly
-              className="w-full p-4 bg-gray-50 rounded-xl text-gray-700 outline-none cursor-pointer group-hover:bg-gray-100 transition"
+              className="w-full p-4 bg-white border border-slate-200 rounded-xl text-gray-700 outline-none cursor-pointer group-hover:bg-slate-50 transition"
             />
             <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
           </div>
@@ -94,13 +94,13 @@ export default function ProfileScreen() {
 
         {/* Champ Country (Select simulé) */}
         <div>
-          <label className="block text-sm font-bold text-gray-900 mb-2">Country/Region</label>
+          <label className="block text-sm font-bold text-gray-700 mb-2">Country/Region</label>
           <div className="relative cursor-pointer group">
              <input
               type="text"
               value={formData.country}
               readOnly
-              className="w-full p-4 bg-gray-50 rounded-xl text-gray-700 outline-none cursor-pointer group-hover:bg-gray-100 transition"
+              className="w-full p-4 bg-white border border-slate-200 rounded-xl text-gray-700 outline-none cursor-pointer group-hover:bg-slate-50 transition"
             />
             <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
           </div>

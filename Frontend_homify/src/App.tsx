@@ -57,7 +57,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-800">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
       <div className="pt-6 md:pt-10 md:ml-64 md:mr-6">
         {renderContent()}
       </div>
