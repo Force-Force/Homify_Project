@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, Bell, Search, SlidersHorizontal, Loader2, X, Check, Sparkles } from 'lucide-react';
+import {
+  MapPin, Bell, Search, SlidersHorizontal, Loader2, X, Check, Sparkles,
+  Map as MapIcon, List,
+} from 'lucide-react';
 import axios from 'axios';
 import { RecommendedCard } from '../components/Cards';
+import PriceMap from '../components/PriceMap';
 import { Hotel } from '../types';
 import { getProperties } from '../services/propertyService';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
@@ -48,6 +52,8 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
   const [locationName, setLocationName] = useState('Localisation...');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [activeId, setActiveId] = useState<number | null>(null);
 
   const buildQueryString = (customSearch?: string): string => {
     let query = `?ordering=${filters.ordering}`;
@@ -135,6 +141,19 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
     }
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) setViewMode('list');
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleMarkerClick = (id: number) => {
+    const hotel = properties.find((p) => p.id === id);
+    if (hotel) onHotelClick(hotel);
+  };
+
   const hasActiveFilters = () =>
     searchQuery ||
     Object.entries(filters).some(
@@ -142,7 +161,7 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
     );
 
   return (
-    <div className="pb-28 md:pb-8 md:px-2">
+    <div className="flex flex-col h-full pb-28 md:pb-0 md:px-4 lg:px-6">
       {/* Header */}
       <header className="flex justify-between items-center mb-6 px-5 md:px-0">
         <div>
@@ -231,36 +250,94 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
         </div>
       )}
 
-      {/* Properties */}
-      <section className="mb-8">
-        <div className="flex items-center justify-between mb-4 px-5 md:px-0">
-          <h2 className="text-lg font-bold text-homify-text">
-            {hasActiveFilters() ? 'Résultats' : 'Récemment publiés'}
-          </h2>
-          {!loading && properties.length > 0 && (
-            <span className="text-xs text-homify-muted font-medium">
-              {properties.length} annonce{properties.length > 1 ? 's' : ''}
-            </span>
-          )}
-        </div>
-
-        {properties.length > 0 ? (
-          <div className="flex overflow-x-auto pb-4 gap-4 px-5 scrollbar-hide md:grid md:grid-cols-2 lg:grid-cols-3 md:px-0 md:overflow-visible md:gap-5">
-            {properties.map((hotel, index) => (
-              <StaggeredItem key={hotel.id} index={index}>
-                <RecommendedCard hotel={hotel} onClick={() => onHotelClick(hotel)} />
-              </StaggeredItem>
-            ))}
+      {/* List + side map */}
+      <div className="flex-1 flex flex-col md:flex-row md:gap-5 md:overflow-hidden md:min-h-0">
+        <section
+          className={`flex-1 md:overflow-y-auto md:pr-1 ${
+            viewMode === 'map' ? 'hidden md:block' : 'block'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-4 px-5 md:px-0">
+            <h2 className="text-lg font-bold text-homify-text">
+              {hasActiveFilters() ? 'Résultats' : 'Récemment publiés'}
+            </h2>
+            {!loading && properties.length > 0 && (
+              <span className="text-xs text-homify-muted font-medium">
+                {properties.length} annonce{properties.length > 1 ? 's' : ''}
+              </span>
+            )}
           </div>
-        ) : (
-          !loading && (
-            <div className="mx-5 md:mx-0 flex flex-col items-center py-12 text-center">
-              <Sparkles className="w-10 h-10 text-homify-muted/40 mb-3" />
-              <p className="text-homify-muted text-sm">Aucune annonce trouvée.</p>
+
+          {properties.length > 0 ? (
+            <div className="flex overflow-x-auto pb-4 gap-4 px-5 scrollbar-hide md:grid md:grid-cols-2 xl:grid-cols-2 md:px-0 md:overflow-visible md:gap-5 md:pb-8">
+              {properties.map((hotel, index) => (
+                <div
+                  key={hotel.id}
+                  onMouseEnter={() => setActiveId(hotel.id)}
+                  onMouseLeave={() => setActiveId(null)}
+                >
+                  <StaggeredItem index={index}>
+                    <RecommendedCard hotel={hotel} onClick={() => onHotelClick(hotel)} />
+                  </StaggeredItem>
+                </div>
+              ))}
             </div>
-          )
-        )}
-      </section>
+          ) : (
+            !loading && (
+              <div className="mx-5 md:mx-0 flex flex-col items-center py-12 text-center">
+                <Sparkles className="w-10 h-10 text-homify-muted/40 mb-3" />
+                <p className="text-homify-muted text-sm">Aucune annonce trouvée.</p>
+              </div>
+            )
+          )}
+        </section>
+
+        {/* Mini map — desktop sidebar + mobile full screen */}
+        <aside
+          className={`md:w-[42%] md:shrink-0 md:sticky md:top-4 md:self-start md:h-[calc(100vh-220px)] ${
+            viewMode === 'map'
+              ? 'fixed inset-0 z-50 bg-homify-surface md:static md:z-auto'
+              : 'hidden md:block'
+          }`}
+        >
+          <div className="h-full p-4 md:p-0">
+            {viewMode === 'map' && (
+              <button
+                onClick={() => setViewMode('list')}
+                className="md:hidden absolute top-4 left-4 z-[1000] bg-homify-card p-3 rounded-full shadow-lg border border-homify-border"
+                aria-label="Retour à la liste"
+              >
+                <List className="w-5 h-5 text-homify-primary" />
+              </button>
+            )}
+            <PriceMap
+              properties={properties}
+              activeId={activeId}
+              onMarkerClick={handleMarkerClick}
+            />
+          </div>
+        </aside>
+      </div>
+
+      {/* Mobile list / map toggle */}
+      <div className="md:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40">
+        <button
+          onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
+          className="bg-homify-primary text-white px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 hover:bg-homify-primary-light transition"
+        >
+          {viewMode === 'list' ? (
+            <>
+              <MapIcon className="w-4 h-4" />
+              Carte
+            </>
+          ) : (
+            <>
+              <List className="w-4 h-4" />
+              Liste
+            </>
+          )}
+        </button>
+      </div>
 
       {/* Filters Modal */}
       {showFilters && (

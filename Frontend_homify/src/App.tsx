@@ -49,9 +49,17 @@ export default function App() {
     }
   };
 
+  const isHomeLayout = activeTab === 'Home' && !selectedHotel && !isChatting;
+
   return (
     <div className="min-h-screen bg-homify-surface font-sans">
-      <div className="pt-6 md:pt-8 md:ml-64 md:mr-8 max-w-7xl">
+      <div
+        className={
+          isHomeLayout
+            ? 'pt-6 md:pt-0 md:ml-64 md:mr-0 md:h-screen md:overflow-hidden'
+            : 'pt-6 md:pt-8 md:ml-64 md:mr-8 max-w-7xl'
+        }
+      >
         {renderContent()}
       </div>
 

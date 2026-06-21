@@ -83,3 +83,8 @@ input[type='range']::-moz-range-thumb {
     transition-duration: 0.01ms !important;
   }
 }
+
+.custom-price-marker {
+  background: transparent !important;
+  border: none !important;
+}
