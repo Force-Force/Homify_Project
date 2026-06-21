@@ -218,12 +218,12 @@ const ChatSupport = () => {
       market_analysis: {
         text: 'View Full Analysis',
         icon: <ArrowRight className="w-4 h-4" />,
-        color: 'from-blue-600 to-blue-700'
+        color: 'from-homify-primary600 to-blue-700'
       },
       property_search: {
         text: 'Search Properties',
         icon: <ExternalLink className="w-4 h-4" />,
-        color: 'from-purple-600 to-purple-700'
+        color: 'from-purple-600 to-homify-accent700'
       },
       mortgage_calc: {
         text: 'Open Calculator',
@@ -257,7 +257,7 @@ const ChatSupport = () => {
           </button>
           
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 bg-gradient-to-br from-homify-primary600 to-homify-accent600 rounded-full flex items-center justify-center shadow-md">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -297,7 +297,7 @@ const ChatSupport = () => {
             className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom duration-300`}
           >
             {message.sender === 'ai' && (
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mr-2 flex-shrink-0 shadow-sm">
+              <div className="w-8 h-8 bg-gradient-to-br from-homify-primary600 to-homify-accent600 rounded-full flex items-center justify-center mr-2 flex-shrink-0 shadow-sm">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
             )}
@@ -306,7 +306,7 @@ const ChatSupport = () => {
               <div
                 className={`rounded-2xl px-4 py-3 shadow-sm ${
                   message.sender === 'user'
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                    ? 'bg-gradient-to-r from-homify-primary600 to-homify-accent600 text-white'
                     : 'bg-white text-gray-900 border border-gray-200'
                 }`}
               >
@@ -318,7 +318,7 @@ const ChatSupport = () => {
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                   {message.intent && message.sender === 'ai' && (
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-xs bg-homify-accent100 text-homify-accent700 px-2 py-0.5 rounded-full font-medium">
                       {message.intent.replace('_', ' ')}
                     </span>
                   )}
@@ -333,7 +333,7 @@ const ChatSupport = () => {
 
         {isLoading && (
           <div className="flex justify-start animate-in fade-in duration-300">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mr-2 flex-shrink-0 shadow-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-homify-primary600 to-homify-accent600 rounded-full flex items-center justify-center mr-2 flex-shrink-0 shadow-sm">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
             <div className="bg-white text-gray-900 border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
@@ -359,13 +359,13 @@ const ChatSupport = () => {
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             <button 
               onClick={() => handleSuggestionClick('Find properties in San Francisco')}
-              className="px-4 py-2 bg-purple-50 text-purple-700 rounded-full text-xs font-medium whitespace-nowrap hover:bg-purple-100 transition border border-purple-200 hover:shadow-sm"
+              className="px-4 py-2 bg-homify-accent50 text-homify-accent700 rounded-full text-xs font-medium whitespace-nowrap hover:bg-homify-accent100 transition border border-purple-200 hover:shadow-sm"
             >
               🏠 Find properties
             </button>
             <button 
               onClick={() => handleSuggestionClick('Show me market trends for Miami')}
-              className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-xs font-medium whitespace-nowrap hover:bg-blue-100 transition border border-blue-200 hover:shadow-sm"
+              className="px-4 py-2 bg-homify-primary/10 text-homify-primary rounded-full text-xs font-medium whitespace-nowrap hover:bg-homify-primary/10 transition border border-homify-primary/20 hover:shadow-sm"
             >
               📈 Market analysis
             </button>
@@ -403,7 +403,7 @@ const ChatSupport = () => {
           <button
             onClick={handleSend}
             disabled={inputText.trim() === '' || isLoading}
-            className="w-12 h-12 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-full flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 hover:scale-105 active:scale-95"
+            className="w-12 h-12 bg-gradient-to-r from-purple-600 to-homify-accent700 text-white rounded-full flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 hover:scale-105 active:scale-95"
           >
             <Send className="w-5 h-5" />
           </button>

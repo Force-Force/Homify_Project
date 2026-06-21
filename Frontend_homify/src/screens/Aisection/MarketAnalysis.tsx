@@ -402,15 +402,15 @@ const MarketAnalysis = () => {
                 <div className="flex items-center gap-1">
                   {marketData.marketChange >= 0 ? (
                     <>
-                      <ArrowUp className="w-3 h-3 text-purple-600" />
-                      <span className="text-xs text-purple-600 font-semibold">
+                      <ArrowUp className="w-3 h-3 text-homify-accent600" />
+                      <span className="text-xs text-homify-accent600 font-semibold">
                         + {marketData.marketChange}%
                       </span>
                     </>
                   ) : (
                     <>
-                      <ArrowDown className="w-3 h-3 text-purple-600" />
-                      <span className="text-xs text-purple-600 font-semibold">
+                      <ArrowDown className="w-3 h-3 text-homify-accent600" />
+                      <span className="text-xs text-homify-accent600 font-semibold">
                         {marketData.marketChange}%
                       </span>
                     </>
@@ -469,9 +469,9 @@ const MarketAnalysis = () => {
               
               <div className="space-y-3">
                 {marketData.predictions.marketTrend && (
-                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-xl">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <TrendingUp className="w-4 h-4 text-blue-600" />
+                  <div className="flex items-start gap-3 p-3 bg-homify-primary/10 rounded-xl">
+                    <div className="w-8 h-8 bg-homify-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <TrendingUp className="w-4 h-4 text-homify-primary" />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-900 mb-1">

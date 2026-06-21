@@ -1,114 +1,106 @@
-// Fichier: src/screens/ProfileScreen.tsx
-import React, { useState } from 'react';
-import { ArrowLeft, Camera, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { Camera, ChevronDown, LogOut, User } from 'lucide-react';
+import { PageHeader, inputClass, labelClass } from '@/components/layout/PageHeader';
 
 export default function ProfileScreen() {
-  // On gère les données du formulaire dans le state
   const [formData, setFormData] = useState({
-    name: "Melissa Peters",
-    email: "melpeters@gmail.com",
-    password: "password123",
-    dob: "23/05/1995",
-    country: "Nigeria"
+    name: 'Melissa Peters',
+    email: 'melpeters@gmail.com',
+    password: '••••••••',
+    dob: '23/05/1995',
+    country: 'Cameroun',
   });
 
-  return (
-    <div className="px-4 pt-6 pb-24 animate-in slide-in-from-right-10 duration-300 bg-slate-50 min-h-screen">
-      
-      {/* Header */}
-      <div className="flex items-center mb-8 relative">
-        <button className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition">
-          <ArrowLeft className="w-6 h-6 text-gray-900" />
-        </button>
-        <h1 className="text-xl font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
-          Edit Profile
-        </h1>
-      </div>
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    window.location.href = '/';
+  };
 
-      {/* Photo de profil */}
+  return (
+    <div className="px-5 md:px-0 pt-2 pb-28">
+      <PageHeader greeting="Mon compte" title="Profil" showNotifications={false} />
+
       <div className="flex justify-center mb-8">
         <div className="relative">
-          <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
-              <img 
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200" 
-                alt="Profile" 
-                className="w-full h-full object-cover" 
-              />
+          <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-homify-card shadow-card ring-2 ring-homify-primary/20">
+            <img
+              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200"
+              alt="Photo de profil"
+              className="w-full h-full object-cover"
+            />
           </div>
-          {/* Bouton caméra (Edit) */}
-          <button className="absolute bottom-1 right-1 bg-blue-900 p-2 rounded-full text-white border-2 border-white hover:bg-blue-800 transition">
+          <button
+            className="absolute bottom-0 right-0 bg-homify-primary p-2 rounded-full text-white border-2 border-homify-card hover:bg-homify-primary-light transition"
+            aria-label="Changer la photo"
+          >
             <Camera className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Formulaire */}
-      <div className="space-y-5 max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
-        
-        {/* Champ Name */}
+      <div className="space-y-4 max-w-2xl mx-auto bg-homify-card p-6 md:p-8 rounded-modal shadow-card border border-homify-border">
+        <div className="flex items-center gap-2 mb-2 pb-4 border-b border-homify-border">
+          <User className="w-5 h-5 text-homify-primary" />
+          <h2 className="font-bold text-homify-text">Informations personnelles</h2>
+        </div>
+
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Name</label>
+          <label className={labelClass}>Nom complet</label>
           <input
             type="text"
             value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-            className="w-full p-4 bg-white border border-slate-200 rounded-xl text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 transition"
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className={inputClass}
           />
         </div>
 
-        {/* Champ Email */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
+          <label className={labelClass}>Email</label>
           <input
             type="email"
             value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="w-full p-4 bg-white border border-slate-200 rounded-xl text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 transition"
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            className={inputClass}
           />
         </div>
 
-        {/* Champ Password */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
+          <label className={labelClass}>Mot de passe</label>
           <input
             type="password"
             value={formData.password}
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
-            className="w-full p-4 bg-white border border-slate-200 rounded-xl text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 tracking-widest transition"
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            className={`${inputClass} tracking-widest`}
           />
         </div>
 
-        {/* Champ Date of Birth (Select simulé) */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Date of Birth</label>
-          <div className="relative cursor-pointer group">
-             <input
-              type="text"
-              value={formData.dob}
-              readOnly
-              className="w-full p-4 bg-white border border-slate-200 rounded-xl text-gray-700 outline-none cursor-pointer group-hover:bg-slate-50 transition"
-            />
-            <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+          <label className={labelClass}>Date de naissance</label>
+          <div className="relative">
+            <input type="text" value={formData.dob} readOnly className={`${inputClass} cursor-pointer`} />
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-homify-muted w-5 h-5 pointer-events-none" />
           </div>
         </div>
 
-        {/* Champ Country (Select simulé) */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Country/Region</label>
-          <div className="relative cursor-pointer group">
-             <input
-              type="text"
-              value={formData.country}
-              readOnly
-              className="w-full p-4 bg-white border border-slate-200 rounded-xl text-gray-700 outline-none cursor-pointer group-hover:bg-slate-50 transition"
-            />
-            <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+          <label className={labelClass}>Pays / Région</label>
+          <div className="relative">
+            <input type="text" value={formData.country} readOnly className={`${inputClass} cursor-pointer`} />
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-homify-muted w-5 h-5 pointer-events-none" />
           </div>
         </div>
 
-        {/* Bouton Sauvegarder */}
-        <button className="w-full bg-blue-900 text-white font-bold py-4 rounded-xl mt-4 shadow-lg shadow-blue-200 hover:bg-blue-800 transition transform active:scale-95">
-          Save changes
+        <button className="w-full bg-homify-primary text-white font-bold py-3.5 rounded-btn mt-2 shadow-sm hover:bg-homify-primary-light transition active:scale-[0.98]">
+          Enregistrer les modifications
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 border border-homify-border text-homify-muted font-semibold py-3 rounded-btn hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition"
+        >
+          <LogOut className="w-4 h-4" />
+          Se déconnecter
         </button>
       </div>
     </div>

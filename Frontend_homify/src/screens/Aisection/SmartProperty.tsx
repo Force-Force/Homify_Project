@@ -266,8 +266,8 @@ const SmartPropertySearch = () => {
 
           {/* Search Icon */}
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center">
-              <Search className="w-8 h-8 text-purple-600" />
+            <div className="w-16 h-16 bg-homify-accent100 rounded-2xl flex items-center justify-center">
+              <Search className="w-8 h-8 text-homify-accent600" />
             </div>
           </div>
 
@@ -301,13 +301,13 @@ const SmartPropertySearch = () => {
             <button
               onClick={getUserLocation}
               disabled={locationLoading}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-homify-accent100 rounded-lg hover:bg-homify-accent200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               title="Utiliser ma position GPS"
             >
               {locationLoading ? (
-                <Loader className="w-4 h-4 text-purple-600 animate-spin" />
+                <Loader className="w-4 h-4 text-homify-accent600 animate-spin" />
               ) : (
-                <MapPin className="w-4 h-4 text-purple-600" />
+                <MapPin className="w-4 h-4 text-homify-accent600" />
               )}
             </button>
             {userLocation && (
@@ -383,7 +383,7 @@ const SmartPropertySearch = () => {
           <button
             onClick={handleSearch}
             disabled={loading || locationLoading}
-            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-purple-600 to-homify-accent700 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             key="search-button"
           >
             <div className="flex items-center justify-center gap-2">
@@ -437,12 +437,12 @@ const SmartPropertySearch = () => {
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-full p-3">
-                        <Search className="w-6 h-6 text-purple-600" />
+                        <Search className="w-6 h-6 text-homify-accent600" />
                       </div>
                     </div>
                     <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full">
                       <span className={`text-xs font-semibold ${
-                        property.status === 'Available' ? 'text-green-600' : 'text-blue-600'
+                        property.status === 'Available' ? 'text-green-600' : 'text-homify-primary'
                       }`}>
                         {property.matchScore}% Compatible
                       </span>
@@ -461,7 +461,7 @@ const SmartPropertySearch = () => {
                       <span className={`text-xs font-semibold px-2 py-1 rounded ${
                         property.status === 'Available' 
                           ? 'bg-green-100 text-green-700' 
-                          : 'bg-blue-100 text-blue-700'
+                          : 'bg-homify-primary/10 text-homify-primary'
                       }`}>
                         {property.status === 'Available' ? 'Disponible' : 'À proximité'}
                       </span>
@@ -490,7 +490,7 @@ const SmartPropertySearch = () => {
                           key={index}
                           className={`text-xs px-3 py-1 rounded-full ${
                             index === 0 
-                              ? 'bg-blue-50 text-blue-700' 
+                              ? 'bg-homify-primary/10 text-homify-primary' 
                               : 'bg-orange-50 text-orange-700'
                           }`}
                         >

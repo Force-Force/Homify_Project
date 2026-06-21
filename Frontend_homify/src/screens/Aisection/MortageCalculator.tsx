@@ -185,8 +185,8 @@ const MortgageCalculator = () => {
 
         {/* Icon */}
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center">
-            <Calculator className="w-8 h-8 text-blue-600" />
+          <div className="w-16 h-16 bg-homify-primary/10 rounded-2xl flex items-center justify-center">
+            <Calculator className="w-8 h-8 text-homify-primary" />
           </div>
         </div>
 
@@ -214,7 +214,7 @@ const MortgageCalculator = () => {
               placeholder="50,000,000"
               value={homePrice}
               onChange={(e) => handleHomePrice(e.target.value)}
-              className="w-full pl-16 pr-4 py-3 bg-white rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full pl-16 pr-4 py-3 bg-white rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-homify-primary/200"
             />
           </div>
         </div>
@@ -233,24 +233,24 @@ const MortgageCalculator = () => {
               placeholder="10,000,000"
               value={downPayment}
               onChange={(e) => handleDownPayment(e.target.value)}
-              className="w-full pl-16 pr-4 py-3 bg-white rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full pl-16 pr-4 py-3 bg-white rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-homify-primary/200"
             />
           </div>
         </div>
 
         {/* Market Rate Toggle */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100">
+        <div className="bg-gradient-to-r from-homify-primary50 to-homify-accent50 rounded-xl p-4 border border-blue-100">
           <div className="flex items-start gap-3">
             <input
               type="checkbox"
               id="marketRate"
               checked={useMarketRate}
               onChange={(e) => setUseMarketRate(e.target.checked)}
-              className="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-200"
+              className="mt-1 w-5 h-5 text-homify-primary rounded focus:ring-2 focus:ring-homify-primary/200"
             />
             <div className="flex-1">
               <label htmlFor="marketRate" className="font-semibold text-gray-900 text-sm cursor-pointer flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-blue-600" />
+                <TrendingUp className="w-4 h-4 text-homify-primary" />
                 Utiliser le taux du marché actuel
               </label>
               <p className="text-xs text-gray-600 mt-1">
@@ -274,7 +274,7 @@ const MortgageCalculator = () => {
                 value={interestRate}
                 onChange={(e) => setInterestRate(e.target.value)}
                 disabled={useMarketRate}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:bg-gray-100 disabled:text-gray-400"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-homify-primary/200 disabled:bg-gray-100 disabled:text-gray-400"
               />
               <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
                 %
@@ -291,7 +291,7 @@ const MortgageCalculator = () => {
               <select
                 value={loanTerm}
                 onChange={(e) => setLoanTerm(e.target.value)}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-700"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 appearance-none focus:outline-none focus:ring-2 focus:ring-homify-primary/200 text-gray-700"
               >
                 <option value="10">10 ans</option>
                 <option value="15">15 ans</option>
@@ -308,7 +308,7 @@ const MortgageCalculator = () => {
         <button
           onClick={calculateMortgage}
           disabled={loading}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-r from-homify-primary600 to-homify-accent600 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
@@ -341,7 +341,7 @@ const MortgageCalculator = () => {
       {result && (
         <div className="px-4 animate-in fade-in slide-in-from-bottom duration-500">
           {/* Monthly Payment Card */}
-          <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-6 shadow-lg mb-4 text-white">
+          <div className="bg-gradient-to-br from-homify-primary600 to-homify-accent600 rounded-2xl p-6 shadow-lg mb-4 text-white">
             <p className="text-sm opacity-90 mb-2">Paiement Mensuel</p>
             <p className="text-4xl font-bold mb-1">
               {formatCFA(result.monthlyPayment)}
@@ -376,7 +376,7 @@ const MortgageCalculator = () => {
               </div>
               <div className="flex justify-between items-center pt-2">
                 <span className="text-sm font-semibold text-gray-900">Total Mensuel</span>
-                <span className="text-lg font-bold text-blue-600">
+                <span className="text-lg font-bold text-homify-primary">
                   {formatCFA(result.monthlyPayment)}
                 </span>
               </div>
