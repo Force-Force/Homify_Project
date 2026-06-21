@@ -7,7 +7,7 @@ FRONTEND_PORT := 5173
 BACKEND_PORT  := 8000
 
 PYTHON       := python3
-VENV         := $(BACKEND_DIR)/.venv
+VENV         := $(CURDIR)/$(BACKEND_DIR)/.venv
 VENV_PYTHON  := $(VENV)/bin/python
 VENV_PIP     := $(VENV)/bin/pip
 
@@ -63,7 +63,7 @@ install-backend:
 
 install-backend-local:
 	@test -d $(VENV) || $(PYTHON) -m venv $(VENV)
-	$(VENV_PIP) install --upgrade pip
+	$(VENV_PIP) install --upgrade pip setuptools wheel
 	$(VENV_PIP) install -r $(BACKEND_DIR)/requirements.txt
 	cd $(BACKEND_DIR) && $(VENV_PYTHON) manage.py migrate --noinput
 	@echo "Backend local prêt (venv: $(VENV), base: SQLite)"
