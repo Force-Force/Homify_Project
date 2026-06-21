@@ -5,10 +5,18 @@ import { Hotel } from '../types/index';
 const API_URL = 'http://localhost:8000/api'; 
 
 
+const TYPE_LABELS: Record<string, string> = {
+  HOUSE: 'Maison',
+  APARTMENT: 'Appart.',
+  STUDIO: 'Studio',
+  ROOM: 'Chambre',
+};
+
 const transformApiToHotel = (apiProp: ApiProperty): Hotel => {
   return {
     id: apiProp.id,
     name: apiProp.title,
+    type: TYPE_LABELS[apiProp.type] ?? apiProp.type,
     location: `${apiProp.address.district}, ${apiProp.address.city}`, // On combine quartier et ville
     price: parseFloat(apiProp.monthly_rent), // On convertit "450000.00" en nombre
     displayPrice: `${parseInt(apiProp.monthly_rent).toLocaleString()} FCFA`, // Format joli

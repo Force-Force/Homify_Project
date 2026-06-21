@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, Bell, Search, SlidersHorizontal, Loader2, X, Check } from 'lucide-react';
+import { MapPin, Bell, Search, SlidersHorizontal, Loader2, X, Check, Sparkles } from 'lucide-react';
 import axios from 'axios';
 import { RecommendedCard } from '../components/Cards';
 import { Hotel } from '../types';
 import { getProperties } from '../services/propertyService';
+import { StaggeredItem } from '@/components/ui/StaggeredItem';
 
 interface HomeProps {
   onHotelClick: (h: Hotel) => void;
@@ -21,14 +22,14 @@ const PROPERTY_TYPES = [
   { value: 'HOUSE', label: 'Maison' },
   { value: 'APARTMENT', label: 'Appartement' },
   { value: 'STUDIO', label: 'Studio' },
-  { value: 'ROOM', label: 'Chambre' }
+  { value: 'ROOM', label: 'Chambre' },
 ];
 
 const SORT_OPTIONS = [
   { value: '-created_at', label: 'Plus récents' },
   { value: 'monthly_rent', label: 'Prix croissant' },
   { value: '-monthly_rent', label: 'Prix décroissant' },
-  { value: 'surface', label: 'Surface croissante' }
+  { value: 'surface', label: 'Surface croissante' },
 ];
 
 const DEFAULT_FILTERS: Filters = {
@@ -36,7 +37,7 @@ const DEFAULT_FILTERS: Filters = {
   minPrice: '',
   maxPrice: '',
   city: '',
-  ordering: '-created_at'
+  ordering: '-created_at',
 };
 
 export default function HomeScreen({ onHotelClick }: HomeProps) {
@@ -48,28 +49,21 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
 
-  // Build query string from filters
   const buildQueryString = (customSearch?: string): string => {
     let query = `?ordering=${filters.ordering}`;
-    
-    if (customSearch) {
-      query += `&search=${encodeURIComponent(customSearch)}`;
-    }
+    if (customSearch) query += `&search=${encodeURIComponent(customSearch)}`;
     if (filters.type) query += `&type=${filters.type}`;
     if (filters.minPrice) query += `&min_price=${filters.minPrice}`;
     if (filters.maxPrice) query += `&max_price=${filters.maxPrice}`;
     if (filters.city) query += `&city=${filters.city}`;
-    
     return query;
   };
 
-  // Fetch properties with optional query string
   const fetchProperties = async (customQueryString?: string) => {
     setLoading(true);
     try {
       const queryString = customQueryString || '?ordering=-created_at';
       const data = await getProperties(queryString);
-      
       if (data.length > 0) {
         setProperties(data);
         setError(null);
@@ -77,7 +71,7 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
         setProperties([]);
         setError('Aucun résultat ne correspond à vos critères.');
       }
-    } catch (err) {
+    } catch {
       setError('Erreur de connexion au serveur.');
       setProperties([]);
     } finally {
@@ -85,7 +79,6 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
     }
   };
 
-  // Fetch city name from coordinates
   const fetchCityName = async (lat: number, lon: number) => {
     try {
       const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
@@ -93,56 +86,46 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
       const address = response.data.address;
       const city = address.city || address.town || address.village || 'Ma Position';
       setLocationName(`${city}, CMR`);
-    } catch (err) {
+    } catch {
       setLocationName('Yaoundé, CMR');
     }
   };
 
-  // Apply filters and close modal
   const applyFilters = () => {
-    const query = buildQueryString();
-    fetchProperties(query);
+    fetchProperties(buildQueryString());
     setShowFilters(false);
     setSearchQuery('');
   };
 
-  // Reset all filters
   const resetFilters = () => {
     setSearchQuery('');
     setFilters(DEFAULT_FILTERS);
     fetchProperties('?ordering=-created_at');
   };
 
-  // Update filter field
   const updateFilter = (key: keyof Filters, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Toggle property type filter
   const togglePropertyType = (type: string) => {
     updateFilter('type', filters.type === type ? '' : type);
   };
 
-  // Initial load
   useEffect(() => {
     fetchProperties();
   }, []);
 
-  // Search query debounce
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searchQuery.trim()) {
-        const query = buildQueryString(searchQuery);
-        fetchProperties(query);
+        fetchProperties(buildQueryString(searchQuery));
       } else if (!showFilters) {
         fetchProperties(`?ordering=${filters.ordering}`);
       }
     }, 500);
-
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  // Geolocation
   useEffect(() => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -152,116 +135,159 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
     }
   }, []);
 
-  const hasActiveFilters = () => {
-    return searchQuery || Object.entries(filters).some(
+  const hasActiveFilters = () =>
+    searchQuery ||
+    Object.entries(filters).some(
       ([key, value]) => key !== 'ordering' && value !== '' && value !== DEFAULT_FILTERS.ordering
     );
-  };
 
   return (
-    <div className="animate-in fade-in duration-300 pb-24 md:p-4">
+    <div className="pb-28 md:pb-8 md:px-2">
       {/* Header */}
-      <header className="flex justify-between items-center mb-6 px-4 md:px-0  rounded-md p-3 px-5">
-        <div className='pl-5'>
-          <p className="text-gray-400 text-xs">Location</p>
-          <div className="flex items-center gap-1 text-blue-950 font-bold text-lg cursor-pointer">
-            <MapPin className="w-5 h-5 text-blue-600" />
+      <header className="flex justify-between items-center mb-6 px-5 md:px-0">
+        <div>
+          <p className="text-homify-muted text-xs font-medium uppercase tracking-wider">Localisation</p>
+          <div className="flex items-center gap-1.5 text-homify-primary font-bold text-lg mt-0.5">
+            <MapPin className="w-4 h-4 text-homify-accent" />
             <span>{locationName}</span>
           </div>
         </div>
-        <div className="relative p-2 bg-white rounded-full shadow-sm pr-5">
-          <Bell className="w-6 h-6 text-black" />
-        </div>
+        <button
+          className="relative p-2.5 bg-homify-card rounded-full shadow-card border border-homify-border hover:border-homify-accent/40 transition-colors"
+          aria-label="Notifications"
+        >
+          <Bell className="w-5 h-5 text-homify-primary" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-homify-accent rounded-full" />
+        </button>
       </header>
 
+      {/* Hero greeting */}
+      <div className="px-5 md:px-0 mb-6">
+        <h1 className="text-2xl font-extrabold text-homify-text tracking-tight">
+          Bonjour 👋
+        </h1>
+        <p className="text-homify-muted text-sm mt-1">
+          Trouvez le logement idéal près de chez vous
+        </p>
+      </div>
+
       {/* Search Bar */}
-      <div className="flex gap-4 mb-8 px-4 md:px-0">
+      <div className="flex gap-3 mb-8 px-5 md:px-0">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-homify-muted w-4 h-4" />
           <input
             type="text"
-            placeholder="Rechercher..."
-            className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-200"
+            placeholder="Rechercher un quartier, une ville..."
+            className="w-full pl-10 pr-4 py-3 bg-homify-card rounded-btn border border-homify-border
+                       focus:outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40
+                       text-sm placeholder:text-homify-muted/70 transition-all"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <button
           onClick={() => setShowFilters(true)}
-          className="bg-blue-600 p-3 rounded-xl text-white hover:bg-blue-700 transition shadow-lg shadow-blue-200"
+          className="bg-homify-primary p-3 rounded-btn text-white hover:bg-homify-primary-light transition shadow-sm shrink-0"
+          aria-label="Filtres"
         >
-          <SlidersHorizontal className="w-6 h-6" />
+          <SlidersHorizontal className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Error Message */}
+      {/* Quick type chips */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-5 md:px-0 mb-6 pb-1">
+        {PROPERTY_TYPES.map(({ value, label }) => (
+          <button
+            key={value}
+            onClick={() => {
+              togglePropertyType(value);
+              const newFilters = { ...filters, type: filters.type === value ? '' : value };
+              setFilters(newFilters);
+              const q = `?ordering=${newFilters.ordering}${newFilters.type ? `&type=${newFilters.type}` : ''}`;
+              fetchProperties(q);
+            }}
+            className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+              filters.type === value
+                ? 'bg-homify-accent text-white border-homify-accent'
+                : 'bg-homify-card text-homify-muted border-homify-border hover:border-homify-primary/30'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Error */}
       {error && (
-        <div className="p-4 bg-red-50 text-red-500 rounded-lg mx-4 mb-4 text-center text-sm">
+        <div className="mx-5 md:mx-0 mb-4 p-3.5 bg-red-50 text-red-600 rounded-btn text-sm text-center border border-red-100">
           {error}
         </div>
       )}
 
-      {/* Loading Spinner */}
+      {/* Loading */}
       {loading && (
-        <div className="flex justify-center mb-4">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <div className="flex justify-center mb-6">
+          <Loader2 className="w-7 h-7 text-homify-primary animate-spin" />
         </div>
       )}
 
-      {/* Properties List */}
+      {/* Properties */}
       <section className="mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-4 px-4 md:px-0">
-          {hasActiveFilters() ? 'Résultats filtrés' : 'Récemment publiés'}
-        </h2>
+        <div className="flex items-center justify-between mb-4 px-5 md:px-0">
+          <h2 className="text-lg font-bold text-homify-text">
+            {hasActiveFilters() ? 'Résultats' : 'Récemment publiés'}
+          </h2>
+          {!loading && properties.length > 0 && (
+            <span className="text-xs text-homify-muted font-medium">
+              {properties.length} annonce{properties.length > 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
 
         {properties.length > 0 ? (
-          <div className="flex overflow-x-auto pb-4 gap-4 px-4 scrollbar-hide md:grid md:grid-cols-3 md:px-0">
-            {properties.map((hotel) => (
-              <RecommendedCard
-                key={hotel.id}
-                hotel={hotel}
-                onClick={() => onHotelClick(hotel)}
-              />
+          <div className="flex overflow-x-auto pb-4 gap-4 px-5 scrollbar-hide md:grid md:grid-cols-2 lg:grid-cols-3 md:px-0 md:overflow-visible md:gap-5">
+            {properties.map((hotel, index) => (
+              <StaggeredItem key={hotel.id} index={index}>
+                <RecommendedCard hotel={hotel} onClick={() => onHotelClick(hotel)} />
+              </StaggeredItem>
             ))}
           </div>
         ) : (
           !loading && (
-            <p className="px-4 text-gray-400 text-sm">Aucune annonce trouvée.</p>
+            <div className="mx-5 md:mx-0 flex flex-col items-center py-12 text-center">
+              <Sparkles className="w-10 h-10 text-homify-muted/40 mb-3" />
+              <p className="text-homify-muted text-sm">Aucune annonce trouvée.</p>
+            </div>
           )
         )}
       </section>
 
       {/* Filters Modal */}
       {showFilters && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white w-full md:w-[500px] h-[85vh] md:h-auto md:rounded-3xl rounded-t-3xl p-6 shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300">
-            {/* Modal Header */}
+        <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
+          <div className="bg-homify-card w-full md:w-[480px] h-[85vh] md:h-auto md:max-h-[85vh] md:rounded-modal rounded-t-modal p-6 shadow-2xl flex flex-col">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Filtres</h3>
+              <h3 className="text-xl font-bold text-homify-text">Filtres</h3>
               <button
                 onClick={() => setShowFilters(false)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition"
+                className="p-2 bg-homify-surface rounded-full hover:bg-homify-border/50 transition"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-homify-muted" />
               </button>
             </div>
 
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto space-y-6 pr-2">
-              {/* Property Type */}
+            <div className="flex-1 overflow-y-auto space-y-6 pr-1">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Type de bien
-                </label>
-                <div className="grid grid-cols-2 gap-3">
+                <label className="block text-sm font-semibold text-homify-text mb-2">Type de bien</label>
+                <div className="grid grid-cols-2 gap-2.5">
                   {PROPERTY_TYPES.map(({ value, label }) => (
                     <button
                       key={value}
                       onClick={() => togglePropertyType(value)}
-                      className={`py-3 rounded-xl text-sm font-medium border transition ${
+                      className={`py-2.5 rounded-btn text-sm font-medium border transition ${
                         filters.type === value
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'
+                          ? 'bg-homify-primary text-white border-homify-primary'
+                          : 'bg-homify-surface text-homify-muted border-homify-border hover:border-homify-primary/30'
                       }`}
                     >
                       {label}
@@ -270,77 +296,62 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
                 </div>
               </div>
 
-              {/* Price Range */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Budget (FCFA)
-                </label>
-                <div className="flex gap-4">
+                <label className="block text-sm font-semibold text-homify-text mb-2">Budget (FCFA)</label>
+                <div className="flex gap-3">
                   <input
                     type="number"
                     placeholder="Min"
-                    className="flex-1 p-3 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-100"
+                    className="flex-1 p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
                     value={filters.minPrice}
                     onChange={(e) => updateFilter('minPrice', e.target.value)}
                   />
                   <input
                     type="number"
                     placeholder="Max"
-                    className="flex-1 p-3 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-100"
+                    className="flex-1 p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
                     value={filters.maxPrice}
                     onChange={(e) => updateFilter('maxPrice', e.target.value)}
                   />
                 </div>
               </div>
 
-              {/* City */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Ville
-                </label>
+                <label className="block text-sm font-semibold text-homify-text mb-2">Ville</label>
                 <input
                   type="text"
                   placeholder="Ex: Yaoundé, Douala..."
-                  className="w-full p-3 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-100"
+                  className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
                   value={filters.city}
                   onChange={(e) => updateFilter('city', e.target.value)}
                 />
               </div>
 
-              {/* Sort By */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Trier par
-                </label>
+                <label className="block text-sm font-semibold text-homify-text mb-2">Trier par</label>
                 <select
-                  className="w-full p-3 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-100 text-gray-700"
+                  className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm text-homify-text"
                   value={filters.ordering}
                   onChange={(e) => updateFilter('ordering', e.target.value)}
                 >
                   {SORT_OPTIONS.map(({ value, label }) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
+                    <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
               </div>
 
-              {/* Reset Filters */}
-              <div>
-                <button
-                  onClick={resetFilters}
-                  className="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-xl shadow-lg shadow-gray-100 hover:bg-gray-300 transition"
-                >
-                  Réinitialiser les filtres
-                </button>
-              </div>
+              <button
+                onClick={resetFilters}
+                className="w-full bg-homify-surface text-homify-muted font-semibold py-3 rounded-btn border border-homify-border hover:bg-homify-border/30 transition text-sm"
+              >
+                Réinitialiser les filtres
+              </button>
             </div>
 
-            {/* Modal Footer */}
-            <div className="pt-6 mt-4 border-t">
+            <div className="pt-5 mt-4 border-t border-homify-border">
               <button
                 onClick={applyFilters}
-                className="w-full bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-800 transition flex justify-center items-center gap-2"
+                className="w-full bg-homify-accent text-white font-bold py-3.5 rounded-btn hover:bg-homify-accent-hover transition flex justify-center items-center gap-2"
               >
                 <Check className="w-5 h-5" />
                 Afficher les résultats

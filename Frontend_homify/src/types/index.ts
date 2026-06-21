@@ -6,6 +6,7 @@ export interface Hotel {
   displayPrice?: string;
   rating: number;
   imageUrl: string;
+  type?: string;
   description?: string;
   discount?: string;
   amenities?: { 

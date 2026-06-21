@@ -1,67 +1,69 @@
-// Fichier: src/components/BottomNav.tsx
 import React from 'react';
-import { Home, Heart, Search, User } from 'lucide-react';
-import { Bot } from 'lucide-react';
+import { Home, Heart, Search, User, Bot } from 'lucide-react';
+import Dock from '@/components/ui/Dock/Dock';
+import { cn } from '@/lib/utils';
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
+const NAV_ITEMS = [
+  { name: 'Home', label: 'Accueil', icon: Home },
+  { name: 'Favorites', label: 'Favoris', icon: Heart },
+  { name: 'Search', label: 'Recherche', icon: Search },
+  { name: 'Assist', label: 'Assistant', icon: Bot },
+  { name: 'Profile', label: 'Profil', icon: User },
+];
+
 export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
-  const navItems = [
-    { name: 'Home', icon: Home },
-    { name: 'Favorites', icon: Heart },
-    { name: 'Search', icon: Search },
-    { name: 'Assist', icon: Bot },
-    { name: 'Profile', icon: User },
-  ];
+  const dockItems = NAV_ITEMS.map((item) => ({
+    icon: <item.icon className={activeTab === item.name ? 'text-white' : 'text-homify-primary'} />,
+    label: item.label,
+    onClick: () => onTabChange(item.name),
+    active: activeTab === item.name,
+  }));
 
   return (
     <>
-      {/* Mobile bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t py-3 px-6 pb-6 md:hidden z-50">
-        <div className="flex justify-between items-center">
-          {navItems.map((item) => (
-            <button 
-              key={item.name}
-              onClick={() => onTabChange(item.name)}
-              className={`flex items-center gap-2 p-2 rounded-full transition-all duration-300 ${
-                activeTab === item.name 
-                  ? 'bg-blue-900 text-white px-4' 
-                  : 'text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              <item.icon className={`w-6 h-6 ${activeTab === item.name ? 'fill-current' : ''}`} />
-              {activeTab === item.name && <span className="text-sm font-medium">{item.name}</span>}
-            </button>
-          ))}
+      <Dock items={dockItems} />
+
+      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:flex md:w-64 md:flex-col md:border-r md:border-homify-border md:bg-homify-card md:px-4 md:pt-10 md:shadow-sm">
+        <div className="mb-8 px-3">
+          <h1 className="text-2xl font-extrabold tracking-tight text-homify-primary">Homify</h1>
+          <p className="mt-0.5 text-xs text-homify-muted">Trouvez votre chez-vous</p>
         </div>
-      </div>
 
-      {/* Desktop left sidebar navigation */}
-      <div className="hidden md:fixed md:inset-y-0 md:left-0 md:w-64 md:flex md:flex-col md:pt-10 md:px-4 bg-blue-950 border-r border-blue-900 shadow-xl gap-4 md:mr-2">
-        {navItems.map((item) => (
-          <button
-            key={item.name}
-            onClick={() => onTabChange(item.name)}
-            className={`
-              flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300
-              ${activeTab === item.name
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 transform scale-102'
-                : 'text-slate-300 hover:bg-blue-900/50 hover:text-white'}
-            `}
-          >
-            <item.icon
-              className={`w-5 h-5 transition-colors duration-300 ${
-                activeTab === item.name ? 'text-white' : 'text-slate-400'
-              }`}
-            />
-            <span className="truncate">{item.name}</span>
-          </button>
-        ))}
-      </div>
+        <nav className="flex flex-col gap-1.5">
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeTab === item.name;
+            return (
+              <button
+                key={item.name}
+                onClick={() => onTabChange(item.name)}
+                className={cn(
+                  'flex items-center gap-3 rounded-btn px-4 py-3 text-sm font-medium transition-all duration-200',
+                  isActive
+                    ? 'bg-homify-primary text-white shadow-sm'
+                    : 'text-homify-muted hover:bg-homify-surface hover:text-homify-primary'
+                )}
+              >
+                <item.icon className={cn('h-5 w-5', isActive && 'text-white')} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
 
+        <div className="mt-auto mb-8 px-3">
+          <div className="rounded-card bg-homify-surface p-4">
+            <p className="text-xs font-semibold text-homify-primary">Assistant IA</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-homify-muted">
+              Analyse de marché, recherche intelligente et plus encore.
+            </p>
+          </div>
+        </div>
+      </aside>
     </>
   );
 };
