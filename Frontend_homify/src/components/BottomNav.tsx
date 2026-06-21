@@ -28,7 +28,7 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
     <>
       <Dock items={dockItems} />
 
-      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:flex md:w-64 md:flex-col md:border-r md:border-homify-border md:bg-homify-card md:px-4 md:pt-10 md:shadow-sm">
+      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-64 md:flex-col md:border-r md:border-homify-border md:bg-homify-card md:px-4 md:pt-10 md:shadow-sm">
         <div className="mb-8 px-3">
           <h1 className="text-2xl font-extrabold tracking-tight text-homify-primary">Homify</h1>
           <p className="mt-0.5 text-xs text-homify-muted">Trouvez votre chez-vous</p>

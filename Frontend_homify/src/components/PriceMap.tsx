@@ -10,6 +10,7 @@ interface Props {
   properties: Hotel[];
   activeId: number | null;
   onMarkerClick: (id: number) => void;
+  fullBleed?: boolean;
 }
 
 function FitBounds({ positions }: { positions: [number, number][] }) {
@@ -69,7 +70,7 @@ function formatPriceLabel(hotel: Hotel): string {
   return `${hotel.price.toLocaleString('fr-FR')} F`;
 }
 
-export default function PriceMap({ properties, activeId, onMarkerClick }: Props) {
+export default function PriceMap({ properties, activeId, onMarkerClick, fullBleed = false }: Props) {
   const mappable = properties.filter(
     (p) => p.coordinates?.lat != null && p.coordinates?.lng != null
   );
@@ -104,7 +105,13 @@ export default function PriceMap({ properties, activeId, onMarkerClick }: Props)
   );
 
   return (
-    <div className="w-full h-full min-h-[280px] bg-homify-surface overflow-hidden md:rounded-card md:border md:border-homify-border">
+    <div
+      className={
+        fullBleed
+          ? 'w-full h-full min-h-0 bg-homify-surface overflow-hidden'
+          : 'w-full h-full min-h-[280px] bg-homify-surface overflow-hidden rounded-card border border-homify-border'
+      }
+    >
       <MapContainer
         center={DEFAULT_CENTER}
         zoom={13}

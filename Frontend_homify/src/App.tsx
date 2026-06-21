@@ -53,19 +53,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-homify-surface font-sans">
-      <div
-        className={
-          isHomeLayout
-            ? 'pt-6 md:pt-0 md:ml-64 md:mr-0 md:h-screen md:overflow-hidden'
-            : 'pt-6 md:pt-8 md:ml-64 md:mr-8 max-w-7xl'
-        }
-      >
-        {renderContent()}
-      </div>
-
       {!selectedHotel && !isChatting && (
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
       )}
+
+      <main
+        className={
+          isHomeLayout
+            ? 'md:ml-64 md:w-[calc(100%-16rem)] md:h-screen md:overflow-hidden'
+            : 'pt-6 md:pt-8 md:ml-64 md:w-[calc(100%-16rem)] md:max-w-5xl md:mx-auto md:px-8'
+        }
+      >
+        {renderContent()}
+      </main>
     </div>
   );
 }

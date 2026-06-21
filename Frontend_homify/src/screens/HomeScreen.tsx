@@ -161,104 +161,101 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
     );
 
   return (
-    <div className="flex flex-col h-full pb-28 md:pb-0 md:px-4 lg:px-6">
-      {/* Header */}
-      <header className="flex justify-between items-center mb-6 px-5 md:px-0">
-        <div>
-          <p className="text-homify-muted text-xs font-medium uppercase tracking-wider">Localisation</p>
-          <div className="flex items-center gap-1.5 text-homify-primary font-bold text-lg mt-0.5">
-            <MapPin className="w-4 h-4 text-homify-accent" />
-            <span>{locationName}</span>
+    <div className="flex flex-col md:flex-row h-full md:h-screen overflow-hidden pb-28 md:pb-0">
+      {/* Colonne gauche — liste + barre de recherche (desktop uniquement sur cette moitié) */}
+      <div
+        className={`flex flex-col min-w-0 md:w-[58%] md:max-w-[58%] md:h-full md:overflow-hidden ${
+          viewMode === 'map' ? 'hidden md:flex' : 'flex flex-1'
+        }`}
+      >
+        {/* Toolbar compacte */}
+        <div className="flex-none bg-homify-card border-b border-homify-border px-5 md:px-6 py-4 md:py-3 space-y-3 md:space-y-2.5">
+          <header className="flex justify-between items-center">
+            <div className="min-w-0">
+              <p className="text-homify-muted text-[10px] md:text-xs font-medium uppercase tracking-wider">
+                Localisation
+              </p>
+              <div className="flex items-center gap-1.5 text-homify-primary font-bold text-base md:text-sm mt-0.5">
+                <MapPin className="w-3.5 h-3.5 md:w-3 md:h-3 text-homify-accent shrink-0" />
+                <span className="truncate">{locationName}</span>
+              </div>
+            </div>
+            <button
+              className="relative p-2 md:p-1.5 bg-homify-surface rounded-full border border-homify-border hover:border-homify-accent/40 transition-colors shrink-0"
+              aria-label="Notifications"
+            >
+              <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-homify-primary" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-homify-accent rounded-full" />
+            </button>
+          </header>
+
+          {/* Hero — mobile seulement */}
+          <div className="md:hidden">
+            <h1 className="text-2xl font-extrabold text-homify-text tracking-tight">Bonjour 👋</h1>
+            <p className="text-homify-muted text-sm mt-1">Trouvez le logement idéal près de chez vous</p>
+          </div>
+
+          <div className="flex gap-2 md:gap-2.5">
+            <div className="flex-1 relative min-w-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-homify-muted w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Rechercher un quartier, une ville..."
+                className="w-full pl-9 pr-3 py-2.5 md:py-2 bg-homify-surface rounded-btn border border-homify-border
+                           focus:outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40
+                           text-sm placeholder:text-homify-muted/70 transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={() => setShowFilters(true)}
+              className="bg-homify-primary p-2.5 md:p-2 rounded-btn text-white hover:bg-homify-primary-light transition shadow-sm shrink-0"
+              aria-label="Filtres"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+            {PROPERTY_TYPES.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => {
+                  togglePropertyType(value);
+                  const newFilters = { ...filters, type: filters.type === value ? '' : value };
+                  setFilters(newFilters);
+                  const q = `?ordering=${newFilters.ordering}${newFilters.type ? `&type=${newFilters.type}` : ''}`;
+                  fetchProperties(q);
+                }}
+                className={`shrink-0 px-3 py-1 md:px-2.5 md:py-0.5 rounded-full text-xs font-semibold border transition-all ${
+                  filters.type === value
+                    ? 'bg-homify-accent text-white border-homify-accent'
+                    : 'bg-homify-surface text-homify-muted border-homify-border hover:border-homify-primary/30'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
-        <button
-          className="relative p-2.5 bg-homify-card rounded-full shadow-card border border-homify-border hover:border-homify-accent/40 transition-colors"
-          aria-label="Notifications"
-        >
-          <Bell className="w-5 h-5 text-homify-primary" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-homify-accent rounded-full" />
-        </button>
-      </header>
 
-      {/* Hero greeting */}
-      <div className="px-5 md:px-0 mb-6">
-        <h1 className="text-2xl font-extrabold text-homify-text tracking-tight">
-          Bonjour 👋
-        </h1>
-        <p className="text-homify-muted text-sm mt-1">
-          Trouvez le logement idéal près de chez vous
-        </p>
-      </div>
+        {/* Liste scrollable */}
+        <section className="flex-1 overflow-y-auto px-5 md:px-6 py-4 md:py-5 min-h-0">
+          {error && (
+            <div className="mb-4 p-3.5 bg-red-50 text-red-600 rounded-btn text-sm text-center border border-red-100">
+              {error}
+            </div>
+          )}
 
-      {/* Search Bar */}
-      <div className="flex gap-3 mb-8 px-5 md:px-0">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-homify-muted w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Rechercher un quartier, une ville..."
-            className="w-full pl-10 pr-4 py-3 bg-homify-card rounded-btn border border-homify-border
-                       focus:outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40
-                       text-sm placeholder:text-homify-muted/70 transition-all"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <button
-          onClick={() => setShowFilters(true)}
-          className="bg-homify-primary p-3 rounded-btn text-white hover:bg-homify-primary-light transition shadow-sm shrink-0"
-          aria-label="Filtres"
-        >
-          <SlidersHorizontal className="w-5 h-5" />
-        </button>
-      </div>
+          {loading && (
+            <div className="flex justify-center mb-6">
+              <Loader2 className="w-7 h-7 text-homify-primary animate-spin" />
+            </div>
+          )}
 
-      {/* Quick type chips */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-5 md:px-0 mb-6 pb-1">
-        {PROPERTY_TYPES.map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => {
-              togglePropertyType(value);
-              const newFilters = { ...filters, type: filters.type === value ? '' : value };
-              setFilters(newFilters);
-              const q = `?ordering=${newFilters.ordering}${newFilters.type ? `&type=${newFilters.type}` : ''}`;
-              fetchProperties(q);
-            }}
-            className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-              filters.type === value
-                ? 'bg-homify-accent text-white border-homify-accent'
-                : 'bg-homify-card text-homify-muted border-homify-border hover:border-homify-primary/30'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Error */}
-      {error && (
-        <div className="mx-5 md:mx-0 mb-4 p-3.5 bg-red-50 text-red-600 rounded-btn text-sm text-center border border-red-100">
-          {error}
-        </div>
-      )}
-
-      {/* Loading */}
-      {loading && (
-        <div className="flex justify-center mb-6">
-          <Loader2 className="w-7 h-7 text-homify-primary animate-spin" />
-        </div>
-      )}
-
-      {/* List + side map */}
-      <div className="flex-1 flex flex-col md:flex-row md:gap-5 md:overflow-hidden md:min-h-0">
-        <section
-          className={`flex-1 md:overflow-y-auto md:pr-1 ${
-            viewMode === 'map' ? 'hidden md:block' : 'block'
-          }`}
-        >
-          <div className="flex items-center justify-between mb-4 px-5 md:px-0">
-            <h2 className="text-lg font-bold text-homify-text">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg md:text-base font-bold text-homify-text">
               {hasActiveFilters() ? 'Résultats' : 'Récemment publiés'}
             </h2>
             {!loading && properties.length > 0 && (
@@ -269,7 +266,7 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
           </div>
 
           {properties.length > 0 ? (
-            <div className="flex overflow-x-auto pb-4 gap-4 px-5 scrollbar-hide md:grid md:grid-cols-2 xl:grid-cols-2 md:px-0 md:overflow-visible md:gap-5 md:pb-8">
+            <div className="flex overflow-x-auto pb-4 gap-4 scrollbar-hide md:grid md:grid-cols-2 md:overflow-visible md:gap-4 md:pb-6">
               {properties.map((hotel, index) => (
                 <div
                   key={hotel.id}
@@ -284,42 +281,41 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
             </div>
           ) : (
             !loading && (
-              <div className="mx-5 md:mx-0 flex flex-col items-center py-12 text-center">
+              <div className="flex flex-col items-center py-12 text-center">
                 <Sparkles className="w-10 h-10 text-homify-muted/40 mb-3" />
                 <p className="text-homify-muted text-sm">Aucune annonce trouvée.</p>
               </div>
             )
           )}
         </section>
-
-        {/* Mini map — desktop sidebar + mobile full screen */}
-        <aside
-          className={`md:w-[42%] md:shrink-0 md:sticky md:top-4 md:self-start md:h-[calc(100vh-220px)] ${
-            viewMode === 'map'
-              ? 'fixed inset-0 z-50 bg-homify-surface md:static md:z-auto'
-              : 'hidden md:block'
-          }`}
-        >
-          <div className="h-full p-4 md:p-0">
-            {viewMode === 'map' && (
-              <button
-                onClick={() => setViewMode('list')}
-                className="md:hidden absolute top-4 left-4 z-[1000] bg-homify-card p-3 rounded-full shadow-lg border border-homify-border"
-                aria-label="Retour à la liste"
-              >
-                <List className="w-5 h-5 text-homify-primary" />
-              </button>
-            )}
-            <PriceMap
-              properties={properties}
-              activeId={activeId}
-              onMarkerClick={handleMarkerClick}
-            />
-          </div>
-        </aside>
       </div>
 
-      {/* Mobile list / map toggle */}
+      {/* Carte — pleine hauteur à droite (desktop) */}
+      <aside
+        className={`md:w-[42%] md:shrink-0 md:h-full md:min-h-0 md:border-l md:border-homify-border ${
+          viewMode === 'map'
+            ? 'fixed inset-0 z-50 md:static md:z-auto flex flex-col'
+            : 'hidden md:flex md:flex-col'
+        }`}
+      >
+        {viewMode === 'map' && (
+          <button
+            onClick={() => setViewMode('list')}
+            className="md:hidden absolute top-4 left-4 z-[1000] bg-homify-card p-3 rounded-full shadow-lg border border-homify-border"
+            aria-label="Retour à la liste"
+          >
+            <List className="w-5 h-5 text-homify-primary" />
+          </button>
+        )}
+        <PriceMap
+          properties={properties}
+          activeId={activeId}
+          onMarkerClick={handleMarkerClick}
+          fullBleed
+        />
+      </aside>
+
+      {/* Toggle mobile liste / carte */}
       <div className="md:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40">
         <button
           onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
