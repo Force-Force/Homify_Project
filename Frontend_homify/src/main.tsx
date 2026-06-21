@@ -2,14 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import App from "./App";
-import AuthPage from "./components/Authentification/authpage";   // <-- create this page
+import LandingPage from "./screens/LandingPage";
 import HomifiSignIn from "./components/Authentification/HomifiSignIn";
 import HomifiSignUp from "./components/Authentification/HomifiSignUp";
 import ForgotPassword from "./components/Authentification/ForgotPassword";
-import "./index.css";
 import ResetPass from "./components/Authentification/ResetPass";
+import "./index.css";
+
 function Root() {
-  // Example auth check — replace with your real logic
   const isAuthenticated = localStorage.getItem("access_token") !== null;
 
   return (
@@ -23,12 +23,12 @@ function Root() {
             </>
           ) : (
             <>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/signin" element={<HomifiSignIn />} />
               <Route path="/signup" element={<HomifiSignUp />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path =  "/Reset-passode" element= {<ResetPass/>} />
-              <Route path="/" element={<AuthPage />} />
-              <Route path="*" element={<Navigate to="/signin" replace />} />
+              <Route path="/Reset-passode" element={<ResetPass />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}
         </Routes>
