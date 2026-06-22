@@ -9,7 +9,17 @@ interface CardProps {
   onClick: () => void;
 }
 
-export const RecommendedCard = ({ hotel, onClick }: CardProps) => (
+interface RecommendedCardProps extends CardProps {
+  isFavorite?: boolean;
+  onFavoriteToggle?: (e: React.MouseEvent) => void;
+}
+
+export const RecommendedCard = ({
+  hotel,
+  onClick,
+  isFavorite = false,
+  onFavoriteToggle,
+}: RecommendedCardProps) => (
   <SpotlightCard
     onClick={onClick}
     className="min-w-[260px] shrink-0 p-0 group"
@@ -22,11 +32,16 @@ export const RecommendedCard = ({ hotel, onClick }: CardProps) => (
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
       <button
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onFavoriteToggle?.(e);
+        }}
         className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm hover:text-homify-accent transition-colors z-10"
-        aria-label="Ajouter aux favoris"
+        aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
       >
-        <Heart className="w-4 h-4 text-homify-muted" />
+        <Heart
+          className={`w-4 h-4 ${isFavorite ? 'fill-homify-accent text-homify-accent' : 'text-homify-muted'}`}
+        />
       </button>
       {hotel.type && (
         <span className="absolute top-2.5 left-2.5 bg-homify-primary/90 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full z-10">
@@ -38,10 +53,12 @@ export const RecommendedCard = ({ hotel, onClick }: CardProps) => (
     <div className="p-3.5">
       <div className="flex justify-between items-start mb-1.5 gap-2">
         <h3 className="font-semibold text-homify-text text-[15px] leading-snug truncate">{hotel.name}</h3>
-        <div className="flex items-center gap-0.5 shrink-0">
-          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-          <span className="text-xs font-medium text-homify-muted">{hotel.rating}</span>
-        </div>
+        {hotel.rating > 0 && (
+          <div className="flex items-center gap-0.5 shrink-0">
+            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span className="text-xs font-medium text-homify-muted">{hotel.rating}</span>
+          </div>
+        )}
       </div>
       <div className="flex items-center text-homify-muted text-xs mb-2.5">
         <MapPin className="w-3 h-3 mr-1 shrink-0 text-homify-accent" />
@@ -57,7 +74,11 @@ export const RecommendedCard = ({ hotel, onClick }: CardProps) => (
   </SpotlightCard>
 );
 
-export const FavoriteCard = ({ hotel, onClick }: CardProps) => (
+interface FavoriteCardProps extends CardProps {
+  onRemove?: () => void;
+}
+
+export const FavoriteCard = ({ hotel, onClick, onRemove }: FavoriteCardProps) => (
   <SpotlightCard
     onClick={onClick}
     className="mb-6 p-0 group"
@@ -69,9 +90,16 @@ export const FavoriteCard = ({ hotel, onClick }: CardProps) => (
         alt={hotel.name}
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
-      <div className="absolute top-4 right-4 bg-white/30 backdrop-blur-sm p-2 rounded-full z-10">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove?.();
+        }}
+        className="absolute top-4 right-4 bg-white/30 backdrop-blur-sm p-2 rounded-full z-10 hover:bg-white/50 transition"
+        aria-label="Retirer des favoris"
+      >
         <Heart className="w-5 h-5 text-homify-accent fill-homify-accent" />
-      </div>
+      </button>
       <div className="absolute bottom-4 left-4 bg-homify-primary/85 backdrop-blur-md px-3 py-1.5 rounded-btn z-10">
         <span className="text-white font-bold text-sm">
           {hotel.displayPrice || `${hotel.price} FCFA`}

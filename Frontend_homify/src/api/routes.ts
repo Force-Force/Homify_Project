@@ -5,29 +5,35 @@ export const API_ROUTES = {
     register: `${API_BASE_URL}/auth/register/`,
     login: `${API_BASE_URL}/auth/login/`,
     refresh: `${API_BASE_URL}/auth/refresh/`,
+    logout: `${API_BASE_URL}/auth/logout/`,
     me: `${API_BASE_URL}/auth/me/`,
     changePassword: `${API_BASE_URL}/auth/me/password/`,
-    social: `${API_BASE_URL}/auth/social/`,
     forgotPassword: `${API_BASE_URL}/auth/forgot-password/`,
+    resetPassword: `${API_BASE_URL}/auth/reset-password/`,
+    social: `${API_BASE_URL}/auth/social/`,
   },
   properties: {
     list: `${API_BASE_URL}/properties/`,
     details: (id: number | string) => `${API_BASE_URL}/properties/${id}/`,
     myProperties: `${API_BASE_URL}/properties/my_properties/`,
     uploadPhotos: (id: number | string) => `${API_BASE_URL}/properties/${id}/upload_photos/`,
-    deletePhoto: (id: number | string, photoId: number | string) => `${API_BASE_URL}/properties/${id}/photos/${photoId}/`,
+    deletePhoto: (id: number | string, photoId: number | string) =>
+      `${API_BASE_URL}/properties/${id}/photos/${photoId}/`,
     similar: (id: number | string) => `${API_BASE_URL}/properties/${id}/similar/`,
   },
   favorites: {
     list: `${API_BASE_URL}/favorites/`,
     add: `${API_BASE_URL}/favorites/`,
-    remove: (propertyId: number | string) => `${API_BASE_URL}/favorites/${propertyId}/`,
+    remove: (propertyId: number | string) =>
+      `${API_BASE_URL}/favorites/by-property/${propertyId}/`,
   },
   messages: {
     list: `${API_BASE_URL}/messages/`,
     inbox: `${API_BASE_URL}/messages/inbox/`,
     sent: `${API_BASE_URL}/messages/sent/`,
     send: `${API_BASE_URL}/messages/`,
+    thread: (propertyId: number | string) =>
+      `${API_BASE_URL}/messages/thread/${propertyId}/`,
     markAsRead: (id: number | string) => `${API_BASE_URL}/messages/${id}/mark_as_read/`,
     unreadCount: `${API_BASE_URL}/messages/unread_count/`,
   },
@@ -38,6 +44,7 @@ export const API_ROUTES = {
   reports: {
     list: `${API_BASE_URL}/reports/`,
     create: `${API_BASE_URL}/reports/`,
+    review: (id: number | string) => `${API_BASE_URL}/reports/${id}/review/`,
     resolve: (id: number | string) => `${API_BASE_URL}/reports/${id}/resolve/`,
     dismiss: (id: number | string) => `${API_BASE_URL}/reports/${id}/dismiss/`,
   },
@@ -46,7 +53,9 @@ export const API_ROUTES = {
     suspendUser: (id: number | string) => `${API_BASE_URL}/auth/admin/users/${id}/suspend/`,
     activateUser: (id: number | string) => `${API_BASE_URL}/auth/admin/users/${id}/activate/`,
     pendingProperties: `${API_BASE_URL}/properties/admin/properties/pending/`,
-    approveProperty: (id: number | string) => `${API_BASE_URL}/properties/admin/properties/${id}/approve/`,
-    rejectProperty: (id: number | string) => `${API_BASE_URL}/properties/admin/properties/${id}/reject/`,
+    approveProperty: (id: number | string) =>
+      `${API_BASE_URL}/properties/admin/properties/${id}/approve/`,
+    rejectProperty: (id: number | string) =>
+      `${API_BASE_URL}/properties/admin/properties/${id}/reject/`,
   },
 } as const;

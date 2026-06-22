@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
-import axios from 'axios';
-import { API_ROUTES } from '../../api/routes';
+import { login } from '../../services/authService';
+import { ApiError } from '../../services/apiClient';
 import Carosel from './Carosel';
 import MobileCarousel from './MobileCarossel';
 import { SocialButtons, authInputClass } from './SocialButtons';
 
 const HomifiSignIn = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
   const [loading, setLoading] = useState(false);
@@ -19,23 +20,11 @@ const HomifiSignIn = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(API_ROUTES.auth.login, {
-        email: formData.email,
-        password: formData.password,
-      });
-
-      const { access, refresh } = response.data || {};
-      if (access && refresh) {
-        localStorage.setItem('access_token', access);
-        localStorage.setItem('refresh_token', refresh);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
-        window.location.href = '/';
-      } else {
-        setError('Réponse invalide du serveur.');
-      }
+      await login(formData.email, formData.password);
+      window.location.href = '/home';
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || 'Identifiants incorrects. Veuillez réessayer.');
+      if (err instanceof ApiError) {
+        setError(err.message || 'Identifiants incorrects. Veuillez réessayer.');
       } else {
         setError('Erreur de connexion. Veuillez réessayer.');
       }
@@ -49,26 +38,8 @@ const HomifiSignIn = () => {
     setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
-  const handleSocialSignIn = async (provider: string) => {
-    try {
-      await axios.post(API_ROUTES.auth.social, { provider });
-      alert(`Connexion ${provider} initiée`);
-    } catch {
-      setError(`Échec de la connexion ${provider}`);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!formData.email) {
-      alert('Veuillez entrer votre email d\'abord');
-      return;
-    }
-    try {
-      await axios.post(API_ROUTES.auth.forgotPassword, { email: formData.email });
-      alert('Lien de réinitialisation envoyé !');
-    } catch {
-      setError('Échec de l\'envoi du lien');
-    }
+  const handleSocialSignIn = () => {
+    setError('Connexion sociale bientôt disponible.');
   };
 
   return (
@@ -83,96 +54,87 @@ const HomifiSignIn = () => {
 
           <Link
             to="/"
-            className="hidden lg:flex items-center gap-2 text-homify-muted mb-6 hover:text-homify-primary transition-colors"
+            className="inline-flex items-center gap-2 text-homify-muted hover:text-homify-primary mb-6 text-sm font-medium transition"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm">Retour à l'accueil</span>
+            <ArrowLeft className="w-4 h-4" />
+            Retour
           </Link>
 
-          <div className="bg-homify-card/90 backdrop-blur-sm rounded-modal shadow-card p-6 sm:p-8 border border-homify-border">
-            <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2 text-homify-text">
-              Bon retour !
-            </h2>
-            <p className="text-center text-homify-muted mb-6">
-              Connectez-vous pour continuer votre recherche
-            </p>
+          <div className="bg-homify-card rounded-modal shadow-card p-8 border border-homify-border">
+            <h2 className="text-2xl font-bold text-homify-text mb-1">Bon retour !</h2>
+            <p className="text-homify-muted text-sm mb-6">Connectez-vous à votre compte Homify</p>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-btn text-red-600 text-sm">{error}</div>
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-btn text-sm border border-red-100">
+                {error}
+              </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Adresse email"
-                autoComplete="email"
-                required
-                className={authInputClass}
-              />
-
-              <div className="relative">
+              <div>
+                <label className="block text-sm font-medium text-homify-text mb-1.5">Email</label>
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
+                  type="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleChange}
-                  placeholder="Mot de passe"
-                  autoComplete="current-password"
                   required
-                  className={`${authInputClass} pr-12`}
+                  className={authInputClass}
+                  placeholder="vous@exemple.com"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-homify-muted hover:text-homify-text"
-                  aria-label={showPassword ? 'Masquer' : 'Afficher'}
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-homify-text mb-1.5">Mot de passe</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    className={authInputClass}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-homify-muted hover:text-homify-primary"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer group">
+                <label className="flex items-center gap-2 text-homify-muted cursor-pointer">
                   <input
                     type="checkbox"
                     name="rememberMe"
                     checked={formData.rememberMe}
                     onChange={handleChange}
-                    className="w-4 h-4 text-homify-primary border-homify-border rounded focus:ring-homify-primary/30 cursor-pointer"
+                    className="rounded border-homify-border text-homify-primary focus:ring-homify-primary/20"
                   />
-                  <span className="text-homify-muted group-hover:text-homify-primary transition-colors">Se souvenir de moi</span>
+                  Se souvenir de moi
                 </label>
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-homify-primary font-medium hover:underline"
-                >
+                <Link to="/forgot-password" className="text-homify-primary font-medium hover:underline">
                   Mot de passe oublié ?
-                </button>
+                </Link>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-14 bg-homify-primary hover:bg-homify-primary-light text-white rounded-btn font-semibold text-base transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none active:scale-95 flex items-center justify-center gap-2"
+                className="w-full bg-homify-primary text-white font-bold py-3 rounded-btn hover:bg-homify-primary-light transition disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Connexion...
-                  </>
-                ) : (
-                  'Se connecter'
-                )}
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                Se connecter
               </button>
             </form>
 
-            <SocialButtons onSocial={handleSocialSignIn} mode="signin" />
+            <SocialButtons onSocialClick={handleSocialSignIn} />
 
-            <p className="text-center text-sm text-homify-muted">
+            <p className="text-center text-sm text-homify-muted mt-6">
               Pas encore de compte ?{' '}
               <Link to="/signup" className="text-homify-primary font-semibold hover:underline">
                 S'inscrire

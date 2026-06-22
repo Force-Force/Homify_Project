@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   MapPin, Bell, Search, SlidersHorizontal, Loader2, X, Check, Sparkles,
   Map as MapIcon, List,
@@ -8,11 +9,9 @@ import { RecommendedCard } from '../components/Cards';
 import PriceMap from '../components/PriceMap';
 import { Hotel } from '../types';
 import { getProperties } from '../services/propertyService';
+import { getUnreadCount } from '../services/messageService';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
-
-interface HomeProps {
-  onHotelClick: (h: Hotel) => void;
-}
+import { useFavorites } from '@/context/FavoritesContext';
 
 interface Filters {
   type: string;
@@ -44,7 +43,9 @@ const DEFAULT_FILTERS: Filters = {
   ordering: '-created_at',
 };
 
-export default function HomeScreen({ onHotelClick }: HomeProps) {
+export default function HomeScreen() {
+  const navigate = useNavigate();
+  const { isFavorite, toggleFavorite, authError: favAuthError } = useFavorites();
   const [properties, setProperties] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +55,13 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [activeId, setActiveId] = useState<number | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    getUnreadCount()
+      .then(setUnreadCount)
+      .catch(() => setUnreadCount(0));
+  }, []);
 
   const buildQueryString = (customSearch?: string): string => {
     let query = `?ordering=${filters.ordering}`;
@@ -150,8 +158,7 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
   }, []);
 
   const handleMarkerClick = (id: number) => {
-    const hotel = properties.find((p) => p.id === id);
-    if (hotel) onHotelClick(hotel);
+    navigate(`/property/${id}`);
   };
 
   const hasActiveFilters = () =>
@@ -185,6 +192,10 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
               aria-label="Notifications"
             >
               <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-homify-primary" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-homify-accent rounded-full" />
+              )}
+            </button>
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-homify-accent rounded-full" />
             </button>
           </header>
@@ -274,7 +285,12 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
                   onMouseLeave={() => setActiveId(null)}
                 >
                   <StaggeredItem index={index}>
-                    <RecommendedCard hotel={hotel} onClick={() => onHotelClick(hotel)} />
+                    <RecommendedCard
+                      hotel={{ ...hotel, isFavorite: isFavorite(hotel.id) }}
+                      onClick={() => navigate(`/property/${hotel.id}`)}
+                      isFavorite={isFavorite(hotel.id)}
+                      onFavoriteToggle={() => toggleFavorite(hotel.id)}
+                    />
                   </StaggeredItem>
                 </div>
               ))}

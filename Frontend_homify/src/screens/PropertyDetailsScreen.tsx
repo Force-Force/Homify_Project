@@ -1,37 +1,81 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  ArrowLeft, Share2, Heart, Star, MapPin, Bath, BedDouble, Maximize2,
-  MessageCircle, MessageSquare, Utensils,
+  ArrowLeft, Share2, Heart, MapPin, Bath, BedDouble, Maximize2,
+  MessageCircle, MessageSquare, Loader2, Eye,
 } from 'lucide-react';
 import { Hotel } from '../types';
 import { PropertyImage } from '../components/PropertyImage';
 import { PropertyMap } from '../components/PropertyMap';
+import { getPropertyById } from '../services/propertyService';
+import { useFavorites } from '@/context/FavoritesContext';
 
 interface DetailsProps {
-  hotel: Hotel;
+  propertyId: number;
   onBack: () => void;
-  onBookNow: () => void;
+  onOpenChat: () => void;
 }
 
-const TABS = ['À propos', 'Galerie', 'Avis'] as const;
+const TABS = ['À propos', 'Galerie', 'Équipements'] as const;
 
-export default function PropertyDetailsScreen({ hotel, onBack, onBookNow }: DetailsProps) {
+export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }: DetailsProps) {
+  const [hotel, setHotel] = useState<Hotel | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>('À propos');
   const [showModal, setShowModal] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(hotel.isFavorite);
+  const { isFavorite, toggleFavorite } = useFavorites();
 
-  const priceDisplay = hotel.displayPrice || `${hotel.price.toLocaleString()} FCFA`;
+  useEffect(() => {
+    setLoading(true);
+    getPropertyById(propertyId)
+      .then(setHotel)
+      .catch(() => setError('Impossible de charger cette annonce.'))
+      .finally(() => setLoading(false));
+  }, [propertyId]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 text-homify-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !hotel) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-red-600 mb-4">{error ?? 'Annonce introuvable.'}</p>
+        <button onClick={onBack} className="text-homify-primary font-semibold hover:underline">
+          Retour
+        </button>
+      </div>
+    );
+  }
+
+  const favorited = isFavorite(hotel.id);
+  const priceDisplay = hotel.displayPrice || `${hotel.price.toLocaleString('fr-FR')} FCFA`;
+  const whatsappPhone = hotel.landlord?.phone?.replace(/\D/g, '');
 
   const handleWhatsApp = () => {
-    const phoneNumber = '237600000000';
+    if (!whatsappPhone) return;
     const message = `Bonjour, je suis intéressé(e) par : ${hotel.name}`;
-    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`, '_blank');
     setShowModal(false);
   };
 
   const handleInternalChat = () => {
     setShowModal(false);
-    onBookNow();
+    onOpenChat();
+  };
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/property/${hotel.id}`;
+    if (navigator.share) {
+      await navigator.share({ title: hotel.name, url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert('Lien copié dans le presse-papier.');
+    }
   };
 
   return (
@@ -48,14 +92,17 @@ export default function PropertyDetailsScreen({ hotel, onBack, onBookNow }: Deta
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex gap-2">
-              <button className="bg-black/30 backdrop-blur-md p-2.5 rounded-full text-white hover:bg-black/50 transition">
+              <button
+                onClick={handleShare}
+                className="bg-black/30 backdrop-blur-md p-2.5 rounded-full text-white hover:bg-black/50 transition"
+              >
                 <Share2 className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setIsFavorite(!isFavorite)}
+                onClick={() => toggleFavorite(hotel.id)}
                 className="bg-black/30 backdrop-blur-md p-2.5 rounded-full text-white hover:bg-black/50 transition"
               >
-                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-homify-accent text-homify-accent' : ''}`} />
+                <Heart className={`w-4 h-4 ${favorited ? 'fill-homify-accent text-homify-accent' : ''}`} />
               </button>
             </div>
           </div>
@@ -70,16 +117,27 @@ export default function PropertyDetailsScreen({ hotel, onBack, onBookNow }: Deta
         <div className="px-5 pt-6 md:px-0 md:pt-0">
           <div className="flex justify-between items-start mb-1">
             <h1 className="text-2xl font-bold text-homify-text pr-4">{hotel.name}</h1>
-            <div className="flex items-center gap-1 shrink-0 mt-1">
-              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-              <span className="text-sm font-medium text-homify-muted">{hotel.rating}</span>
-            </div>
+            {hotel.viewCount !== undefined && (
+              <div className="flex items-center gap-1 shrink-0 mt-1 text-homify-muted text-sm">
+                <Eye className="w-4 h-4" />
+                {hotel.viewCount}
+              </div>
+            )}
           </div>
 
-          <p className="text-homify-muted text-sm mb-6 flex items-center gap-1.5">
+          <p className="text-homify-muted text-sm mb-2 flex items-center gap-1.5">
             <MapPin className="w-4 h-4 text-homify-accent shrink-0" />
             {hotel.location}
           </p>
+
+          {hotel.landlord && (
+            <p className="text-sm text-homify-muted mb-6">
+              Propriétaire : <span className="font-medium text-homify-text">{hotel.landlord.name}</span>
+              {hotel.landlord.maskedPhone && (
+                <span className="ml-2">· {hotel.landlord.maskedPhone}</span>
+              )}
+            </p>
+          )}
 
           <div className="flex border-b border-homify-border mb-6">
             {TABS.map((tab) => (
@@ -103,9 +161,8 @@ export default function PropertyDetailsScreen({ hotel, onBack, onBookNow }: Deta
               <div className="flex gap-4 mb-6 overflow-x-auto pb-2 scrollbar-hide">
                 {[
                   { icon: BedDouble, label: `${hotel.amenities?.beds ?? 0} ch.` },
-                  { icon: Bath, label: `${hotel.amenities?.baths ?? 1} sdb` },
+                  { icon: Bath, label: `${hotel.amenities?.baths ?? 0} sdb` },
                   { icon: Maximize2, label: `${hotel.amenities?.sqft ?? '—'} m²` },
-                  { icon: Utensils, label: `${hotel.amenities?.kitchen ?? 1} cuisine` },
                 ].map(({ icon: Icon, label }) => (
                   <div key={label} className="flex flex-col items-center gap-2 min-w-[64px]">
                     <div className="p-3 bg-homify-surface rounded-btn text-homify-primary border border-homify-border">
@@ -125,28 +182,38 @@ export default function PropertyDetailsScreen({ hotel, onBack, onBookNow }: Deta
                 <div className="mb-8">
                   <h3 className="font-bold text-homify-text mb-3">Localisation</h3>
                   <PropertyMap lat={hotel.coordinates.lat} lng={hotel.coordinates.lng} address={hotel.location} />
-                  <p className="text-xs text-homify-muted mt-2">
-                    Le marqueur indique la zone approximative du bien.
-                  </p>
                 </div>
               )}
             </>
           )}
 
           {activeTab === 'Galerie' && (
-            <div className="rounded-card overflow-hidden mb-6">
-              <PropertyImage src={hotel.imageUrl} alt={hotel.name} className="w-full h-56 object-cover" />
-              <p className="text-sm text-homify-muted p-4 bg-homify-card border border-t-0 border-homify-border rounded-b-card">
-                Photo principale de l'annonce.
-              </p>
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              {(hotel.photos?.length ? hotel.photos : [{ id: 0, url: hotel.imageUrl }]).map((photo) => (
+                <PropertyImage
+                  key={photo.id}
+                  src={photo.url}
+                  alt={hotel.name}
+                  className="w-full h-40 object-cover rounded-card"
+                />
+              ))}
             </div>
           )}
 
-          {activeTab === 'Avis' && (
-            <div className="bg-homify-card border border-homify-border rounded-card p-6 text-center mb-6">
-              <Star className="w-8 h-8 text-amber-400 fill-amber-400 mx-auto mb-2" />
-              <p className="font-bold text-homify-text text-lg">{hotel.rating} / 5</p>
-              <p className="text-sm text-homify-muted mt-1">Avis à venir prochainement.</p>
+          {activeTab === 'Équipements' && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {hotel.amenities?.items?.length ? (
+                hotel.amenities.items.map((item) => (
+                  <span
+                    key={item}
+                    className="px-3 py-1.5 bg-homify-surface border border-homify-border rounded-full text-sm text-homify-text"
+                  >
+                    {item}
+                  </span>
+                ))
+              ) : (
+                <p className="text-sm text-homify-muted">Aucun équipement renseigné.</p>
+              )}
             </div>
           )}
 
@@ -168,7 +235,6 @@ export default function PropertyDetailsScreen({ hotel, onBack, onBookNow }: Deta
         </div>
       </div>
 
-      {/* Barre mobile */}
       <div className="fixed bottom-0 left-0 right-0 md:left-64 bg-homify-card border-t border-homify-border p-4 md:hidden z-20 flex justify-between items-center shadow-dock">
         <div>
           <span className="text-xs text-homify-muted block">Loyer mensuel</span>
@@ -193,13 +259,15 @@ export default function PropertyDetailsScreen({ hotel, onBack, onBookNow }: Deta
             <p className="text-homify-muted text-center mb-6 text-sm">Comment souhaitez-vous entrer en contact ?</p>
 
             <div className="space-y-3">
-              <button
-                onClick={handleWhatsApp}
-                className="w-full flex items-center justify-center gap-3 p-4 bg-green-50 text-green-700 rounded-btn font-semibold hover:bg-green-100 transition border border-green-200"
-              >
-                <MessageCircle className="w-5 h-5" />
-                WhatsApp
-              </button>
+              {whatsappPhone && (
+                <button
+                  onClick={handleWhatsApp}
+                  className="w-full flex items-center justify-center gap-3 p-4 bg-green-50 text-green-700 rounded-btn font-semibold hover:bg-green-100 transition border border-green-200"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  WhatsApp
+                </button>
+              )}
               <button
                 onClick={handleInternalChat}
                 className="w-full flex items-center justify-center gap-3 p-4 bg-homify-primary/10 text-homify-primary rounded-btn font-semibold hover:bg-homify-primary/20 transition border border-homify-primary/20"

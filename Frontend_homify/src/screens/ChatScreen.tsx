@@ -1,110 +1,142 @@
-import { useState } from 'react';
-import { ArrowLeft, Phone, Video, Send, Mic, Paperclip } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { getPropertyById } from '../services/propertyService';
+import { getThread, sendMessage } from '../services/messageService';
+import { ApiMessage } from '../types/api';
+import { useAuth } from '@/context/AuthContext';
+import { ApiError } from '@/services/apiClient';
 
 interface ChatProps {
+  propertyId: number;
   onBack: () => void;
-  agentName: string;
 }
 
-interface Message {
-  id: number;
-  text: string;
-  isSender: boolean;
-  time: string;
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function ChatScreen({ onBack, agentName }: ChatProps) {
+export default function ChatScreen({ propertyId, onBack }: ChatProps) {
+  const { user } = useAuth();
+  const [propertyName, setPropertyName] = useState('');
+  const [landlordName, setLandlordName] = useState('Propriétaire');
+  const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [inputText, setInputText] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: `Bonjour, je suis intéressé(e) par ce bien.`, isSender: true, time: '10:00' },
-    { id: 2, text: 'Bonjour ! Merci pour votre message. Comment puis-je vous aider ?', isSender: false, time: '10:01' },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
-    const newMessage = { id: Date.now(), text: inputText, isSender: true, time: '10:05' };
-    setMessages([...messages, newMessage]);
-    setInputText('');
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [property, thread] = await Promise.all([
+          getPropertyById(propertyId),
+          getThread(propertyId),
+        ]);
+        setPropertyName(property.name);
+        setLandlordName(property.landlord?.name ?? 'Propriétaire');
+        setMessages(thread);
+      } catch {
+        setError('Impossible de charger la conversation.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [propertyId]);
 
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { id: Date.now() + 1, text: 'Je suis disponible pour une visite demain.', isSender: false, time: '10:06' },
-      ]);
-    }, 1500);
+  const handleSend = async () => {
+    const content = inputText.trim();
+    if (content.length < 20) {
+      setError('Le message doit contenir au moins 20 caractères.');
+      return;
+    }
+
+    setSending(true);
+    setError(null);
+    try {
+      const msg = await sendMessage({
+        property_id: propertyId,
+        subject: messages.length ? `Re: ${propertyName}` : `Contact — ${propertyName}`,
+        content,
+      });
+      setMessages((prev) => [...prev, msg]);
+      setInputText('');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Envoi impossible.');
+    } finally {
+      setSending(false);
+    }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="w-8 h-8 text-homify-primary animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-screen bg-homify-surface">
-      <div className="px-4 py-3 border-b border-homify-border flex items-center justify-between bg-homify-card shadow-sm z-10 md:ml-0">
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-homify-surface rounded-full transition">
-            <ArrowLeft className="w-5 h-5 text-homify-text" />
-          </button>
-          <div className="relative">
-            <img
-              src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=100"
-              alt="Avatar"
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-homify-primary/20"
-            />
-            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-homify-card" />
-          </div>
-          <div>
-            <h2 className="font-bold text-homify-text text-sm">{agentName}</h2>
-            <p className="text-xs text-emerald-600 font-medium">● En ligne</p>
-          </div>
-        </div>
-        <div className="flex gap-3 text-homify-muted">
-          <Phone className="w-5 h-5 cursor-pointer hover:text-homify-primary transition" />
-          <Video className="w-5 h-5 cursor-pointer hover:text-homify-primary transition" />
+    <div className="flex flex-col h-screen bg-homify-surface md:ml-64">
+      <div className="px-4 py-3 border-b border-homify-border flex items-center gap-3 bg-homify-card shadow-sm z-10">
+        <button onClick={onBack} className="p-2 -ml-2 hover:bg-homify-surface rounded-full transition">
+          <ArrowLeft className="w-5 h-5 text-homify-text" />
+        </button>
+        <div>
+          <h2 className="font-bold text-homify-text text-sm">{landlordName}</h2>
+          <p className="text-xs text-homify-muted truncate max-w-[240px]">{propertyName}</p>
         </div>
       </div>
+
+      {error && (
+        <div className="mx-4 mt-3 p-3 bg-red-50 text-red-600 text-sm rounded-btn border border-red-100">
+          {error}
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.isSender ? 'justify-end' : 'justify-start items-end gap-2'}`}>
-            {!msg.isSender && (
-              <img
-                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=50"
-                className="w-6 h-6 rounded-full mb-1"
-                alt=""
-              />
-            )}
-            <div
-              className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm ${
-                msg.isSender
-                  ? 'bg-homify-primary text-white rounded-br-sm'
-                  : 'bg-homify-card text-homify-text rounded-bl-sm border border-homify-border shadow-sm'
-              }`}
-            >
-              {msg.text}
+        {messages.length === 0 && (
+          <p className="text-center text-sm text-homify-muted py-8">
+            Démarrez la conversation avec le propriétaire.
+          </p>
+        )}
+        {messages.map((msg) => {
+          const isSender = msg.sender.id === user?.id;
+          return (
+            <div key={msg.id} className={`flex ${isSender ? 'justify-end' : 'justify-start'}`}>
+              <div
+                className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm ${
+                  isSender
+                    ? 'bg-homify-primary text-white rounded-br-sm'
+                    : 'bg-homify-card text-homify-text rounded-bl-sm border border-homify-border shadow-sm'
+                }`}
+              >
+                <p>{msg.content}</p>
+                <p className={`text-[10px] mt-1 ${isSender ? 'text-white/70' : 'text-homify-muted'}`}>
+                  {formatTime(msg.sent_at)}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      <div className="p-3 bg-homify-card border-t border-homify-border flex items-center gap-2 md:pb-4">
-        <button className="p-2 text-homify-muted hover:text-homify-primary transition">
-          <Paperclip className="w-5 h-5" />
-        </button>
-        <div className="flex-1 relative">
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Écrivez votre message..."
-            className="w-full bg-homify-surface text-homify-text rounded-full pl-4 pr-10 py-3 text-sm outline-none focus:ring-2 focus:ring-homify-primary/20 border border-homify-border"
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          />
-          <button className="absolute right-3 top-1/2 -translate-y-1/2 text-homify-muted hover:text-homify-primary">
-            <Mic className="w-5 h-5" />
-          </button>
-        </div>
+      <div className="p-3 bg-homify-card border-t border-homify-border flex items-center gap-2">
+        <input
+          type="text"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder="Écrivez votre message (min. 20 car.)..."
+          className="flex-1 bg-homify-surface text-homify-text rounded-full px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-homify-primary/20 border border-homify-border"
+          onKeyDown={(e) => e.key === 'Enter' && !sending && handleSend()}
+        />
         <button
           onClick={handleSend}
-          className="bg-homify-accent text-white p-3 rounded-full hover:bg-homify-accent-hover transition shadow-sm"
+          disabled={sending}
+          className="bg-homify-accent text-white p-3 rounded-full hover:bg-homify-accent-hover transition shadow-sm disabled:opacity-50"
         >
-          <Send className="w-5 h-5" />
+          {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
         </button>
       </div>
     </div>

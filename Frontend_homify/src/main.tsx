@@ -1,25 +1,35 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import App from "./App";
-import LandingPage from "./screens/LandingPage";
-import HomifiSignIn from "./components/Authentification/HomifiSignIn";
-import HomifiSignUp from "./components/Authentification/HomifiSignUp";
-import ForgotPassword from "./components/Authentification/ForgotPassword";
-import ResetPass from "./components/Authentification/ResetPass";
-import "./index.css";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import App from './App';
+import LandingPage from './screens/LandingPage';
+import HomifiSignIn from './components/Authentification/HomifiSignIn';
+import HomifiSignUp from './components/Authentification/HomifiSignUp';
+import ForgotPassword from './components/Authentification/ForgotPassword';
+import ResetPass from './components/Authentification/ResetPass';
+import { AuthProvider } from './context/AuthContext';
+import { isAuthenticated } from './services/apiClient';
+import './index.css';
+
+function AuthenticatedApp() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}
 
 function Root() {
-  const isAuthenticated = localStorage.getItem("access_token") !== null;
+  const authed = isAuthenticated();
 
   return (
     <React.StrictMode>
       <BrowserRouter>
         <Routes>
-          {isAuthenticated ? (
+          {authed ? (
             <>
-              <Route path="/*" element={<App />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="/*" element={<AuthenticatedApp />} />
+              <Route path="*" element={<Navigate to="/home" replace />} />
             </>
           ) : (
             <>
@@ -27,7 +37,8 @@ function Root() {
               <Route path="/signin" element={<HomifiSignIn />} />
               <Route path="/signup" element={<HomifiSignUp />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/Reset-passode" element={<ResetPass />} />
+              <Route path="/reset-password" element={<ResetPass />} />
+              <Route path="/Reset-passode" element={<Navigate to="/reset-password" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}
@@ -37,4 +48,4 @@ function Root() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<Root />);
+ReactDOM.createRoot(document.getElementById('root')!).render(<Root />);

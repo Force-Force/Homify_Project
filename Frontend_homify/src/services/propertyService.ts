@@ -1,9 +1,12 @@
-// Fichier: src/services/propertyService.ts
-import { PaginatedResponse, ApiProperty, FavoritesResponse } from '../types/api';
-import { Hotel } from '../types/index'; 
-
-const API_URL = 'http://localhost:8000/api'; 
-
+import { API_ROUTES } from '../api/routes';
+import {
+  ApiProperty,
+  ApiPropertyDetail,
+  FavoritesResponse,
+  PaginatedResponse,
+} from '../types/api';
+import { Hotel } from '../types/index';
+import { apiFetch } from './apiClient';
 
 const TYPE_LABELS: Record<string, string> = {
   HOUSE: 'Maison',
@@ -12,104 +15,95 @@ const TYPE_LABELS: Record<string, string> = {
   ROOM: 'Chambre',
 };
 
-const transformApiToHotel = (apiProp: ApiProperty): Hotel => {
+const formatPrice = (rent: string) =>
+  `${parseInt(rent, 10).toLocaleString('fr-FR')} FCFA`;
+
+const fallbackImage =
+  'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800';
+
+export const transformApiToHotel = (apiProp: ApiProperty): Hotel => {
+  const beds = apiProp.number_of_bedrooms ?? apiProp.number_of_rooms ?? 0;
+
   return {
     id: apiProp.id,
     name: apiProp.title,
     type: TYPE_LABELS[apiProp.type] ?? apiProp.type,
-    location: `${apiProp.address.district}, ${apiProp.address.city}`, // On combine quartier et ville
-    price: parseFloat(apiProp.monthly_rent), // On convertit "450000.00" en nombre
-    displayPrice: `${parseInt(apiProp.monthly_rent).toLocaleString()} FCFA`, // Format joli
-    rating: 4.5, // Valeur par défaut car l'API ne fournit pas de note
-    imageUrl: apiProp.primary_photo?.url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800', 
-    description: `Surface: ${apiProp.surface}m² - ${apiProp.furnished ? 'Meublé' : 'Non meublé'}`,
+    location: [apiProp.address.district, apiProp.address.city].filter(Boolean).join(', '),
+    price: parseFloat(apiProp.monthly_rent),
+    displayPrice: formatPrice(apiProp.monthly_rent),
+    rating: 0,
+    imageUrl: apiProp.primary_photo?.url || fallbackImage,
+    description: apiProp.furnished ? 'Logement meublé' : 'Logement non meublé',
     amenities: {
-      beds: apiProp.number_of_bedrooms,
-      
+      beds,
       sqft: apiProp.surface,
-      
     },
     coordinates: {
       lat: apiProp.address.latitude,
-      lng: apiProp.address.longitude
+      lng: apiProp.address.longitude,
     },
-    isFavorite: apiProp.is_favorite
-
+    isFavorite: apiProp.is_favorite,
+    furnished: apiProp.furnished,
   };
 };
 
-// --- LA FONCTION DE FETCH ---
-export const getProperties = async (filters: string = ''): Promise<Hotel[]> => {
-  try {
-    const response = await fetch(`${API_URL}/properties/${filters}`);
-    
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des propriétés');
-    }
+export const transformDetailToHotel = (detail: ApiPropertyDetail): Hotel => {
+  const base = transformApiToHotel(detail);
 
-    const data: PaginatedResponse = await response.json();
-    
-    return data.results.map(transformApiToHotel);
-    
-  } catch (error) {
-    console.error("Erreur API:", error);
-    return []; 
-  }
+  return {
+    ...base,
+    description: detail.description,
+    rating: 0,
+    amenities: {
+      beds: detail.number_of_bedrooms ?? detail.number_of_rooms,
+      baths: detail.number_of_bathrooms,
+      sqft: detail.surface,
+      items: detail.amenities?.map((a) => a.name) ?? [],
+    },
+    photos: detail.photos.map((p) => ({
+      id: p.id,
+      url: p.url,
+      thumbnailUrl: p.thumbnail_url,
+    })),
+    imageUrl: detail.photos.find((p) => p.is_primary)?.url || detail.photos[0]?.url || base.imageUrl,
+    landlord: {
+      id: detail.landlord.id,
+      name: detail.landlord.full_name || `${detail.landlord.first_name} ${detail.landlord.last_name}`,
+      maskedPhone: 'masked_phone' in detail.landlord ? detail.landlord.masked_phone : undefined,
+      phone: 'phone' in detail.landlord ? detail.landlord.phone : undefined,
+    },
+    viewCount: detail.view_count,
+    charges: detail.charges,
+    deposit: detail.deposit,
+    isFavorite: detail.is_favorite,
+  };
+};
+
+export const getProperties = async (filters = ''): Promise<Hotel[]> => {
+  const query = filters.startsWith('?') ? filters : filters ? `?${filters}` : '';
+  const data = await apiFetch<PaginatedResponse>(`${API_ROUTES.properties.list}${query}`);
+  return data.results.map(transformApiToHotel);
+};
+
+export const getPropertyById = async (id: number): Promise<Hotel> => {
+  const data = await apiFetch<ApiPropertyDetail>(API_ROUTES.properties.details(id));
+  return transformDetailToHotel(data);
 };
 
 export const getFavorites = async (): Promise<Hotel[]> => {
-  try {
-    // Note: Si tu as un token stocké (ex: localStorage), il faut l'ajouter ici
-    // const token = localStorage.getItem('token');
-    
-    const response = await fetch(`${API_URL}/favorites/`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        // 'Authorization': `Bearer ${token}` // <--- DÉCOMMENTER QUAND TU AURAS LE LOGIN
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des favoris');
-    }
-
-    const data: FavoritesResponse = await response.json();
-    
-    // ASTUCE : L'API renvoie { id: 1, property: { ... } }
-    // On doit mapper sur "item.property" pour utiliser notre transformateur
-    return data.results.map(item => transformApiToHotel(item.property));
-    
-  } catch (error) {
-    console.error("Erreur Favoris:", error);
-    return []; 
-  }
+  const data = await apiFetch<FavoritesResponse>(API_ROUTES.favorites.list);
+  return data.results.map((item) => transformApiToHotel(item.property));
 };
 
 export const addToFavorites = async (propertyId: number): Promise<boolean> => {
-  try {
-    const response = await fetch(`${API_URL}/favorites/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ property_id: propertyId })
-    });
-    return response.ok; // Renvoie true si créé (201)
-  } catch (error) {
-    console.error("Erreur Add Favorite:", error);
-    return false;
-  }
+  await apiFetch(API_ROUTES.favorites.add, {
+    method: 'POST',
+    body: JSON.stringify({ property_id: propertyId }),
+  });
+  return true;
 };
 
 export const removeFromFavorites = async (propertyId: number): Promise<boolean> => {
-  try {
-    // Note: L'API demande property_id dans l'URL
-    const response = await fetch(`${API_URL}/favorites/${propertyId}/`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
-    });
-    return response.ok; // Renvoie true si supprimé (204)
-  } catch (error) {
-    console.error("Erreur Remove Favorite:", error);
-    return false;
-  }
+  await apiFetch(API_ROUTES.favorites.remove(propertyId), { method: 'DELETE' });
+  return true;
 };

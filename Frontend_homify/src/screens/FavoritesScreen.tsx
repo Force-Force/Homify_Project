@@ -1,35 +1,50 @@
-// Fichier: src/screens/FavoritesScreen.tsx
-import { useEffect, useState } from 'react';
-import { Loader2, HeartOff, Heart } from 'lucide-react';
-import { FavoriteCard } from '../components/Cards';
+import React from 'react';
+import { Heart, Loader2 } from 'lucide-react';
+import { RecommendedCard, FavoriteCard } from '../components/Cards';
 import { Hotel } from '../types';
-import { getFavorites } from '../services/propertyService';
+import { getFavorites, removeFromFavorites } from '../services/propertyService';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
+import { useFavorites } from '@/context/FavoritesContext';
+import { ApiError } from '@/services/apiClient';
+import { useNavigate } from 'react-router-dom';
 
-interface FavProps {
-  onHotelClick: (h: Hotel) => void;
-}
+export default function FavoritesScreen() {
+  const navigate = useNavigate();
+  const { authError, refreshFavorites } = useFavorites();
+  const [favorites, setFavorites] = React.useState<Hotel[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-export default function FavoritesScreen({ onHotelClick }: FavProps) {
-  const [favorites, setFavorites] = useState<Hotel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchFavorites = async () => {
-      setLoading(true);
+  const loadFavorites = React.useCallback(async () => {
+    setLoading(true);
+    try {
       const data = await getFavorites();
-      if (data) {
-        setFavorites(data);
-        setError(null);
+      setFavorites(data);
+      setError(null);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setError('Session expirée. Reconnectez-vous pour voir vos favoris.');
       } else {
         setError('Impossible de charger les favoris.');
       }
+      setFavorites([]);
+    } finally {
       setLoading(false);
-    };
-    fetchFavorites();
+    }
   }, []);
+
+  React.useEffect(() => {
+    loadFavorites();
+  }, [loadFavorites]);
+
+  const handleRemove = async (propertyId: number) => {
+    const ok = await removeFromFavorites(propertyId);
+    if (ok) {
+      setFavorites((prev) => prev.filter((f) => f.id !== propertyId));
+      await refreshFavorites();
+    }
+  };
 
   if (loading) {
     return (
@@ -53,17 +68,14 @@ export default function FavoritesScreen({ onHotelClick }: FavProps) {
         </span>
       </div>
 
-      {error && (
+      {(error || authError) && (
         <div className="p-3.5 bg-red-50 text-red-600 rounded-btn text-sm text-center mb-4 border border-red-100">
-          {error}
+          {error || authError}
         </div>
       )}
 
-      {!loading && favorites.length === 0 && !error ? (
+      {!loading && favorites.length === 0 && !error && !authError ? (
         <div className="flex flex-col items-center justify-center py-20 text-homify-muted">
-          <div className="bg-homify-surface p-6 rounded-full mb-4 border border-homify-border">
-            <HeartOff className="w-12 h-12 text-homify-muted/40" />
-          </div>
           <p className="font-medium text-homify-text mb-1">Aucun favori pour l'instant</p>
           <p className="text-sm">Explorez les annonces et ajoutez vos coups de cœur ici.</p>
         </div>
@@ -71,7 +83,11 @@ export default function FavoritesScreen({ onHotelClick }: FavProps) {
         <div className="flex flex-col md:grid md:grid-cols-2 md:gap-6">
           {favorites.map((hotel, index) => (
             <StaggeredItem key={hotel.id} index={index}>
-              <FavoriteCard hotel={hotel} onClick={() => onHotelClick(hotel)} />
+              <FavoriteCard
+                hotel={hotel}
+                onClick={() => navigate(`/property/${hotel.id}`)}
+                onRemove={() => handleRemove(hotel.id)}
+              />
             </StaggeredItem>
           ))}
         </div>

@@ -1,79 +1,95 @@
-// Fichier: src/App.tsx
-import React, { useState } from 'react';
+import React from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { BottomNav } from './components/BottomNav';
 import HomeScreen from './screens/HomeScreen';
 import FavoritesScreen from './screens/FavoritesScreen';
 import PropertyDetailsScreen from './screens/PropertyDetailsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import ChatScreen from './screens/ChatScreen';
-import { Hotel } from './types';
 import MainAi from './screens/Aisection/MainAi';
+import { FavoritesProvider } from './context/FavoritesContext';
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState('Home');
-  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
-  const [isChatting, setIsChatting] = useState(false);
+const TAB_PATHS: Record<string, string> = {
+  Home: '/home',
+  Favorites: '/favorites',
+  Search: '/home',
+  Assist: '/assist',
+  Profile: '/profile',
+};
 
-  const renderContent = () => {
-    if (isChatting) {
-      return (
-        <ChatScreen
-          onBack={() => setIsChatting(false)}
-          agentName="John Doe"
-        />
-      );
-    }
+function tabFromPath(pathname: string): string {
+  if (pathname.startsWith('/favorites')) return 'Favorites';
+  if (pathname.startsWith('/assist')) return 'Assist';
+  if (pathname.startsWith('/profile')) return 'Profile';
+  return 'Home';
+}
 
-    if (selectedHotel) {
-      return (
-        <PropertyDetailsScreen
-          hotel={selectedHotel}
-          onBack={() => setSelectedHotel(null)}
-          onBookNow={() => setIsChatting(true)}
-        />
-      );
-    }
+function PropertyDetailRoute() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const propertyId = Number(id);
 
-    switch (activeTab) {
-      case 'Home':
-        return <HomeScreen onHotelClick={setSelectedHotel} />;
-      case 'Favorites':
-        return <FavoritesScreen onHotelClick={setSelectedHotel} />;
-      case 'Profile':
-        return <ProfileScreen />;
-      case 'Search':
-      case 'Assist':
-        return <MainAi />;
-      default:
-        return <HomeScreen onHotelClick={setSelectedHotel} />;
-    }
-  };
-
-  const handleTabChange = (tab: string) => {
-    setSelectedHotel(null);
-    setActiveTab(tab);
-  };
-
-  const isHomeLayout = activeTab === 'Home' && !selectedHotel && !isChatting;
-  const isDetailsLayout = !!selectedHotel && !isChatting;
+  if (!propertyId) return <Navigate to="/home" replace />;
 
   return (
-    <div className="min-h-screen bg-homify-surface font-sans">
-      {!isChatting && (
-        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-      )}
+    <PropertyDetailsScreen
+      propertyId={propertyId}
+      onBack={() => navigate(-1)}
+      onOpenChat={() => navigate(`/property/${propertyId}/chat`)}
+    />
+  );
+}
 
-      <main
-        className={
-          isHomeLayout
-            ? 'md:ml-64 md:w-[calc(100%-16rem)] md:h-screen md:overflow-hidden'
-            : isDetailsLayout
-              ? 'pt-4 md:pt-8 md:ml-64 md:w-[calc(100%-16rem)] md:max-w-6xl md:mx-auto md:px-6 lg:px-8'
-              : 'pt-6 md:pt-8 md:ml-64 md:w-[calc(100%-16rem)] md:max-w-5xl md:mx-auto md:px-8'
-        }
-      >
-        {renderContent()}
-      </main>
-    </div>
+function PropertyChatRoute() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const propertyId = Number(id);
+
+  if (!propertyId) return <Navigate to="/home" replace />;
+
+  return <ChatScreen propertyId={propertyId} onBack={() => navigate(`/property/${propertyId}`)} />;
+}
+
+export default function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activeTab = tabFromPath(location.pathname);
+  const isChatRoute = location.pathname.includes('/chat');
+  const isDetailRoute = location.pathname.startsWith('/property/') && !isChatRoute;
+  const isHomeLayout = location.pathname === '/home' || location.pathname === '/';
+
+  const handleTabChange = (tab: string) => {
+    navigate(TAB_PATHS[tab] ?? '/home');
+  };
+
+  return (
+    <FavoritesProvider>
+      <div className="min-h-screen bg-homify-surface font-sans">
+        {!isChatRoute && (
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        )}
+
+        <main
+          className={
+            isHomeLayout && !isDetailRoute
+              ? 'md:ml-64 md:w-[calc(100%-16rem)] md:h-screen md:overflow-hidden'
+              : isDetailRoute
+                ? 'pt-4 md:pt-8 md:ml-64 md:w-[calc(100%-16rem)] md:max-w-6xl md:mx-auto md:px-6 lg:px-8'
+                : 'pt-6 md:pt-8 md:ml-64 md:w-[calc(100%-16rem)] md:max-w-5xl md:mx-auto md:px-8'
+          }
+        >
+          <Routes>
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<HomeScreen />} />
+            <Route path="/favorites" element={<FavoritesScreen />} />
+            <Route path="/profile" element={<ProfileScreen />} />
+            <Route path="/assist" element={<MainAi />} />
+            <Route path="/property/:id" element={<PropertyDetailRoute />} />
+            <Route path="/property/:id/chat" element={<PropertyChatRoute />} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
+          </Routes>
+        </main>
+      </div>
+    </FavoritesProvider>
   );
 }
