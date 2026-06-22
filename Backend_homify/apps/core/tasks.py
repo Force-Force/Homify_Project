@@ -158,3 +158,52 @@ def notify_new_message_task(message_id):
         body,
         recipient.email,
     )
+
+
+@shared_task
+def send_verification_email_task(user_id, token):
+    from apps.users.models import User
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return
+
+    frontend = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+    verify_url = f"{frontend}/verify-email?token={token}"
+    body = (
+        f"Bonjour {user.first_name},\n\n"
+        f"Bienvenue sur Homify ! Vérifiez votre adresse email en cliquant sur le lien ci-dessous :\n\n"
+        f"{verify_url}\n\n"
+        f"Ce lien expire dans 24 heures.\n\n— L'équipe Homify"
+    )
+    send_email_task.delay(
+        'Homify — Vérifiez votre email',
+        body,
+        user.email,
+    )
+
+
+@shared_task
+def send_password_reset_email_task(user_id, token):
+    from apps.users.models import User
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return
+
+    frontend = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+    reset_url = f"{frontend}/Reset-passode?token={token}"
+    body = (
+        f"Bonjour {user.first_name},\n\n"
+        f"Vous avez demandé une réinitialisation de mot de passe.\n\n"
+        f"{reset_url}\n\n"
+        f"Ce lien expire dans 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.\n\n"
+        f"— L'équipe Homify"
+    )
+    send_email_task.delay(
+        'Homify — Réinitialisation du mot de passe',
+        body,
+        user.email,
+    )

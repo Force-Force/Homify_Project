@@ -4,6 +4,8 @@ from .messaging import MessagingPolicyService
 from .notifications import NotificationService
 from .user_lifecycle import UserLifecycleService
 from .report_moderation import ReportModerationService
+from .auth import AuthService
+from .user_audit import UserAuditService
 
 __all__ = [
     'PropertyLifecycleService',
@@ -12,4 +14,6 @@ __all__ = [
     'NotificationService',
     'UserLifecycleService',
     'ReportModerationService',
+    'AuthService',
+    'UserAuditService',
 ]

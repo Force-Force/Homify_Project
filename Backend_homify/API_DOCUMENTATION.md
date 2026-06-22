@@ -54,7 +54,8 @@ Créer un nouveau compte utilisateur.
     "full_name": "Jean Dupont",
     "phone": "237612345678",
     "masked_phone": "XX XX XX 5678",
-    "role": "TENANT",
+    "role": "VISITOR",
+    "pending_role": "TENANT",
     "status": "ACTIVE",
     "email_verified": false,
     "created_at": "2024-10-15T10:00:00Z"
@@ -79,11 +80,70 @@ Se connecter et obtenir les tokens JWT.
 ```json
 {
   "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-  "access": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "user": { "...": "..." }
 }
 ```
 
-#### 3. Rafraîchir le token
+> Connexion refusée si email non vérifié, compte suspendu ou supprimé.
+
+#### 3. Déconnexion (Logout)
+**POST** `/api/auth/logout/`
+
+🔒 **Authentification requise**
+
+Invalide le refresh token (blacklist JWT).
+
+**Body**:
+```json
+{
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+}
+```
+
+#### 4. Vérifier l'email
+**POST** `/api/auth/verify-email/`
+
+**Body**:
+```json
+{
+  "token": "token_reçu_par_email"
+}
+```
+
+#### 5. Renvoyer l'email de vérification
+**POST** `/api/auth/resend-verification/`
+
+**Body**:
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+#### 6. Mot de passe oublié
+**POST** `/api/auth/forgot-password/`
+
+**Body**:
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+#### 7. Réinitialiser le mot de passe
+**POST** `/api/auth/reset-password/`
+
+**Body**:
+```json
+{
+  "token": "token_reçu_par_email",
+  "password": "NewSecurePass123!",
+  "password_confirm": "NewSecurePass123!"
+}
+```
+
+#### 8. Rafraîchir le token
 **POST** `/api/auth/refresh/`
 
 Obtenir un nouveau token d'accès avec le refresh token.
@@ -143,6 +203,24 @@ Obtenir un nouveau token d'accès avec le refresh token.
 
 ### 6. Changer mon mot de passe
 **POST** `/api/auth/me/password/`
+
+🔒 **Authentification requise**
+
+Révoque tous les autres tokens JWT après changement.
+
+### Supprimer mon compte
+**POST** `/api/auth/me/delete/`
+
+🔒 **Authentification requise**
+
+Suppression logique du compte (status=DELETED) + révocation des tokens.
+
+**Body**:
+```json
+{
+  "password": "SecurePass123!"
+}
+```
 
 🔒 **Authentification requise**
 
