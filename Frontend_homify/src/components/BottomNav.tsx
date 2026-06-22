@@ -1,22 +1,28 @@
 import React from 'react';
-import { Home, Heart, Search, User, Bot } from 'lucide-react';
+import { Home, Heart, Bot, User, Building2 } from 'lucide-react';
 import Dock from '@/components/ui/Dock/Dock';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-const NAV_ITEMS = [
-  { name: 'Home', label: 'Accueil', icon: Home },
-  { name: 'Favorites', label: 'Favoris', icon: Heart },
-  { name: 'Search', label: 'Recherche', icon: Search },
-  { name: 'Assist', label: 'Assistant', icon: Bot },
-  { name: 'Profile', label: 'Profil', icon: User },
-];
-
 export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
+  const { user } = useAuth();
+  const isLandlord = user?.role === 'LANDLORD' || user?.role === 'ADMIN';
+
+  const NAV_ITEMS = [
+    { name: 'Home', label: 'Accueil', icon: Home },
+    { name: 'Favorites', label: 'Favoris', icon: Heart },
+    ...(isLandlord
+      ? [{ name: 'MyProperties', label: 'Mes annonces', icon: Building2 }]
+      : [{ name: 'Search', label: 'Recherche', icon: Home }]),
+    { name: 'Assist', label: 'Assistant', icon: Bot },
+    { name: 'Profile', label: 'Profil', icon: User },
+  ];
+
   const dockItems = NAV_ITEMS.map((item) => ({
     icon: <item.icon className={activeTab === item.name ? 'text-white' : 'text-homify-primary'} />,
     label: item.label,
@@ -45,7 +51,7 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
                   'flex items-center gap-3 rounded-btn px-4 py-3 text-sm font-medium transition-all duration-200',
                   isActive
                     ? 'bg-homify-primary text-white shadow-sm'
-                    : 'text-homify-muted hover:bg-homify-surface hover:text-homify-primary'
+                    : 'text-homify-muted hover:bg-homify-surface hover:text-homify-primary',
                 )}
               >
                 <item.icon className={cn('h-5 w-5', isActive && 'text-white')} />
@@ -55,11 +61,25 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
           })}
         </nav>
 
+        {isLandlord && (
+          <div className="mt-6 px-3">
+            <button
+              onClick={() => onTabChange('MyProperties')}
+              className="w-full text-left rounded-card bg-homify-accent/10 border border-homify-accent/20 p-4 hover:bg-homify-accent/15 transition"
+            >
+              <p className="text-xs font-semibold text-homify-accent">Espace propriétaire</p>
+              <p className="mt-1 text-[11px] text-homify-muted">
+                {user?.properties_count ?? 0} annonce(s) · Publier un bien
+              </p>
+            </button>
+          </div>
+        )}
+
         <div className="mt-auto mb-8 px-3">
           <div className="rounded-card bg-homify-surface p-4">
             <p className="text-xs font-semibold text-homify-primary">Assistant IA</p>
             <p className="mt-1 text-[11px] leading-relaxed text-homify-muted">
-              Analyse de marché, recherche intelligente et plus encore.
+              Analyse de marché, budget loyer et recherche au Cameroun.
             </p>
           </div>
         </div>

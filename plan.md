@@ -48,17 +48,15 @@ Amenities ✅ (corrigé)
 - Filtre par catégorie : `GET /api/amenities/?category=COMFORT` (+ recherche `search`, tri `ordering`)
 
 
-Frontend — Perspectives d'amélioration ✅ (réparé — phase 1)
+Frontend — Perspectives d'amélioration ✅ (phase 1 + phase 2)
 - Client API centralisé (`apiClient.ts`) avec JWT + refresh automatique
-- `authService` + `AuthContext` : login, logout, GET/PATCH `/auth/me/`
+- `authService` + `AuthContext` : login, logout, GET/PATCH `/auth/me/`, verify/resend email
 - Favoris branchés (`FavoritesContext`, cœurs sur cartes, DELETE by-property)
 - Détail via `GET /properties/{id}/` (galerie, description, landlord, équipements)
 - Messagerie réelle (`messageService`, thread + POST messages, cloche unread_count)
-- Routes URL : `/home`, `/favorites`, `/profile`, `/property/:id`, `/property/:id/chat`
+- Routes URL : `/home`, `/favorites`, `/profile`, `/assist`, `/property/:id`, `/property/:id/chat`
 - Profil dynamique, reset password, signin via authService
-
-Reste (phase 2)
-- Pagination liste, filtres avancés (furnished, bathrooms, geo)
-- Parcours propriétaire (my_properties, création annonce)
-- Section IA (n8n) — copy Cameroun, calculateur loyer
-- Email verification UX, rôle LANDLORD dashboard
+- Pagination + filtres avancés (meublé, chambres, salles de bain, quartier, surface, geo)
+- Parcours propriétaire : `/my-properties`, `/property/new` (création + photos + soumission)
+- Section IA : calculateur loyer FCFA, copy Cameroun, chat support localisé
+- UX vérification email : `/verify-pending`, `/verify-email`, signup/signin branchés

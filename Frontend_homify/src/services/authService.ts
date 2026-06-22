@@ -89,3 +89,34 @@ export async function resetPassword(
     false,
   );
 }
+
+export async function verifyEmail(token: string): Promise<void> {
+  await apiFetch(
+    API_ROUTES.auth.verifyEmail,
+    { method: 'POST', body: JSON.stringify({ token }) },
+    false,
+  );
+}
+
+export async function resendVerification(email: string): Promise<void> {
+  await apiFetch(
+    API_ROUTES.auth.resendVerification,
+    { method: 'POST', body: JSON.stringify({ email }) },
+    false,
+  );
+}
+
+export async function register(payload: {
+  email: string;
+  password: string;
+  password_confirm: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  role: string;
+}): Promise<void> {
+  await apiFetch(API_ROUTES.auth.register, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, false);
+}

@@ -4,6 +4,8 @@ import { BottomNav } from './components/BottomNav';
 import HomeScreen from './screens/HomeScreen';
 import FavoritesScreen from './screens/FavoritesScreen';
 import PropertyDetailsScreen from './screens/PropertyDetailsScreen';
+import PropertyFormScreen from './screens/PropertyFormScreen';
+import MyPropertiesScreen from './screens/MyPropertiesScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import ChatScreen from './screens/ChatScreen';
 import MainAi from './screens/Aisection/MainAi';
@@ -13,11 +15,13 @@ const TAB_PATHS: Record<string, string> = {
   Home: '/home',
   Favorites: '/favorites',
   Search: '/home',
+  MyProperties: '/my-properties',
   Assist: '/assist',
   Profile: '/profile',
 };
 
 function tabFromPath(pathname: string): string {
+  if (pathname.startsWith('/my-properties') || pathname.startsWith('/property/new')) return 'MyProperties';
   if (pathname.startsWith('/favorites')) return 'Favorites';
   if (pathname.startsWith('/assist')) return 'Assist';
   if (pathname.startsWith('/profile')) return 'Profile';
@@ -55,7 +59,10 @@ export default function App() {
   const navigate = useNavigate();
   const activeTab = tabFromPath(location.pathname);
   const isChatRoute = location.pathname.includes('/chat');
-  const isDetailRoute = location.pathname.startsWith('/property/') && !isChatRoute;
+  const isDetailRoute =
+    location.pathname.startsWith('/property/') &&
+    !isChatRoute &&
+    !location.pathname.endsWith('/new');
   const isHomeLayout = location.pathname === '/home' || location.pathname === '/';
 
   const handleTabChange = (tab: string) => {
@@ -65,9 +72,7 @@ export default function App() {
   return (
     <FavoritesProvider>
       <div className="min-h-screen bg-homify-surface font-sans">
-        {!isChatRoute && (
-          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-        )}
+        {!isChatRoute && <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />}
 
         <main
           className={
@@ -84,6 +89,8 @@ export default function App() {
             <Route path="/favorites" element={<FavoritesScreen />} />
             <Route path="/profile" element={<ProfileScreen />} />
             <Route path="/assist" element={<MainAi />} />
+            <Route path="/my-properties" element={<MyPropertiesScreen />} />
+            <Route path="/property/new" element={<PropertyFormScreen />} />
             <Route path="/property/:id" element={<PropertyDetailRoute />} />
             <Route path="/property/:id/chat" element={<PropertyChatRoute />} />
             <Route path="*" element={<Navigate to="/home" replace />} />

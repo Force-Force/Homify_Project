@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { register } from '../../services/authService';
 import { API_ROUTES } from '../../api/routes';
 import Carosel from './Carosel';
 import MobileCarousel from './MobileCarossel';
@@ -38,7 +39,7 @@ const HomifiSignUp = () => {
 
     setLoading(true);
     try {
-      await axios.post(API_ROUTES.auth.register, {
+      await register({
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
@@ -47,7 +48,7 @@ const HomifiSignUp = () => {
         phone: formData.phone,
         role: formData.role,
       });
-      window.location.href = '/signin';
+      window.location.href = `/verify-pending?email=${encodeURIComponent(formData.email)}`;
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || "Échec de l'inscription. Veuillez réessayer.");

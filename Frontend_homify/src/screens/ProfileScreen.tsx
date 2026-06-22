@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Camera, LogOut, User, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Camera, LogOut, User, Loader2, Mail, Building2, AlertTriangle } from 'lucide-react';
 import { PageHeader, inputClass, labelClass } from '@/components/layout/PageHeader';
 import { useAuth } from '@/context/AuthContext';
-import { updateMe } from '@/services/authService';
+import { updateMe, resendVerification } from '@/services/authService';
 
 export default function ProfileScreen() {
   const { user, loading, logout, refreshUser } = useAuth();
@@ -13,6 +14,7 @@ export default function ProfileScreen() {
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -38,6 +40,20 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!user?.email) return;
+    setResending(true);
+    setMessage(null);
+    try {
+      await resendVerification(user.email);
+      setMessage('Email de vérification renvoyé.');
+    } catch {
+      setMessage('Impossible de renvoyer l\'email.');
+    } finally {
+      setResending(false);
+    }
+  };
+
   const handleLogout = async () => {
     await logout();
     window.location.href = '/';
@@ -54,6 +70,46 @@ export default function ProfileScreen() {
   return (
     <div className="px-5 md:px-0 pt-2 pb-28">
       <PageHeader greeting="Mon compte" title="Profil" showNotifications={false} />
+
+      {user && !user.email_verified && (
+        <div className="max-w-2xl mx-auto mb-6 p-4 bg-amber-50 border border-amber-200 rounded-modal flex gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-900">Email non vérifié</p>
+            <p className="text-xs text-amber-800 mt-1">
+              Activez votre compte pour publier des annonces et contacter les propriétaires.
+            </p>
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resending}
+              className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-homify-primary hover:underline disabled:opacity-50"
+            >
+              <Mail className="w-4 h-4" />
+              {resending ? 'Envoi...' : 'Renvoyer l\'email de vérification'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {(user?.role === 'LANDLORD' || user?.role === 'ADMIN') && (
+        <div className="max-w-2xl mx-auto mb-6">
+          <Link
+            to="/my-properties"
+            className="flex items-center gap-4 p-4 bg-homify-accent/10 border border-homify-accent/20 rounded-modal hover:bg-homify-accent/15 transition"
+          >
+            <div className="w-12 h-12 bg-homify-accent/20 rounded-xl flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-homify-accent" />
+            </div>
+            <div>
+              <p className="font-bold text-homify-text">Mes annonces</p>
+              <p className="text-sm text-homify-muted">
+                {user.properties_count ?? 0} annonce(s) · Gérer et publier
+              </p>
+            </div>
+          </Link>
+        </div>
+      )}
 
       <div className="flex justify-center mb-8">
         <div className="relative">

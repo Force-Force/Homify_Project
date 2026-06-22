@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin, Bell, Search, SlidersHorizontal, Loader2, X, Check, Sparkles,
-  Map as MapIcon, List,
+  Map as MapIcon, List, ChevronLeft, ChevronRight, Navigation,
 } from 'lucide-react';
 import axios from 'axios';
 import { RecommendedCard } from '../components/Cards';
 import PriceMap from '../components/PriceMap';
 import { Hotel } from '../types';
-import { getProperties } from '../services/propertyService';
+import { searchProperties } from '../services/propertyService';
 import { getUnreadCount } from '../services/messageService';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
 import { useFavorites } from '@/context/FavoritesContext';
@@ -18,7 +18,14 @@ interface Filters {
   minPrice: string;
   maxPrice: string;
   city: string;
+  district: string;
   ordering: string;
+  furnished: string;
+  bedrooms: string;
+  bathrooms: string;
+  minSurface: string;
+  nearMe: boolean;
+  radiusKm: string;
 }
 
 const PROPERTY_TYPES = [
@@ -40,12 +47,19 @@ const DEFAULT_FILTERS: Filters = {
   minPrice: '',
   maxPrice: '',
   city: '',
+  district: '',
   ordering: '-created_at',
+  furnished: '',
+  bedrooms: '',
+  bathrooms: '',
+  minSurface: '',
+  nearMe: false,
+  radiusKm: '10',
 };
 
 export default function HomeScreen() {
   const navigate = useNavigate();
-  const { isFavorite, toggleFavorite, authError: favAuthError } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [properties, setProperties] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +70,11 @@ export default function HomeScreen() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [activeId, setActiveId] = useState<number | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     getUnreadCount()
@@ -63,35 +82,47 @@ export default function HomeScreen() {
       .catch(() => setUnreadCount(0));
   }, []);
 
-  const buildQueryString = (customSearch?: string): string => {
-    let query = `?ordering=${filters.ordering}`;
-    if (customSearch) query += `&search=${encodeURIComponent(customSearch)}`;
-    if (filters.type) query += `&type=${filters.type}`;
-    if (filters.minPrice) query += `&min_price=${filters.minPrice}`;
-    if (filters.maxPrice) query += `&max_price=${filters.maxPrice}`;
-    if (filters.city) query += `&city=${filters.city}`;
-    return query;
-  };
+  const buildQueryString = useCallback((customSearch?: string, customFilters?: Filters): string => {
+    const f = customFilters ?? filters;
+    const params = new URLSearchParams();
+    params.set('ordering', f.ordering);
+    if (customSearch) params.set('search', customSearch);
+    if (f.type) params.set('type', f.type);
+    if (f.minPrice) params.set('min_price', f.minPrice);
+    if (f.maxPrice) params.set('max_price', f.maxPrice);
+    if (f.city) params.set('city', f.city);
+    if (f.district) params.set('district', f.district);
+    if (f.furnished) params.set('furnished', f.furnished);
+    if (f.bedrooms) params.set('number_of_bedrooms', f.bedrooms);
+    if (f.bathrooms) params.set('number_of_bathrooms', f.bathrooms);
+    if (f.minSurface) params.set('min_surface', f.minSurface);
+    if (f.nearMe && userCoords) {
+      params.set('lat', String(userCoords.lat));
+      params.set('lng', String(userCoords.lng));
+      params.set('radius_km', f.radiusKm || '10');
+    }
+    return `?${params.toString()}`;
+  }, [filters, userCoords]);
 
-  const fetchProperties = async (customQueryString?: string) => {
+  const fetchProperties = useCallback(async (queryString?: string, pageNum = 1) => {
     setLoading(true);
     try {
-      const queryString = customQueryString || '?ordering=-created_at';
-      const data = await getProperties(queryString);
-      if (data.length > 0) {
-        setProperties(data);
-        setError(null);
-      } else {
-        setProperties([]);
-        setError('Aucun résultat ne correspond à vos critères.');
-      }
+      const qs = queryString ?? buildQueryString();
+      const data = await searchProperties(qs, pageNum);
+      setProperties(data.results);
+      setTotalCount(data.count);
+      setHasNext(!!data.next);
+      setHasPrevious(!!data.previous);
+      setPage(pageNum);
+      setError(data.results.length === 0 ? 'Aucun résultat ne correspond à vos critères.' : null);
     } catch {
       setError('Erreur de connexion au serveur.');
       setProperties([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, [buildQueryString]);
 
   const fetchCityName = async (lat: number, lon: number) => {
     try {
@@ -106,7 +137,8 @@ export default function HomeScreen() {
   };
 
   const applyFilters = () => {
-    fetchProperties(buildQueryString());
+    setPage(1);
+    fetchProperties(buildQueryString(), 1);
     setShowFilters(false);
     setSearchQuery('');
   };
@@ -114,10 +146,11 @@ export default function HomeScreen() {
   const resetFilters = () => {
     setSearchQuery('');
     setFilters(DEFAULT_FILTERS);
-    fetchProperties('?ordering=-created_at');
+    setPage(1);
+    fetchProperties('?ordering=-created_at', 1);
   };
 
-  const updateFilter = (key: keyof Filters, value: string) => {
+  const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -126,15 +159,17 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    fetchProperties();
+    fetchProperties('?ordering=-created_at', 1);
   }, []);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searchQuery.trim()) {
-        fetchProperties(buildQueryString(searchQuery));
+        setPage(1);
+        fetchProperties(buildQueryString(searchQuery), 1);
       } else if (!showFilters) {
-        fetchProperties(`?ordering=${filters.ordering}`);
+        setPage(1);
+        fetchProperties(buildQueryString(), 1);
       }
     }, 500);
     return () => clearTimeout(delayDebounceFn);
@@ -143,8 +178,11 @@ export default function HomeScreen() {
   useEffect(() => {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (p) => fetchCityName(p.coords.latitude, p.coords.longitude),
-        () => setLocationName('Yaoundé, CMR')
+        (p) => {
+          setUserCoords({ lat: p.coords.latitude, lng: p.coords.longitude });
+          fetchCityName(p.coords.latitude, p.coords.longitude);
+        },
+        () => setLocationName('Yaoundé, CMR'),
       );
     }
   }, []);
@@ -161,21 +199,29 @@ export default function HomeScreen() {
     navigate(`/property/${id}`);
   };
 
+  const goToPage = (nextPage: number) => {
+    fetchProperties(buildQueryString(searchQuery.trim() || undefined), nextPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const hasActiveFilters = () =>
     searchQuery ||
-    Object.entries(filters).some(
-      ([key, value]) => key !== 'ordering' && value !== '' && value !== DEFAULT_FILTERS.ordering
-    );
+    Object.entries(filters).some(([key, value]) => {
+      if (key === 'ordering') return value !== DEFAULT_FILTERS.ordering;
+      if (key === 'nearMe') return value === true;
+      if (key === 'radiusKm') return filters.nearMe && value !== DEFAULT_FILTERS.radiusKm;
+      return value !== '' && value !== false;
+    });
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / 20));
 
   return (
     <div className="flex flex-col md:flex-row h-full md:h-screen overflow-hidden pb-28 md:pb-0">
-      {/* Colonne gauche — liste + barre de recherche (desktop uniquement sur cette moitié) */}
       <div
         className={`flex flex-col min-w-0 md:w-[58%] md:max-w-[58%] md:h-full md:overflow-hidden ${
           viewMode === 'map' ? 'hidden md:flex' : 'flex flex-1'
         }`}
       >
-        {/* Toolbar compacte */}
         <div className="flex-none bg-homify-card border-b border-homify-border px-5 md:px-6 py-4 md:py-3 space-y-3 md:space-y-2.5">
           <header className="flex justify-between items-center">
             <div className="min-w-0">
@@ -198,7 +244,6 @@ export default function HomeScreen() {
             </button>
           </header>
 
-          {/* Hero — mobile seulement */}
           <div className="md:hidden">
             <h1 className="text-2xl font-extrabold text-homify-text tracking-tight">Bonjour 👋</h1>
             <p className="text-homify-muted text-sm mt-1">Trouvez le logement idéal près de chez vous</p>
@@ -231,11 +276,11 @@ export default function HomeScreen() {
               <button
                 key={value}
                 onClick={() => {
-                  togglePropertyType(value);
-                  const newFilters = { ...filters, type: filters.type === value ? '' : value };
+                  const newType = filters.type === value ? '' : value;
+                  const newFilters = { ...filters, type: newType };
                   setFilters(newFilters);
-                  const q = `?ordering=${newFilters.ordering}${newFilters.type ? `&type=${newFilters.type}` : ''}`;
-                  fetchProperties(q);
+                  setPage(1);
+                  fetchProperties(buildQueryString(undefined, newFilters), 1);
                 }}
                 className={`shrink-0 px-3 py-1 md:px-2.5 md:py-0.5 rounded-full text-xs font-semibold border transition-all ${
                   filters.type === value
@@ -249,7 +294,6 @@ export default function HomeScreen() {
           </div>
         </div>
 
-        {/* Liste scrollable */}
         <section className="flex-1 overflow-y-auto px-5 md:px-6 py-4 md:py-5 min-h-0">
           {error && (
             <div className="mb-4 p-3.5 bg-red-50 text-red-600 rounded-btn text-sm text-center border border-red-100">
@@ -267,32 +311,60 @@ export default function HomeScreen() {
             <h2 className="text-lg md:text-base font-bold text-homify-text">
               {hasActiveFilters() ? 'Résultats' : 'Récemment publiés'}
             </h2>
-            {!loading && properties.length > 0 && (
+            {!loading && totalCount > 0 && (
               <span className="text-xs text-homify-muted font-medium">
-                {properties.length} annonce{properties.length > 1 ? 's' : ''}
+                {totalCount} annonce{totalCount > 1 ? 's' : ''}
               </span>
             )}
           </div>
 
           {properties.length > 0 ? (
-            <div className="flex overflow-x-auto pb-4 gap-4 scrollbar-hide md:grid md:grid-cols-2 md:overflow-visible md:gap-4 md:pb-6">
-              {properties.map((hotel, index) => (
-                <div
-                  key={hotel.id}
-                  onMouseEnter={() => setActiveId(hotel.id)}
-                  onMouseLeave={() => setActiveId(null)}
-                >
-                  <StaggeredItem index={index}>
-                    <RecommendedCard
-                      hotel={{ ...hotel, isFavorite: isFavorite(hotel.id) }}
-                      onClick={() => navigate(`/property/${hotel.id}`)}
-                      isFavorite={isFavorite(hotel.id)}
-                      onFavoriteToggle={() => toggleFavorite(hotel.id)}
-                    />
-                  </StaggeredItem>
+            <>
+              <div className="flex overflow-x-auto pb-4 gap-4 scrollbar-hide md:grid md:grid-cols-2 md:overflow-visible md:gap-4 md:pb-6">
+                {properties.map((hotel, index) => (
+                  <div
+                    key={hotel.id}
+                    onMouseEnter={() => setActiveId(hotel.id)}
+                    onMouseLeave={() => setActiveId(null)}
+                  >
+                    <StaggeredItem index={index}>
+                      <RecommendedCard
+                        hotel={{ ...hotel, isFavorite: isFavorite(hotel.id) }}
+                        onClick={() => navigate(`/property/${hotel.id}`)}
+                        isFavorite={isFavorite(hotel.id)}
+                        onFavoriteToggle={() => toggleFavorite(hotel.id)}
+                      />
+                    </StaggeredItem>
+                  </div>
+                ))}
+              </div>
+
+              {totalCount > 20 && (
+                <div className="flex items-center justify-center gap-4 py-4 border-t border-homify-border">
+                  <button
+                    onClick={() => goToPage(page - 1)}
+                    disabled={!hasPrevious || loading}
+                    className="flex items-center gap-1 px-4 py-2 rounded-btn border border-homify-border text-sm font-medium
+                               text-homify-muted hover:bg-homify-surface disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Précédent
+                  </button>
+                  <span className="text-sm text-homify-muted">
+                    Page {page} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => goToPage(page + 1)}
+                    disabled={!hasNext || loading}
+                    className="flex items-center gap-1 px-4 py-2 rounded-btn border border-homify-border text-sm font-medium
+                               text-homify-muted hover:bg-homify-surface disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Suivant
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           ) : (
             !loading && (
               <div className="flex flex-col items-center py-12 text-center">
@@ -304,7 +376,6 @@ export default function HomeScreen() {
         </section>
       </div>
 
-      {/* Carte — panneau droit avec marges intérieures */}
       <aside
         className={`md:w-[42%] md:shrink-0 md:h-full md:min-h-0 md:p-4 md:pl-3 md:pr-5 md:py-5 bg-homify-surface ${
           viewMode === 'map'
@@ -329,7 +400,6 @@ export default function HomeScreen() {
         />
       </aside>
 
-      {/* Toggle mobile liste / carte */}
       <div className="md:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40">
         <button
           onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
@@ -349,7 +419,6 @@ export default function HomeScreen() {
         </button>
       </div>
 
-      {/* Filters Modal */}
       {showFilters && (
         <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
           <div className="bg-homify-card w-full md:w-[480px] h-[85vh] md:h-auto md:max-h-[85vh] md:rounded-modal rounded-t-modal p-6 shadow-2xl flex flex-col">
@@ -403,6 +472,56 @@ export default function HomeScreen() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-semibold text-homify-text mb-2">Chambres (min.)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Ex: 2"
+                    className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                    value={filters.bedrooms}
+                    onChange={(e) => updateFilter('bedrooms', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-homify-text mb-2">Salles de bain (min.)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Ex: 1"
+                    className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                    value={filters.bathrooms}
+                    onChange={(e) => updateFilter('bathrooms', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-homify-text mb-2">Surface min. (m²)</label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Ex: 40"
+                  className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                  value={filters.minSurface}
+                  onChange={(e) => updateFilter('minSurface', e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-homify-text mb-2">Meublé</label>
+                <select
+                  className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm text-homify-text"
+                  value={filters.furnished}
+                  onChange={(e) => updateFilter('furnished', e.target.value)}
+                >
+                  <option value="">Indifférent</option>
+                  <option value="true">Meublé uniquement</option>
+                  <option value="false">Non meublé uniquement</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold text-homify-text mb-2">Ville</label>
                 <input
@@ -412,6 +531,53 @@ export default function HomeScreen() {
                   value={filters.city}
                   onChange={(e) => updateFilter('city', e.target.value)}
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-homify-text mb-2">Quartier</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Bastos, Akwa..."
+                  className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                  value={filters.district}
+                  onChange={(e) => updateFilter('district', e.target.value)}
+                />
+              </div>
+
+              <div className="rounded-btn border border-homify-border p-4 bg-homify-surface">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.nearMe}
+                    disabled={!userCoords}
+                    onChange={(e) => updateFilter('nearMe', e.target.checked)}
+                    className="w-4 h-4 rounded border-homify-border text-homify-primary"
+                  />
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold text-homify-text flex items-center gap-1.5">
+                      <Navigation className="w-4 h-4 text-homify-accent" />
+                      Près de moi
+                    </span>
+                    <p className="text-xs text-homify-muted mt-0.5">
+                      {userCoords
+                        ? 'Annonces dans un rayon autour de votre position'
+                        : 'Autorisez la géolocalisation pour activer ce filtre'}
+                    </p>
+                  </div>
+                </label>
+                {filters.nearMe && userCoords && (
+                  <div className="mt-3">
+                    <label className="block text-xs font-medium text-homify-muted mb-1">Rayon (km)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="50"
+                      className="w-full p-2.5 bg-homify-card rounded-btn border border-homify-border text-sm"
+                      value={filters.radiusKm}
+                      onChange={(e) => updateFilter('radiusKm', e.target.value)}
+                    />
+                  </div>
+                )}
               </div>
 
               <div>

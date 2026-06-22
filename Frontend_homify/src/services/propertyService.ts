@@ -44,6 +44,7 @@ export const transformApiToHotel = (apiProp: ApiProperty): Hotel => {
     },
     isFavorite: apiProp.is_favorite,
     furnished: apiProp.furnished,
+    status: (apiProp as ApiProperty & { status?: string }).status,
   };
 };
 
@@ -76,18 +77,74 @@ export const transformDetailToHotel = (detail: ApiPropertyDetail): Hotel => {
     charges: detail.charges,
     deposit: detail.deposit,
     isFavorite: detail.is_favorite,
+    status: detail.status,
+    rejectionReason: detail.rejection_reason,
   };
 };
 
-export const getProperties = async (filters = ''): Promise<Hotel[]> => {
-  const query = filters.startsWith('?') ? filters : filters ? `?${filters}` : '';
-  const data = await apiFetch<PaginatedResponse>(`${API_ROUTES.properties.list}${query}`);
-  return data.results.map(transformApiToHotel);
+export interface PropertySearchResult {
+  results: Hotel[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
+
+export const searchProperties = async (filters = '', page = 1): Promise<PropertySearchResult> => {
+  const base = filters.startsWith('?') ? filters.slice(1) : filters;
+  const params = new URLSearchParams(base);
+  params.set('page', String(page));
+  const data = await apiFetch<PaginatedResponse>(`${API_ROUTES.properties.list}?${params}`);
+  return {
+    results: data.results.map(transformApiToHotel),
+    count: data.count,
+    next: data.next,
+    previous: data.previous,
+  };
 };
+
+export const STATUS_LABELS: Record<string, string> = {
+  DRAFT: 'Brouillon',
+  PENDING: 'En modération',
+  APPROVED: 'Approuvé',
+  REJECTED: 'Rejeté',
+  PUBLISHED: 'Publié',
+  RENTED: 'Loué',
+  DELETED: 'Supprimé',
+};
+
+export interface PropertyFormPayload {
+  title: string;
+  description: string;
+  type: string;
+  surface: number;
+  number_of_rooms: number;
+  number_of_bedrooms: number;
+  number_of_bathrooms: number;
+  furnished: boolean;
+  monthly_rent: string;
+  charges: string;
+  charges_included: boolean;
+  deposit: string;
+  agency_fees: string;
+  address: {
+    street_address: string;
+    city: string;
+    postal_code: string;
+    district: string;
+    latitude?: number | null;
+    longitude?: number | null;
+  };
+  amenity_ids: number[];
+}
 
 export const getPropertyById = async (id: number): Promise<Hotel> => {
   const data = await apiFetch<ApiPropertyDetail>(API_ROUTES.properties.details(id));
   return transformDetailToHotel(data);
+};
+
+export const getProperties = async (filters = ''): Promise<Hotel[]> => {
+  const { results } = await searchProperties(filters, 1);
+  return results;
 };
 
 export const getFavorites = async (): Promise<Hotel[]> => {
@@ -106,4 +163,40 @@ export const addToFavorites = async (propertyId: number): Promise<boolean> => {
 export const removeFromFavorites = async (propertyId: number): Promise<boolean> => {
   await apiFetch(API_ROUTES.favorites.remove(propertyId), { method: 'DELETE' });
   return true;
+};
+
+export const getMyProperties = async (): Promise<Hotel[]> => {
+  const data = await apiFetch<PaginatedResponse>(API_ROUTES.properties.myProperties);
+  return data.results.map(transformApiToHotel);
+};
+
+export const createProperty = async (payload: PropertyFormPayload): Promise<{ id: number }> => {
+  return apiFetch<{ id: number }>(API_ROUTES.properties.list, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+};
+
+export const updateProperty = async (id: number, payload: Partial<PropertyFormPayload>): Promise<void> => {
+  await apiFetch(API_ROUTES.properties.details(id), {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+};
+
+export const uploadPropertyPhotos = async (propertyId: number, files: File[]): Promise<void> => {
+  const form = new FormData();
+  files.forEach((file) => form.append('photos', file));
+  await apiFetch(API_ROUTES.properties.uploadPhotos(propertyId), {
+    method: 'POST',
+    body: form,
+  });
+};
+
+export const submitPropertyForReview = async (propertyId: number): Promise<void> => {
+  await apiFetch(API_ROUTES.properties.submitForReview(propertyId), { method: 'POST' });
+};
+
+export const markPropertyRented = async (propertyId: number): Promise<void> => {
+  await apiFetch(API_ROUTES.properties.markRented(propertyId), { method: 'POST' });
 };

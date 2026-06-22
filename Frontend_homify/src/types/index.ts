@@ -40,4 +40,6 @@ export interface Hotel {
   viewCount?: number;
   charges?: string;
   deposit?: string;
+  status?: string;
+  rejectionReason?: string;
 }

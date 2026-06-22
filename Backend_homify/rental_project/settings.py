@@ -190,7 +190,7 @@ CORS_ALLOWED_ORIGINS = [
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Redis Configuration
-REDIS_URL = os.getenv('REDIS_URL', 'redis://redis:6379/0')
+REDIS_URL = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/0')
 
 # Celery Configuration
 CELERY_BROKER_URL = REDIS_URL
@@ -199,3 +199,11 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# Dev local (make dev-local) : pas de Redis requis — tâches exécutées inline.
+# Docker/prod : REDIS_URL=redis://redis:6379/0 + CELERY_TASK_ALWAYS_EAGER=false + worker Celery.
+CELERY_TASK_ALWAYS_EAGER = os.getenv(
+    'CELERY_TASK_ALWAYS_EAGER',
+    'True' if DEBUG else 'False',
+).lower() in ('1', 'true', 'yes')
+CELERY_TASK_EAGER_PROPAGATES = CELERY_TASK_ALWAYS_EAGER

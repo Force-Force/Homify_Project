@@ -103,7 +103,7 @@ dev-backend-local: backend-local
 backend-local:
 	@test -d $(VENV) || (echo "❌ Venv absent. Lancez: make install-local" && exit 1)
 	cd $(BACKEND_DIR) && $(VENV_PYTHON) manage.py migrate --noinput
-	cd $(BACKEND_DIR) && $(VENV_PYTHON) manage.py runserver 0.0.0.0:$(BACKEND_PORT)
+	cd $(BACKEND_DIR) && CELERY_TASK_ALWAYS_EAGER=True $(VENV_PYTHON) manage.py runserver 0.0.0.0:$(BACKEND_PORT)
 
 migrate-local:
 	@test -d $(VENV) || (echo "❌ Venv absent. Lancez: make install-local" && exit 1)

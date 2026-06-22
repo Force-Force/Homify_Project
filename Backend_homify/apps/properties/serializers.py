@@ -59,7 +59,8 @@ class PropertyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
         fields = ('id', 'title', 'type', 'monthly_rent', 'surface', 'number_of_rooms',
-                  'address', 'primary_photo', 'furnished', 'published_at', 'is_favorite')
+                  'number_of_bedrooms', 'number_of_bathrooms', 'address', 'primary_photo',
+                  'furnished', 'published_at', 'is_favorite', 'status')
     
     def get_primary_photo(self, obj):
         """Get primary photo."""

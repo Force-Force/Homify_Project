@@ -43,6 +43,7 @@ services:
       - SECRET_KEY=django-insecure-dev-key-change-in-production
       - DATABASE_URL=postgresql://rental_user:rental_password@db:5432/rental_db
       - REDIS_URL=redis://redis:6379/0
+      - CELERY_TASK_ALWAYS_EAGER=True
       - ALLOWED_HOSTS=localhost,127.0.0.1
     depends_on:
       db:

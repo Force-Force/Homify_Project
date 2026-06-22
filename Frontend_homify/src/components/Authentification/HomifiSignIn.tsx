@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, Loader2, Mail } from 'lucide-react';
 import { login } from '../../services/authService';
 import { ApiError } from '../../services/apiClient';
 import Carosel from './Carosel';
@@ -12,10 +12,12 @@ const HomifiSignIn = () => {
   const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    setEmailNotVerified(false);
     setLoading(true);
 
     try {
@@ -23,7 +25,12 @@ const HomifiSignIn = () => {
       window.location.href = '/home';
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message || 'Identifiants incorrects. Veuillez réessayer.');
+        if (err.code === 'email_not_verified') {
+          setEmailNotVerified(true);
+          setError('Votre email n\'est pas encore vérifié. Consultez votre boîte mail ou renvoyez le lien.');
+        } else {
+          setError(err.message || 'Identifiants incorrects. Veuillez réessayer.');
+        }
       } else {
         setError('Erreur de connexion. Veuillez réessayer.');
       }
@@ -66,6 +73,15 @@ const HomifiSignIn = () => {
             {error && (
               <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-btn text-sm border border-red-100">
                 {error}
+                {emailNotVerified && formData.email && (
+                  <Link
+                    to={`/verify-pending?email=${encodeURIComponent(formData.email)}`}
+                    className="mt-2 flex items-center gap-1.5 text-homify-primary font-medium hover:underline"
+                  >
+                    <Mail className="w-4 h-4" />
+                    Renvoyer l'email de vérification
+                  </Link>
+                )}
               </div>
             )}
 

@@ -10,6 +10,8 @@ export const API_ROUTES = {
     changePassword: `${API_BASE_URL}/auth/me/password/`,
     forgotPassword: `${API_BASE_URL}/auth/forgot-password/`,
     resetPassword: `${API_BASE_URL}/auth/reset-password/`,
+    verifyEmail: `${API_BASE_URL}/auth/verify-email/`,
+    resendVerification: `${API_BASE_URL}/auth/resend-verification/`,
     social: `${API_BASE_URL}/auth/social/`,
   },
   properties: {
@@ -20,6 +22,9 @@ export const API_ROUTES = {
     deletePhoto: (id: number | string, photoId: number | string) =>
       `${API_BASE_URL}/properties/${id}/photos/${photoId}/`,
     similar: (id: number | string) => `${API_BASE_URL}/properties/${id}/similar/`,
+    submitForReview: (id: number | string) =>
+      `${API_BASE_URL}/properties/${id}/submit_for_review/`,
+    markRented: (id: number | string) => `${API_BASE_URL}/properties/${id}/mark_rented/`,
   },
   favorites: {
     list: `${API_BASE_URL}/favorites/`,

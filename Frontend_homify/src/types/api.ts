@@ -53,11 +53,13 @@ export interface ApiProperty {
   surface: number;
   number_of_rooms: number;
   number_of_bedrooms?: number;
+  number_of_bathrooms?: number;
   address: Address;
   primary_photo: PrimaryPhoto | null;
   furnished: boolean;
   published_at: string;
   is_favorite: boolean;
+  status?: string;
 }
 
 export interface ApiPropertyDetail extends ApiProperty {
@@ -75,6 +77,7 @@ export interface ApiPropertyDetail extends ApiProperty {
   view_count: number;
   status: string;
   updated_at: string;
+  rejection_reason?: string;
 }
 
 export interface PaginatedResponse<T = ApiProperty> {

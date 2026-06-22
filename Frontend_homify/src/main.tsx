@@ -7,6 +7,8 @@ import HomifiSignIn from './components/Authentification/HomifiSignIn';
 import HomifiSignUp from './components/Authentification/HomifiSignUp';
 import ForgotPassword from './components/Authentification/ForgotPassword';
 import ResetPass from './components/Authentification/ResetPass';
+import VerifyEmailScreen from './screens/VerifyEmailScreen';
+import VerifyPendingScreen from './screens/VerifyPendingScreen';
 import { AuthProvider } from './context/AuthContext';
 import { isAuthenticated } from './services/apiClient';
 import './index.css';
@@ -38,6 +40,8 @@ function Root() {
               <Route path="/signup" element={<HomifiSignUp />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPass />} />
+              <Route path="/verify-email" element={<VerifyEmailScreen />} />
+              <Route path="/verify-pending" element={<VerifyPendingScreen />} />
               <Route path="/Reset-passode" element={<Navigate to="/reset-password" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, Search, TrendingUp, Calculator, Headphones, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SmartPropertySearch from './SmartProperty';
 import MarketAnalysis from './MarketAnalysis';
-import MortageCalculator from './MortageCalculator';
+import RentCalculator from './RentCalculator';
 import ChatSupport from './ChatSupport';
 
 type Feature = {
@@ -38,7 +38,7 @@ const features: Feature[] = [
     iconBg: 'bg-amber-100',
     iconColor: 'text-amber-600',
     title: 'Calculateur de loyer',
-    description: 'Simulez vos mensualités et comparez différentes options de financement.',
+    description: 'Estimez le loyer adapté à votre budget à Yaoundé, Douala et au Cameroun.',
   },
   {
     id: 4,
@@ -52,6 +52,15 @@ const features: Feature[] = [
 
 export default function MainAi() {
   const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
+
+  useEffect(() => {
+    const openId = sessionStorage.getItem('openAssistFeature');
+    if (openId) {
+      sessionStorage.removeItem('openAssistFeature');
+      const feature = features.find((f) => f.id === Number(openId));
+      if (feature) setSelectedFeature(feature);
+    }
+  }, []);
 
   if (selectedFeature) {
     return (
@@ -77,7 +86,7 @@ export default function MainAi() {
 
           {selectedFeature.id === 1 && <SmartPropertySearch />}
           {selectedFeature.id === 2 && <MarketAnalysis />}
-          {selectedFeature.id === 3 && <MortageCalculator />}
+          {selectedFeature.id === 3 && <RentCalculator />}
           {selectedFeature.id === 4 && <ChatSupport />}
         </div>
       </div>
