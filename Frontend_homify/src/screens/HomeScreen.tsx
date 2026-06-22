@@ -196,8 +196,6 @@ export default function HomeScreen() {
                 <span className="absolute top-1 right-1 w-2 h-2 bg-homify-accent rounded-full" />
               )}
             </button>
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-homify-accent rounded-full" />
-            </button>
           </header>
 
           {/* Hero — mobile seulement */}

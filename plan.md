@@ -48,69 +48,17 @@ Amenities ✅ (corrigé)
 - Filtre par catégorie : `GET /api/amenities/?category=COMFORT` (+ recherche `search`, tri `ordering`)
 
 
-Frontend — Perspectives d'amélioration (logique métier)
-Auth
-Priorité	Problème	Fichiers
-Critique
-Token JWT jamais envoyé dans propertyService.ts (fetch sans Authorization)
-propertyService.ts
-Critique
-Pas de refresh token — session expire silencieusement
-routes.ts, main.tsx
-Haute
-Mot de passe oublié / social auth : UI existe, endpoints backend absents
-ForgotPassword.tsx, HomifiSignIn.tsx
-Haute
-Profil hardcodé (Melissa Peters) — pas d'appel GET /auth/me/
-ProfileScreen.tsx
-Moyenne
-rememberMe cosmétique, auth non réactive après login
-HomifiSignIn.tsx
-Moyenne
-Rôle LANDLORD collecté à l'inscription, aucune UX propriétaire
-HomifiSignUp.tsx, App.tsx
-Properties
-Priorité	Problème
-Haute
-Détail = données de la liste en mémoire — pas de GET /properties/{id}/
-Haute
-Rating 4.5 hardcodé, description synthétique, une seule photo
-Haute
-Chambres souvent à 0 (champ absent du list serializer backend)
-Moyenne
-Pagination ignorée — seule la 1ère page affichée
-Moyenne
-Filtres incomplets vs backend (furnished, bathrooms, district, surface…)
-Moyenne
-WhatsApp avec numéro statique 237600000000
-Basse
-Galerie, Share, Avis = stubs
-Favorites
-Cœurs sur les cartes = état local uniquement — addToFavorites/removeFromFavorites jamais appelés
-API favorites retourne 401 sans token → liste vide sans message d'erreur clair
-Pas de désynchronisation entre Home et Favoris
-Navigation
-Pas de deep linking (/property/42) — refresh perd le contexte
-Onglets Search et Assist identiques (tous deux → MainAi)
-ChatSupport redirige vers des routes inexistantes
-Messaging
-ChatScreen = conversation mockée (fausse réponse auto après 1,5s)
-« Chat intégré » dans le détail n'appelle pas POST /api/messages/
-Cloche notifications = décorative (unread_count non utilisé)
-AI Section
-Toutes les features IA passent par des webhooks n8n localhost — déconnectées du backend Homify
-« Calculateur de loyer » affiche en réalité un calculateur hypothécaire US
-Copy en anglais / villes US alors que le produit cible le Cameroun
-Intégration API (transversal)
-Deux configs API dupliquées (propertyService.ts vs routes.ts)
-Type Hotel (legacy) vs domaine Property backend
-Promesses landing (favoris sync, messagerie, publier une annonce) largement non implémentées
-Ordre de priorité suggéré (full-stack)
-Client API centralisé avec JWT + refresh
-Favoris end-to-end (token + cœurs branchés)
-Détail propriété via API (landlord, galerie, vraie description)
-Messagerie réelle (remplacer le mock chat)
-Modération propriétés (bloquer auto-publish côté backend)
-Rate limit messages côté backend
-Parcours propriétaire (my_properties, création d'annonce)
-Routes URL pour détail, favoris, messages
+Frontend — Perspectives d'amélioration ✅ (réparé — phase 1)
+- Client API centralisé (`apiClient.ts`) avec JWT + refresh automatique
+- `authService` + `AuthContext` : login, logout, GET/PATCH `/auth/me/`
+- Favoris branchés (`FavoritesContext`, cœurs sur cartes, DELETE by-property)
+- Détail via `GET /properties/{id}/` (galerie, description, landlord, équipements)
+- Messagerie réelle (`messageService`, thread + POST messages, cloche unread_count)
+- Routes URL : `/home`, `/favorites`, `/profile`, `/property/:id`, `/property/:id/chat`
+- Profil dynamique, reset password, signin via authService
+
+Reste (phase 2)
+- Pagination liste, filtres avancés (furnished, bathrooms, geo)
+- Parcours propriétaire (my_properties, création annonce)
+- Section IA (n8n) — copy Cameroun, calculateur loyer
+- Email verification UX, rôle LANDLORD dashboard

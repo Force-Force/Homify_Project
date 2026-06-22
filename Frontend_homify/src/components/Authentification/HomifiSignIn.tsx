@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { login } from '../../services/authService';
 import { ApiError } from '../../services/apiClient';
@@ -8,7 +8,6 @@ import MobileCarousel from './MobileCarossel';
 import { SocialButtons, authInputClass } from './SocialButtons';
 
 const HomifiSignIn = () => {
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
   const [loading, setLoading] = useState(false);
@@ -132,7 +131,7 @@ const HomifiSignIn = () => {
               </button>
             </form>
 
-            <SocialButtons onSocialClick={handleSocialSignIn} />
+            <SocialButtons onSocial={handleSocialSignIn} />
 
             <p className="text-center text-sm text-homify-muted mt-6">
               Pas encore de compte ?{' '}
