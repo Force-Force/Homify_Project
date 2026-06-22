@@ -73,8 +73,9 @@ const HomifiSignIn = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-homify-surface">
-      {/* Form — left on desktop */}
-      <div className="flex-1 lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-8 order-2 lg:order-1">
+      <Carosel />
+
+      <div className="flex-1 lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-2">
             <MobileCarousel />
@@ -179,11 +180,6 @@ const HomifiSignIn = () => {
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Carousel — right on desktop (original layout) */}
-      <div className="order-1 lg:order-2">
-        <Carosel />
       </div>
     </div>
   );
