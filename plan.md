@@ -14,24 +14,16 @@ Auth & Users ✅ (corrigé)
 - Admin : sync status/is_active, anti auto-suspension, audit trail (`UserAuditLog`)
 - `last_login_at` mis à jour au login
 
-Properties (annonces)
-Priorité	Problème
-Critique
-Un propriétaire peut auto-publier via PATCH status: "PUBLISHED" — bypass de la modération
-Haute
-Raison de rejet non stockée, pas de notification au landlord
-Haute
-Règles photos (min 3, 5 Mo, JPG/PNG) non appliquées — seul max 10 fichiers
-Moyenne
-view_count gonflé à chaque refresh (pas de déduplication)
-Moyenne
-Téléphone landlord non masqué dans le détail public
-Moyenne
-Pas de soft-delete, pas de transition vers RENTED
-Basse
-Filtre number_of_bathrooms documenté mais absent du PropertyFilter
-Basse
-Pas de recherche géographique malgré lat/lng sur Address
+Properties (annonces) ✅ (corrigé)
+- Statut PUBLISHED/admin non modifiable par le landlord (read_only + transitions centralisées)
+- rejection_reason stocké + notification email au rejet
+- Validation photos : min 3 à la soumission, 5 Mo, JPG/PNG, max 10 par upload
+- view_count dédupliqué (1 vue/jour/visiteur via PropertyViewRecord)
+- Téléphone landlord masqué dans le détail public (LandlordPublicSerializer)
+- Soft-delete (DELETED) + transition PUBLISHED → RENTED (mark_rented)
+- Filtre number_of_bathrooms + recherche géo (lat, lng, radius_km)
+
+
 Favorites
 Favoris obsolètes quand une annonce passe en REJECTED/RENTED/DRAFT
 Pas de nettoyage automatique au changement de statut

@@ -10,7 +10,7 @@ from django.db.models import Q
 
 from apps.core.exceptions import BusinessLogicError
 from apps.core.utils import business_error_response
-from apps.core.services import PropertyLifecycleService, PropertyMediaService, NotificationService
+from apps.core.services import PropertyLifecycleService, PropertyMediaService, PropertyViewService, NotificationService
 
 from .models import Property, Photo
 from .serializers import (
@@ -64,7 +64,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.increment_view_count()
+        PropertyViewService.record_view(instance, request)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -107,6 +107,25 @@ class PropertyViewSet(viewsets.ModelViewSet):
         serializer = PropertyDetailSerializer(property_obj, context={'request': request})
         return Response({
             'message': 'Annonce soumise pour modération.',
+            'property': serializer.data,
+        })
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def mark_rented(self, request, pk=None):
+        """Landlord marks a published property as rented."""
+        property_obj = self.get_object()
+        if property_obj.landlord != request.user and request.user.role != 'ADMIN':
+            return Response(
+                {'error': 'Permission refusée.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        try:
+            PropertyLifecycleService.mark_rented(property_obj)
+        except BusinessLogicError as exc:
+            return business_error_response(exc)
+        serializer = PropertyDetailSerializer(property_obj, context={'request': request})
+        return Response({
+            'message': 'Annonce marquée comme louée.',
             'property': serializer.data,
         })
 
@@ -247,6 +266,20 @@ class AdminPropertyViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(property_obj)
         return Response({
             'message': 'Annonce rejetée.',
+            'property': serializer.data,
+        })
+
+    @action(detail=True, methods=['post'])
+    def mark_rented(self, request, pk=None):
+        """PUBLISHED → RENTED."""
+        property_obj = self.get_object()
+        try:
+            PropertyLifecycleService.mark_rented(property_obj)
+        except BusinessLogicError as exc:
+            return business_error_response(exc)
+        serializer = self.get_serializer(property_obj)
+        return Response({
+            'message': 'Annonce marquée comme louée.',
             'property': serializer.data,
         })
 

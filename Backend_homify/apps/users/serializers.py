@@ -63,23 +63,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Serializer for User model."""
-
-    full_name = serializers.CharField(source='get_full_name', read_only=True)
-    masked_phone = serializers.CharField(source='get_masked_phone', read_only=True)
-
-    class Meta:
-        model = User
-        fields = (
-            'id', 'email', 'first_name', 'last_name', 'full_name', 'phone',
-            'masked_phone', 'role', 'pending_role', 'status', 'email_verified', 'created_at',
-        )
-        read_only_fields = (
-            'id', 'email', 'role', 'pending_role', 'status', 'email_verified', 'created_at',
-        )
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for user profile with full details."""
 
     full_name = serializers.CharField(source='get_full_name', read_only=True)
@@ -101,6 +84,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         if obj.role == 'LANDLORD':
             return obj.properties.filter(status__in=['PUBLISHED', 'RENTED']).count()
         return 0
+
+
+class LandlordPublicSerializer(serializers.ModelSerializer):
+    """Public landlord profile — phone masked, no email."""
+
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    masked_phone = serializers.CharField(source='get_masked_phone', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'full_name', 'masked_phone', 'role')
+        read_only_fields = fields
 
 
 class PasswordChangeSerializer(serializers.Serializer):

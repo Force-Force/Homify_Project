@@ -7,7 +7,7 @@ from apps.core.exceptions import PropertyLifecycleError
 from apps.core.services import PropertyLifecycleService
 
 from .models import Property, Address, Photo
-from apps.users.serializers import UserSerializer
+from apps.users.serializers import UserSerializer, LandlordPublicSerializer, LandlordPublicSerializer
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -84,7 +84,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     
     address = AddressSerializer(read_only=True)
     photos = PhotoSerializer(many=True, read_only=True)
-    landlord = UserSerializer(read_only=True)
+    landlord = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
     is_favorite = serializers.SerializerMethodField()
     
@@ -95,6 +95,14 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
                   'monthly_rent', 'charges', 'charges_included', 'deposit', 'agency_fees',
                   'address', 'photos', 'amenities', 'landlord', 'view_count', 'status',
                   'rejection_reason', 'published_at', 'updated_at', 'is_favorite')
+
+    def get_landlord(self, obj):
+        """Full contact for owner/admin; masked phone for public viewers."""
+        request = self.context.get('request')
+        user = request.user if request and request.user.is_authenticated else None
+        if user and (user.role == 'ADMIN' or obj.landlord_id == user.id):
+            return UserSerializer(obj.landlord).data
+        return LandlordPublicSerializer(obj.landlord).data
     
     def get_amenities(self, obj):
         """Get property amenities."""
@@ -126,6 +134,12 @@ class PropertyCreateUpdateSerializer(serializers.ModelSerializer):
                   'monthly_rent', 'charges', 'charges_included', 'deposit', 'agency_fees',
                   'address', 'amenity_ids', 'status')
         read_only_fields = ('id',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request and getattr(request.user, 'role', None) == 'LANDLORD':
+            self.fields['status'].read_only = True
 
     def validate_status(self, value):
         """Landlords cannot set admin-only statuses."""

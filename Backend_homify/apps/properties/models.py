@@ -165,3 +165,39 @@ class Photo(models.Model):
     
     def __str__(self):
         return f"Photo {self.id} - {self.property.title}"
+
+
+class PropertyViewRecord(models.Model):
+    """Tracks unique daily views per property per viewer."""
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name='view_records',
+        verbose_name='Propriété',
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Utilisateur',
+    )
+    viewer_key = models.CharField(max_length=64, verbose_name='Clé visiteur')
+    viewed_on = models.DateField(verbose_name='Date de vue')
+
+    class Meta:
+        verbose_name = 'Enregistrement de vue'
+        verbose_name_plural = 'Enregistrements de vues'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['property', 'viewer_key', 'viewed_on'],
+                name='unique_property_view_per_day',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['property', 'viewed_on']),
+        ]
+
+    def __str__(self):
+        return f"Vue {self.property_id} — {self.viewer_key} ({self.viewed_on})"
