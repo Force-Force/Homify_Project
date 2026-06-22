@@ -35,8 +35,8 @@ export default function PropertyDetailsScreen({ hotel, onBack, onBookNow }: Deta
   };
 
   return (
-    <div className="min-h-screen bg-homify-surface pb-24 md:pb-8">
-      <div className="md:max-w-6xl md:mx-auto md:p-6 md:grid md:grid-cols-2 md:gap-8">
+    <div className="min-h-[calc(100vh-4rem)] bg-homify-surface pb-24 md:pb-8">
+      <div className="md:grid md:grid-cols-2 md:gap-8">
         <div className="relative h-[380px] md:h-[500px] md:rounded-modal overflow-hidden">
           <PropertyImage src={hotel.imageUrl} alt={hotel.name} className="w-full h-full object-cover" />
 

@@ -49,19 +49,27 @@ export default function App() {
     }
   };
 
+  const handleTabChange = (tab: string) => {
+    setSelectedHotel(null);
+    setActiveTab(tab);
+  };
+
   const isHomeLayout = activeTab === 'Home' && !selectedHotel && !isChatting;
+  const isDetailsLayout = !!selectedHotel && !isChatting;
 
   return (
     <div className="min-h-screen bg-homify-surface font-sans">
-      {!selectedHotel && !isChatting && (
-        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      {!isChatting && (
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
       )}
 
       <main
         className={
           isHomeLayout
             ? 'md:ml-64 md:w-[calc(100%-16rem)] md:h-screen md:overflow-hidden'
-            : 'pt-6 md:pt-8 md:ml-64 md:w-[calc(100%-16rem)] md:max-w-5xl md:mx-auto md:px-8'
+            : isDetailsLayout
+              ? 'pt-4 md:pt-8 md:ml-64 md:w-[calc(100%-16rem)] md:max-w-6xl md:mx-auto md:px-6 lg:px-8'
+              : 'pt-6 md:pt-8 md:ml-64 md:w-[calc(100%-16rem)] md:max-w-5xl md:mx-auto md:px-8'
         }
       >
         {renderContent()}
