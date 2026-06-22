@@ -809,13 +809,45 @@ Liste tous les équipements disponibles.
 
 🔒 **Authentification requise** (ADMIN uniquement)
 
+Transition: `PENDING` → `APPROVED`. Envoie une notification email au propriétaire.
+
 **Réponse** (200 OK):
-\`\`\`json
+```json
 {
-  "message": "Annonce approuvée et publiée.",
+  "message": "Annonce approuvée.",
   "property": {...}
 }
-\`\`\`
+```
+
+### 35b. Publier une annonce approuvée
+**POST** `/api/properties/admin/properties/{id}/publish/`
+
+🔒 **Authentification requise** (ADMIN uniquement)
+
+Transition: `APPROVED` → `PUBLISHED`. Envoie une notification email au propriétaire.
+
+**Réponse** (200 OK):
+```json
+{
+  "message": "Annonce publiée.",
+  "property": {...}
+}
+```
+
+### 35c. Soumettre une annonce pour modération (propriétaire)
+**POST** `/api/properties/{id}/submit_for_review/`
+
+🔒 **Authentification requise** (LANDLORD propriétaire)
+
+Transition: `DRAFT` ou `REJECTED` → `PENDING`. Requiert au minimum 3 photos.
+
+**Réponse** (200 OK):
+```json
+{
+  "message": "Annonce soumise pour modération.",
+  "property": {...}
+}
+```
 
 ### 36. Rejeter une annonce
 **POST** `/api/properties/admin/properties/{id}/reject/`
@@ -890,11 +922,14 @@ Toutes les listes sont paginées avec 12 éléments par page par défaut.
 
 1. **Authentification**: La plupart des endpoints nécessitent un token JWT valide
 2. **Permissions**: Certaines actions sont réservées aux propriétaires ou admins
-3. **Validation**: Tous les champs sont validés côté serveur
-4. **Soft Delete**: Les suppressions sont logiques (données conservées)
-5. **Rate Limiting**: Limite de 3 messages par annonce par 24h
-6. **Upload**: Photos limitées à 5 Mo, formats JPG/PNG
-7. **Recherche**: Utilise la recherche full-text sur plusieurs champs
+3. **Validation**: Tous les champs sont validés côté serveur via la couche `apps.core.services`
+4. **Soft Delete**: Les suppressions d'annonces et comptes utilisent le statut `DELETED` (données conservées)
+5. **Modération en 2 étapes**: `approve` (→ APPROVED) puis `publish` (→ PUBLISHED)
+6. **Rate Limiting**: Limite de 3 messages par annonce par utilisateur par 24h (enforced)
+7. **Upload photos**: 3 à 10 photos par requête, max 5 Mo chacune, formats JPG/PNG ; thumbnails générés en async (Celery)
+8. **Mots de passe**: Hashés avec bcrypt (BCryptSHA256)
+9. **Signalements**: Workflow `PENDING` → `REVIEWED` → `RESOLVED`/`DISMISSED`
+10. **Recherche**: Utilise la recherche full-text sur plusieurs champs
 
 ---
 

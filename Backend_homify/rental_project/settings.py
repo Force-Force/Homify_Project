@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     
     # Local apps
+    'apps.core',
     'apps.users',
     'apps.properties',
     'apps.chat',
@@ -102,6 +103,22 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# bcrypt as documented in README (falls back to PBKDF2 if bcrypt unavailable)
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+]
+
+# Homify business rules (aligned with API_DOCUMENTATION.md)
+HOMIFY_MIN_PHOTOS_PER_UPLOAD = 3
+HOMIFY_MAX_PHOTOS_PER_UPLOAD = 10
+HOMIFY_MAX_PHOTOS_TOTAL = 10
+HOMIFY_MAX_PHOTO_BYTES = 5 * 1024 * 1024  # 5 Mo
+HOMIFY_THUMBNAIL_SIZE = (400, 400)
+HOMIFY_MESSAGE_RATE_LIMIT = 3
+HOMIFY_MESSAGE_RATE_WINDOW_HOURS = 24
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@homify.cm')
 
 # Internationalization
 LANGUAGE_CODE = 'fr-fr'

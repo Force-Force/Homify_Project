@@ -8,6 +8,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 from django.contrib.auth import get_user_model
+from apps.core.exceptions import BusinessLogicError
+from apps.core.utils import business_error_response
+from apps.core.services import UserLifecycleService
 from .serializers import (
     UserRegistrationSerializer, UserSerializer, UserProfileSerializer,
     PasswordChangeSerializer, AdminUserSerializer
@@ -90,10 +93,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     def suspend(self, request, pk=None):
         """Suspend a user."""
         user = self.get_object()
-        user.status = 'SUSPENDED'
-        user.is_active = False
-        user.save()
-
+        UserLifecycleService.suspend(user)
         return Response({
             'message': f'Utilisateur {user.email} suspendu.',
             'user': self.get_serializer(user).data
@@ -103,11 +103,33 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     def activate(self, request, pk=None):
         """Activate a suspended user."""
         user = self.get_object()
-        user.status = 'ACTIVE'
-        user.is_active = True
-        user.save()
-
+        try:
+            UserLifecycleService.activate(user)
+        except BusinessLogicError as exc:
+            return business_error_response(exc)
         return Response({
             'message': f'Utilisateur {user.email} réactivé.',
             'user': self.get_serializer(user).data
         })
+
+    @action(detail=True, methods=['post'])
+    def soft_delete(self, request, pk=None):
+        """Soft delete user — status DELETED."""
+        user = self.get_object()
+        try:
+            UserLifecycleService.soft_delete(user)
+        except BusinessLogicError as exc:
+            return business_error_response(exc)
+        return Response({
+            'message': f'Utilisateur {user.email} supprimé.',
+            'user': self.get_serializer(user).data
+        })
+
+    def destroy(self, request, *args, **kwargs):
+        """Redirect hard delete to soft delete."""
+        user = self.get_object()
+        try:
+            UserLifecycleService.soft_delete(user)
+        except BusinessLogicError as exc:
+            return business_error_response(exc)
+        return Response(status=status.HTTP_204_NO_CONTENT)

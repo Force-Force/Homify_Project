@@ -84,6 +84,7 @@ class Property(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Date de création')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Date de modification')
     published_at = models.DateTimeField(null=True, blank=True, verbose_name='Date de publication')
+    rejection_reason = models.TextField(blank=True, default='', verbose_name='Motif de rejet')
     
     class Meta:
         verbose_name = 'Propriété'

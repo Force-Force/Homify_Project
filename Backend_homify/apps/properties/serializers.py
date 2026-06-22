@@ -2,6 +2,10 @@
 Serializers for Property models.
 """
 from rest_framework import serializers
+
+from apps.core.exceptions import PropertyLifecycleError
+from apps.core.services import PropertyLifecycleService
+
 from .models import Property, Address, Photo
 from apps.users.serializers import UserSerializer
 
@@ -90,7 +94,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
                   'number_of_bedrooms', 'number_of_bathrooms', 'floor', 'furnished',
                   'monthly_rent', 'charges', 'charges_included', 'deposit', 'agency_fees',
                   'address', 'photos', 'amenities', 'landlord', 'view_count', 'status',
-                  'published_at', 'updated_at', 'is_favorite')
+                  'rejection_reason', 'published_at', 'updated_at', 'is_favorite')
     
     def get_amenities(self, obj):
         """Get property amenities."""
@@ -122,50 +126,64 @@ class PropertyCreateUpdateSerializer(serializers.ModelSerializer):
                   'monthly_rent', 'charges', 'charges_included', 'deposit', 'agency_fees',
                   'address', 'amenity_ids', 'status')
         read_only_fields = ('id',)
-    
+
+    def validate_status(self, value):
+        """Landlords cannot set admin-only statuses."""
+        request = self.context.get('request')
+        if request and request.user.role == 'LANDLORD':
+            if value in PropertyLifecycleService.ADMIN_ONLY_STATUSES:
+                raise serializers.ValidationError(
+                    'Ce statut ne peut être défini que par un administrateur.'
+                )
+            if value not in PropertyLifecycleService.LANDLORD_WRITABLE_STATUSES:
+                raise serializers.ValidationError(f'Statut « {value} » non autorisé.')
+        return value
+
     def create(self, validated_data):
         """Create property with address and amenities."""
         address_data = validated_data.pop('address')
         amenity_ids = validated_data.pop('amenity_ids', [])
-        
-        # Set landlord from request user
-        validated_data['landlord'] = self.context['request'].user
-        
-        # Create property
+        user = self.context['request'].user
+
+        requested_status = validated_data.pop('status', None)
+        validated_data['status'] = PropertyLifecycleService.resolve_initial_status(
+            user, requested_status
+        )
+        validated_data['landlord'] = user
+
         property_obj = Property.objects.create(**validated_data)
-        
-        # Create address
         Address.objects.create(property=property_obj, **address_data)
-        
-        # Add amenities
+
         if amenity_ids:
             from apps.amenities.models import Amenity
             amenities = Amenity.objects.filter(id__in=amenity_ids)
             property_obj.amenities.set(amenities)
-        
+
         return property_obj
-    
+
     def update(self, instance, validated_data):
         """Update property with address and amenities."""
         address_data = validated_data.pop('address', None)
         amenity_ids = validated_data.pop('amenity_ids', None)
-        
-        # Update property fields
+        user = self.context['request'].user
+
+        new_status = validated_data.get('status')
+        if new_status is not None and user.role == 'LANDLORD':
+            try:
+                PropertyLifecycleService.validate_landlord_status_change(instance, new_status)
+            except PropertyLifecycleError as exc:
+                raise serializers.ValidationError({'status': exc.message}) from exc
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        
-        # Update address
+
         if address_data:
-            Address.objects.update_or_create(
-                property=instance,
-                defaults=address_data
-            )
-        
-        # Update amenities
+            Address.objects.update_or_create(property=instance, defaults=address_data)
+
         if amenity_ids is not None:
             from apps.amenities.models import Amenity
             amenities = Amenity.objects.filter(id__in=amenity_ids)
             instance.amenities.set(amenities)
-        
+
         return instance

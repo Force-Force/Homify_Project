@@ -1,0 +1,160 @@
+"""
+Celery async tasks: emails, thumbnails, notifications.
+"""
+import io
+import logging
+
+from celery import shared_task
+from django.core.mail import send_mail
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_email_task(self, subject, message, recipient_email):
+    """Send an email asynchronously."""
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@homify.cm'),
+            recipient_list=[recipient_email],
+            fail_silently=False,
+        )
+        logger.info('Email sent to %s: %s', recipient_email, subject)
+    except Exception as exc:
+        logger.exception('Failed to send email to %s', recipient_email)
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=30)
+def generate_photo_thumbnail_task(self, photo_id):
+    """Generate a thumbnail for a property photo using Pillow."""
+    from PIL import Image
+    from apps.properties.models import Photo
+
+    try:
+        photo = Photo.objects.select_related('property').get(id=photo_id)
+    except Photo.DoesNotExist:
+        logger.warning('Photo %s not found for thumbnail generation', photo_id)
+        return
+
+    if not photo.image:
+        return
+
+    try:
+        thumb_size = getattr(settings, 'HOMIFY_THUMBNAIL_SIZE', (400, 400))
+        with photo.image.open('rb') as image_file:
+            img = Image.open(image_file)
+            img = img.convert('RGB')
+            img.thumbnail(thumb_size, Image.Resampling.LANCZOS)
+
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG', quality=85)
+            buffer.seek(0)
+
+            base_name = photo.image.name.rsplit('/', 1)[-1]
+            thumb_name = f'thumb_{base_name.rsplit(".", 1)[0]}.jpg'
+            photo.thumbnail.save(thumb_name, buffer, save=True)
+
+        logger.info('Thumbnail generated for photo %s', photo_id)
+    except Exception as exc:
+        logger.exception('Thumbnail generation failed for photo %s', photo_id)
+        raise self.retry(exc=exc)
+
+
+@shared_task
+def notify_property_rejected_task(property_id, reason=''):
+    """Notify landlord when their property is rejected."""
+    from apps.properties.models import Property
+
+    try:
+        prop = Property.objects.select_related('landlord').get(id=property_id)
+    except Property.DoesNotExist:
+        return
+
+    landlord = prop.landlord
+    body = (
+        f"Bonjour {landlord.first_name},\n\n"
+        f"Votre annonce « {prop.title} » a été rejetée.\n"
+    )
+    if reason:
+        body += f"\nMotif : {reason}\n"
+    body += "\nVous pouvez la modifier et la resoumettre depuis votre espace propriétaire.\n\n— L'équipe Homify"
+
+    send_email_task.delay(
+        'Homify — Annonce rejetée',
+        body,
+        landlord.email,
+    )
+
+
+@shared_task
+def notify_property_approved_task(property_id):
+    """Notify landlord when property is approved (awaiting publish)."""
+    from apps.properties.models import Property
+
+    try:
+        prop = Property.objects.select_related('landlord').get(id=property_id)
+    except Property.DoesNotExist:
+        return
+
+    landlord = prop.landlord
+    body = (
+        f"Bonjour {landlord.first_name},\n\n"
+        f"Votre annonce « {prop.title} » a été approuvée par notre équipe.\n"
+        f"Elle sera publiée prochainement sur la plateforme.\n\n— L'équipe Homify"
+    )
+    send_email_task.delay(
+        'Homify — Annonce approuvée',
+        body,
+        landlord.email,
+    )
+
+
+@shared_task
+def notify_property_published_task(property_id):
+    """Notify landlord when property goes live."""
+    from apps.properties.models import Property
+
+    try:
+        prop = Property.objects.select_related('landlord').get(id=property_id)
+    except Property.DoesNotExist:
+        return
+
+    landlord = prop.landlord
+    body = (
+        f"Bonjour {landlord.first_name},\n\n"
+        f"Votre annonce « {prop.title} » est maintenant en ligne sur Homify !\n\n— L'équipe Homify"
+    )
+    send_email_task.delay(
+        'Homify — Annonce publiée',
+        body,
+        landlord.email,
+    )
+
+
+@shared_task
+def notify_new_message_task(message_id):
+    """Notify recipient of a new message."""
+    from apps.chat.models import Message
+
+    try:
+        message = Message.objects.select_related('recipient', 'sender', 'property').get(id=message_id)
+    except Message.DoesNotExist:
+        return
+
+    recipient = message.recipient
+    body = (
+        f"Bonjour {recipient.first_name},\n\n"
+        f"Vous avez reçu un nouveau message de {message.sender.get_full_name()} "
+        f"concernant « {message.property.title} ».\n\n"
+        f"Sujet : {message.subject}\n\n"
+        f"Connectez-vous à Homify pour répondre.\n\n— L'équipe Homify"
+    )
+    send_email_task.delay(
+        f'Homify — Nouveau message : {message.subject}',
+        body,
+        recipient.email,
+    )
