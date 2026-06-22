@@ -290,18 +290,18 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
         </section>
       </div>
 
-      {/* Carte — pleine hauteur à droite (desktop) */}
+      {/* Carte — panneau droit avec marges intérieures */}
       <aside
-        className={`md:w-[42%] md:shrink-0 md:h-full md:min-h-0 md:border-l md:border-homify-border ${
+        className={`md:w-[42%] md:shrink-0 md:h-full md:min-h-0 md:p-4 md:pl-3 md:pr-5 md:py-5 bg-homify-surface ${
           viewMode === 'map'
-            ? 'fixed inset-0 z-50 md:static md:z-auto flex flex-col'
+            ? 'fixed inset-0 z-50 md:static md:z-auto flex flex-col p-4'
             : 'hidden md:flex md:flex-col'
         }`}
       >
         {viewMode === 'map' && (
           <button
             onClick={() => setViewMode('list')}
-            className="md:hidden absolute top-4 left-4 z-[1000] bg-homify-card p-3 rounded-full shadow-lg border border-homify-border"
+            className="md:hidden absolute top-6 left-6 z-[1000] bg-homify-card p-3 rounded-full shadow-card border border-homify-border"
             aria-label="Retour à la liste"
           >
             <List className="w-5 h-5 text-homify-primary" />
@@ -311,7 +311,7 @@ export default function HomeScreen({ onHotelClick }: HomeProps) {
           properties={properties}
           activeId={activeId}
           onMarkerClick={handleMarkerClick}
-          fullBleed
+          className={viewMode === 'map' ? 'flex-1' : undefined}
         />
       </aside>
 
