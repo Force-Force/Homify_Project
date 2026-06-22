@@ -4,9 +4,10 @@
 class BusinessLogicError(Exception):
     """Base exception for domain rule violations."""
 
-    def __init__(self, message, code='business_error'):
+    def __init__(self, message, code='business_error', **extra):
         self.message = message
         self.code = code
+        self.extra = extra
         super().__init__(message)
 
 

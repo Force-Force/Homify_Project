@@ -105,6 +105,7 @@ class PropertyLifecycleService:
         property_obj.status = 'REJECTED'
         property_obj.rejection_reason = reason or ''
         property_obj.save(update_fields=['status', 'rejection_reason', 'updated_at'])
+        cls._prune_favorites(property_obj)
         return property_obj
 
     @classmethod
@@ -117,6 +118,7 @@ class PropertyLifecycleService:
             )
         property_obj.status = 'RENTED'
         property_obj.save(update_fields=['status', 'updated_at'])
+        cls._prune_favorites(property_obj)
         return property_obj
 
     @classmethod
@@ -124,4 +126,10 @@ class PropertyLifecycleService:
         """Any status → DELETED (soft delete, record preserved)."""
         property_obj.status = 'DELETED'
         property_obj.save(update_fields=['status', 'updated_at'])
+        cls._prune_favorites(property_obj)
         return property_obj
+
+    @classmethod
+    def _prune_favorites(cls, property_obj):
+        from apps.core.services.favorites import FavoriteService
+        FavoriteService.prune_for_property(property_obj)

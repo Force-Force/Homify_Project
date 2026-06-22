@@ -7,7 +7,7 @@ from apps.core.exceptions import PropertyLifecycleError
 from apps.core.services import PropertyLifecycleService
 
 from .models import Property, Address, Photo
-from apps.users.serializers import UserSerializer, LandlordPublicSerializer, LandlordPublicSerializer
+from apps.users.serializers import UserSerializer, LandlordPublicSerializer
 
 
 class AddressSerializer(serializers.ModelSerializer):

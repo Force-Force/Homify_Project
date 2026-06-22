@@ -6,4 +6,7 @@ from apps.core.exceptions import BusinessLogicError
 
 
 def business_error_response(exc: BusinessLogicError, http_status=status.HTTP_400_BAD_REQUEST):
-    return Response({'error': exc.message, 'code': exc.code}, status=http_status)
+    payload = {'error': exc.message, 'code': exc.code}
+    if exc.extra:
+        payload.update(exc.extra)
+    return Response(payload, status=http_status)

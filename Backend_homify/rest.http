@@ -108,6 +108,12 @@ Content-Type: application/json
 ### 3.1 Lister tous les équipements
 GET {{baseUrl}}/amenities/
 
+### 3.1b Filtrer par catégorie
+GET {{baseUrl}}/amenities/?category=COMFORT
+
+### 3.1c Rechercher un équipement
+GET {{baseUrl}}/amenities/?search=wifi&ordering=name
+
 ### 3.2 Créer un équipement (ADMIN)
 POST {{baseUrl}}/amenities/
 Authorization: Bearer {{accessToken}}
@@ -118,6 +124,14 @@ Content-Type: application/json
   "icon": "pool",
   "category": "EXTERIOR"
 }
+
+### 3.3 Supprimer un équipement (ADMIN) — bloqué si lié à des annonces
+DELETE {{baseUrl}}/amenities/1/
+Authorization: Bearer {{accessToken}}
+
+### 3.4 Supprimer avec confirmation (ADMIN)
+DELETE {{baseUrl}}/amenities/1/?force=true
+Authorization: Bearer {{accessToken}}
 
 ### ============================================
 ### 4. ANNONCES (PROPERTIES)
@@ -134,6 +148,9 @@ GET {{baseUrl}}/properties/?search=centre-ville
 
 ### 4.4 Filtrer par nombre de chambres
 GET {{baseUrl}}/properties/?number_of_bedrooms=2&number_of_bathrooms=1
+
+### 4.4b Recherche géographique (rayon en km)
+GET {{baseUrl}}/properties/?lat=3.8667&lng=11.5167&radius_km=5
 
 ### 4.5 Détails d'une annonce
 GET {{baseUrl}}/properties/1/
@@ -209,6 +226,14 @@ Content-Type: application/json
   "description": "Description mise à jour avec plus de détails..."
 }
 
+### 4.8b Soumettre pour modération (landlord)
+POST {{baseUrl}}/properties/{{propertyId}}/submit_for_review/
+Authorization: Bearer {{accessToken}}
+
+### 4.8c Marquer comme louée (landlord)
+POST {{baseUrl}}/properties/{{propertyId}}/mark_rented/
+Authorization: Bearer {{accessToken}}
+
 ### 4.9 Supprimer une annonce
 DELETE {{baseUrl}}/properties/{{propertyId}}/
 Authorization: Bearer {{accessToken}}
@@ -252,8 +277,8 @@ Content-Type: application/json
   "property_id": 1
 }
 
-### 5.3 Retirer des favoris
-DELETE {{baseUrl}}/favorites/1/
+### 5.3 Retirer des favoris (par property_id)
+DELETE {{baseUrl}}/favorites/by-property/1/
 Authorization: Bearer {{accessToken}}
 
 ### ============================================
@@ -302,6 +327,25 @@ Authorization: Bearer {{accessToken}}
 GET {{baseUrl}}/messages/unread_count/
 Authorization: Bearer {{accessToken}}
 
+### 6.8 Fil de conversation par annonce
+GET {{baseUrl}}/messages/thread/1/
+Authorization: Bearer {{accessToken}}
+
+### 6.9 Réponse du propriétaire (landlord token)
+POST {{baseUrl}}/messages/
+Authorization: Bearer {{landlordAccessToken}}
+Content-Type: application/json
+
+{
+  "property_id": 1,
+  "subject": "Re: Demande de visite",
+  "content": "Bonjour, merci pour votre intérêt. Je suis disponible samedi matin entre 10h et 12h pour une visite. N'hésitez pas à me confirmer si cela vous convient."
+}
+
+### 6.10 Supprimer un message (expéditeur uniquement)
+DELETE {{baseUrl}}/messages/1/
+Authorization: Bearer {{accessToken}}
+
 ### ============================================
 ### 7. SIGNALEMENTS (REPORTS)
 ### ============================================
@@ -343,11 +387,21 @@ Content-Type: application/json
   "description": "Cet utilisateur envoie des messages inappropriés et insistants malgré mes refus."
 }
 
-### 7.5 Résoudre un signalement (ADMIN)
-POST {{baseUrl}}/reports/1/resolve/
+### 7.5 Examiner un signalement (ADMIN) — PENDING → REVIEWED
+POST {{baseUrl}}/reports/1/review/
 Authorization: Bearer {{accessToken}}
 
-### 7.6 Rejeter un signalement (ADMIN)
+### 7.6 Résoudre un signalement (ADMIN) — REVIEWED → RESOLVED
+POST {{baseUrl}}/reports/1/resolve/
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "action": "unpublish_property",
+  "reason": "Annonce frauduleuse confirmée après examen."
+}
+
+### 7.7 Rejeter un signalement (ADMIN) — REVIEWED → DISMISSED
 POST {{baseUrl}}/reports/1/dismiss/
 Authorization: Bearer {{accessToken}}
 

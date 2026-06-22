@@ -86,6 +86,30 @@ class UserSerializer(serializers.ModelSerializer):
         return 0
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    """Serializer for authenticated user profile updates."""
+
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    properties_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'email', 'first_name', 'last_name', 'full_name', 'phone',
+            'role', 'pending_role', 'status', 'email_verified', 'created_at', 'last_login_at',
+            'properties_count',
+        )
+        read_only_fields = (
+            'id', 'email', 'role', 'pending_role', 'status', 'email_verified',
+            'created_at', 'last_login_at', 'properties_count',
+        )
+
+    def get_properties_count(self, obj):
+        if obj.role == 'LANDLORD':
+            return obj.properties.filter(status__in=['PUBLISHED', 'RENTED']).count()
+        return 0
+
+
 class LandlordPublicSerializer(serializers.ModelSerializer):
     """Public landlord profile — phone masked, no email."""
 

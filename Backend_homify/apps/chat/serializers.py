@@ -64,8 +64,9 @@ class MessageCreateSerializer(serializers.ModelSerializer):
         property_obj = validated_data.pop('property_obj')
         validated_data.pop('property_id')
 
-        validated_data['sender'] = self.context['request'].user
-        validated_data['recipient'] = property_obj.landlord
+        sender = self.context['request'].user
+        validated_data['sender'] = sender
+        validated_data['recipient'] = MessagingPolicyService.resolve_recipient(sender, property_obj)
         validated_data['property'] = property_obj
 
         message = super().create(validated_data)

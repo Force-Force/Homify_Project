@@ -24,28 +24,30 @@ Properties (annonces) ✅ (corrigé)
 - Filtre number_of_bathrooms + recherche géo (lat, lng, radius_km)
 
 
-Favorites
-Favoris obsolètes quand une annonce passe en REJECTED/RENTED/DRAFT
-Pas de nettoyage automatique au changement de statut
-Deux chemins DELETE incohérents (PK favori vs property_id)
-Chat / Messages
-Priorité	Problème
-Critique
-Rate limit 3 messages/24h/propriété documenté, jamais appliqué
-Haute
-Modèle unidirectionnel — le landlord ne peut pas répondre dans le thread
-Haute
-Messages modifiables/supprimables par n'importe quelle partie
-Moyenne
-Pas de notifications (email/push) à la réception d'un message
-Reports (signalements)
-Statut REVIEWED jamais utilisé
-Pas de prévention des doublons (même user + même annonce)
-resolve/dismiss sans effet sur l'annonce ou l'utilisateur signalé
-Canaux de modération (reports vs reject property) non unifiés
-Amenities
-Suppression d'un amenity retire silencieusement l'équipement de toutes les annonces
-Pas de filtre par catégorie malgré CATEGORY_CHOICES sur le modèle
+Favorites ✅ (corrigé)
+- Favoris masqués si annonce non PUBLISHED ; nettoyage auto via FavoriteService (reject/rented/delete)
+- DELETE unifié : `DELETE /api/favorites/by-property/{property_id}/` (PK favori désactivé)
+
+Chat / Messages ✅ (corrigé)
+- Rate limit 3 msg/24h/propriété via MessagingPolicyService
+- Messagerie bidirectionnelle : tenant → landlord, landlord → dernier locataire du fil
+- Messages non modifiables ; suppression réservée à l'expéditeur
+- Notification email async à la réception (Celery)
+
+Reports (signalements) ✅ (corrigé)
+- Workflow PENDING → REVIEWED → RESOLVED/DISMISSED (review obligatoire avant resolve/dismiss)
+- Prévention doublons (même reporter + même cible ouverte)
+- resolve avec actions : reject_property, unpublish_property, suspend_user
+- Modération unifiée via ReportModerationService + PropertyLifecycleService/UserLifecycleService
+
+
+Amenities ✅ (corrigé)
+- Suppression protégée : bloquée si l'équipement est lié à des annonces (`amenity_in_use` + `properties_count`)
+- Suppression explicite avec `DELETE /api/amenities/{id}/?force=true` (retourne `properties_affected`)
+- `properties_count` exposé dans le serializer pour visibilité admin
+- Filtre par catégorie : `GET /api/amenities/?category=COMFORT` (+ recherche `search`, tri `ordering`)
+
+
 Frontend — Perspectives d'amélioration (logique métier)
 Auth
 Priorité	Problème	Fichiers
