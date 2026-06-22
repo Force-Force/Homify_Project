@@ -34,6 +34,7 @@ export const API_ROUTES = {
   },
   messages: {
     list: `${API_BASE_URL}/messages/`,
+    details: (id: number | string) => `${API_BASE_URL}/messages/${id}/`,
     inbox: `${API_BASE_URL}/messages/inbox/`,
     sent: `${API_BASE_URL}/messages/sent/`,
     send: `${API_BASE_URL}/messages/`,

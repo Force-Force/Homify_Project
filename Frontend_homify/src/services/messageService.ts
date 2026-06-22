@@ -25,6 +25,17 @@ export async function getUnreadCount(): Promise<number> {
   return data.unread_count;
 }
 
+export async function getInbox(): Promise<ApiMessage[]> {
+  const data = await apiFetch<PaginatedResponse<ApiMessage> | ApiMessage[]>(
+    API_ROUTES.messages.inbox,
+  );
+  return Array.isArray(data) ? data : data.results;
+}
+
+export async function deleteMessage(messageId: number): Promise<void> {
+  await apiFetch(API_ROUTES.messages.details(messageId), { method: 'DELETE' });
+}
+
 export async function markAsRead(messageId: number): Promise<void> {
   await apiFetch(API_ROUTES.messages.markAsRead(messageId), { method: 'POST' });
 }

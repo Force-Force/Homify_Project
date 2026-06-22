@@ -98,6 +98,7 @@ export type FavoritesResponse = PaginatedResponse<ApiFavoriteItem>;
 export interface ApiMessage {
   id: number;
   property: number;
+  property_detail?: ApiProperty;
   sender: { id: number; first_name: string; last_name: string; full_name?: string };
   recipient: { id: number; first_name: string; last_name: string; full_name?: string };
   subject: string;

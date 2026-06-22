@@ -90,6 +90,21 @@ export async function resetPassword(
   );
 }
 
+export async function changePassword(
+  oldPassword: string,
+  newPassword: string,
+  newPasswordConfirm: string,
+): Promise<void> {
+  await apiFetch(API_ROUTES.auth.changePassword, {
+    method: 'POST',
+    body: JSON.stringify({
+      old_password: oldPassword,
+      new_password: newPassword,
+      new_password_confirm: newPasswordConfirm,
+    }),
+  });
+}
+
 export async function verifyEmail(token: string): Promise<void> {
   await apiFetch(
     API_ROUTES.auth.verifyEmail,

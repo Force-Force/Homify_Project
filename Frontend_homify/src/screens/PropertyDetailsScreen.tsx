@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
 import {
   ArrowLeft, Share2, Heart, MapPin, Bath, BedDouble, Maximize2,
-  MessageCircle, MessageSquare, Loader2, Eye,
+  MessageCircle, MessageSquare, Loader2, Eye, Flag,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Hotel } from '../types';
 import { PropertyImage } from '../components/PropertyImage';
 import { PropertyMap } from '../components/PropertyMap';
-import { getPropertyById } from '../services/propertyService';
+import { RecommendedCard } from '../components/Cards';
+import { getPropertyById, getSimilarProperties } from '../services/propertyService';
+import { createReport, ReportReason } from '../services/reportService';
 import { useFavorites } from '@/context/FavoritesContext';
+import { ApiError } from '@/services/apiClient';
 
 interface DetailsProps {
   propertyId: number;
@@ -17,18 +21,39 @@ interface DetailsProps {
 
 const TABS = ['À propos', 'Galerie', 'Équipements'] as const;
 
+const REPORT_REASONS: { value: ReportReason; label: string }[] = [
+  { value: 'FRAUD', label: 'Fraude ou arnaque' },
+  { value: 'INAPPROPRIATE', label: 'Contenu inapproprié' },
+  { value: 'DUPLICATE', label: 'Annonce en doublon' },
+  { value: 'OTHER', label: 'Autre' },
+];
+
 export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }: DetailsProps) {
+  const navigate = useNavigate();
   const [hotel, setHotel] = useState<Hotel | null>(null);
+  const [similar, setSimilar] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>('À propos');
   const [showModal, setShowModal] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [reportReason, setReportReason] = useState<ReportReason>('FRAUD');
+  const [reportDescription, setReportDescription] = useState('');
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportMessage, setReportMessage] = useState<string | null>(null);
   const { isFavorite, toggleFavorite } = useFavorites();
 
   useEffect(() => {
     setLoading(true);
-    getPropertyById(propertyId)
-      .then(setHotel)
+    Promise.all([
+      getPropertyById(propertyId),
+      getSimilarProperties(propertyId).catch(() => [] as Hotel[]),
+    ])
+      .then(([detail, similarList]) => {
+        setHotel(detail);
+        setSimilar(similarList);
+        setError(null);
+      })
       .catch(() => setError('Impossible de charger cette annonce.'))
       .finally(() => setLoading(false));
   }, [propertyId]);
@@ -78,6 +103,32 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
     }
   };
 
+  const handleReport = async () => {
+    if (reportDescription.trim().length < 20) {
+      setReportMessage('La description doit contenir au moins 20 caractères.');
+      return;
+    }
+    setReportLoading(true);
+    setReportMessage(null);
+    try {
+      await createReport({
+        property: hotel.id,
+        reason: reportReason,
+        description: reportDescription.trim(),
+      });
+      setReportMessage('Signalement envoyé. Merci pour votre vigilance.');
+      setTimeout(() => {
+        setShowReport(false);
+        setReportDescription('');
+        setReportMessage(null);
+      }, 2000);
+    } catch (err) {
+      setReportMessage(err instanceof ApiError ? err.message : 'Envoi impossible.');
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-homify-surface pb-24 md:pb-8">
       <div className="md:grid md:grid-cols-2 md:gap-8">
@@ -93,6 +144,15 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
             </button>
             <div className="flex gap-2">
               <button
+                type="button"
+                onClick={() => setShowReport(true)}
+                className="bg-black/30 backdrop-blur-md p-2.5 rounded-full text-white hover:bg-black/50 transition"
+                aria-label="Signaler"
+              >
+                <Flag className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
                 onClick={handleShare}
                 className="bg-black/30 backdrop-blur-md p-2.5 rounded-full text-white hover:bg-black/50 transition"
               >
@@ -232,6 +292,23 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
               Contacter
             </button>
           </div>
+
+          {similar.length > 0 && (
+            <div className="mt-8 pt-6 border-t border-homify-border">
+              <h3 className="font-bold text-homify-text mb-4">Annonces similaires</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {similar.slice(0, 4).map((item) => (
+                  <RecommendedCard
+                    key={item.id}
+                    hotel={{ ...item, isFavorite: isFavorite(item.id) }}
+                    onClick={() => navigate(`/property/${item.id}`)}
+                    isFavorite={isFavorite(item.id)}
+                    onFavoriteToggle={() => toggleFavorite(item.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -250,6 +327,51 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
           Contacter
         </button>
       </div>
+
+      {showReport && (
+        <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
+          <div className="bg-homify-card w-full md:w-[440px] rounded-t-modal md:rounded-modal p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-homify-text mb-4">Signaler cette annonce</h3>
+            {reportMessage && (
+              <p className={`text-sm mb-3 ${reportMessage.includes('envoyé') ? 'text-emerald-600' : 'text-red-600'}`}>
+                {reportMessage}
+              </p>
+            )}
+            <select
+              className="w-full p-3 mb-3 bg-homify-surface rounded-btn border border-homify-border text-sm"
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value as ReportReason)}
+            >
+              {REPORT_REASONS.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+            <textarea
+              className="w-full p-3 mb-4 bg-homify-surface rounded-btn border border-homify-border text-sm min-h-[100px]"
+              placeholder="Décrivez le problème (min. 20 caractères)..."
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowReport(false)}
+                className="flex-1 py-3 rounded-btn border border-homify-border text-homify-muted font-medium"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleReport}
+                disabled={reportLoading}
+                className="flex-1 py-3 rounded-btn bg-red-600 text-white font-semibold disabled:opacity-50"
+              >
+                {reportLoading ? 'Envoi...' : 'Envoyer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showModal && (
         <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">

@@ -234,8 +234,10 @@ export default function HomeScreen() {
               </div>
             </div>
             <button
+              type="button"
+              onClick={() => navigate('/messages')}
               className="relative p-2 md:p-1.5 bg-homify-surface rounded-full border border-homify-border hover:border-homify-accent/40 transition-colors shrink-0"
-              aria-label="Notifications"
+              aria-label="Messages"
             >
               <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-homify-primary" />
               {unreadCount > 0 && (

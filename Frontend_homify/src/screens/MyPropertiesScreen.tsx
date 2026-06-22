@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Loader2, Building2, Send, Home } from 'lucide-react';
+import { Plus, Loader2, Building2, Send, Home, Pencil, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { getMyProperties, submitPropertyForReview, markPropertyRented, STATUS_LABELS } from '@/services/propertyService';
+import { getMyProperties, submitPropertyForReview, markPropertyRented, deleteProperty, STATUS_LABELS } from '@/services/propertyService';
 import { useAuth } from '@/context/AuthContext';
 import { PropertyImage } from '@/components/PropertyImage';
 
@@ -43,6 +43,17 @@ export default function MyPropertiesScreen() {
     setActionId(id);
     try {
       await markPropertyRented(id);
+      await load();
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm('Supprimer cette annonce ?')) return;
+    setActionId(id);
+    try {
+      await deleteProperty(id);
       await load();
     } finally {
       setActionId(null);
@@ -117,14 +128,23 @@ export default function MyPropertiesScreen() {
                       Voir
                     </button>
                     {(status === 'DRAFT' || status === 'REJECTED') && (
-                      <button
-                        disabled={actionId === p.id}
-                        onClick={() => handleSubmit(p.id)}
-                        className="flex items-center gap-1 text-xs font-medium text-homify-accent disabled:opacity-50"
-                      >
-                        <Send className="w-3 h-3" />
-                        Soumettre
-                      </button>
+                      <>
+                        <button
+                          onClick={() => navigate(`/property/${p.id}/edit`)}
+                          className="flex items-center gap-1 text-xs font-medium text-homify-muted hover:text-homify-primary"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          Modifier
+                        </button>
+                        <button
+                          disabled={actionId === p.id}
+                          onClick={() => handleSubmit(p.id)}
+                          className="flex items-center gap-1 text-xs font-medium text-homify-accent disabled:opacity-50"
+                        >
+                          <Send className="w-3 h-3" />
+                          Soumettre
+                        </button>
+                      </>
                     )}
                     {status === 'PUBLISHED' && (
                       <button
@@ -134,6 +154,16 @@ export default function MyPropertiesScreen() {
                       >
                         <Home className="w-3 h-3" />
                         Marquer loué
+                      </button>
+                    )}
+                    {status !== 'PUBLISHED' && status !== 'PENDING' && (
+                      <button
+                        disabled={actionId === p.id}
+                        onClick={() => handleDelete(p.id)}
+                        className="flex items-center gap-1 text-xs font-medium text-red-600 disabled:opacity-50"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Supprimer
                       </button>
                     )}
                   </div>

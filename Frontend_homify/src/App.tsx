@@ -6,6 +6,8 @@ import FavoritesScreen from './screens/FavoritesScreen';
 import PropertyDetailsScreen from './screens/PropertyDetailsScreen';
 import PropertyFormScreen from './screens/PropertyFormScreen';
 import MyPropertiesScreen from './screens/MyPropertiesScreen';
+import MessagesScreen from './screens/MessagesScreen';
+import AdminModerationScreen from './screens/AdminModerationScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import ChatScreen from './screens/ChatScreen';
 import MainAi from './screens/Aisection/MainAi';
@@ -21,7 +23,9 @@ const TAB_PATHS: Record<string, string> = {
 };
 
 function tabFromPath(pathname: string): string {
-  if (pathname.startsWith('/my-properties') || pathname.startsWith('/property/new')) return 'MyProperties';
+  if (pathname.startsWith('/messages')) return 'Messages';
+  if (pathname.startsWith('/admin')) return 'Admin';
+  if (pathname.startsWith('/my-properties') || pathname.startsWith('/property/new') || pathname.includes('/edit')) return 'MyProperties';
   if (pathname.startsWith('/favorites')) return 'Favorites';
   if (pathname.startsWith('/assist')) return 'Assist';
   if (pathname.startsWith('/profile')) return 'Profile';
@@ -62,7 +66,8 @@ export default function App() {
   const isDetailRoute =
     location.pathname.startsWith('/property/') &&
     !isChatRoute &&
-    !location.pathname.endsWith('/new');
+    !location.pathname.endsWith('/new') &&
+    !location.pathname.endsWith('/edit');
   const isHomeLayout = location.pathname === '/home' || location.pathname === '/';
 
   const handleTabChange = (tab: string) => {
@@ -90,7 +95,10 @@ export default function App() {
             <Route path="/profile" element={<ProfileScreen />} />
             <Route path="/assist" element={<MainAi />} />
             <Route path="/my-properties" element={<MyPropertiesScreen />} />
+            <Route path="/messages" element={<MessagesScreen />} />
+            <Route path="/admin" element={<AdminModerationScreen />} />
             <Route path="/property/new" element={<PropertyFormScreen />} />
+            <Route path="/property/:id/edit" element={<PropertyFormScreen />} />
             <Route path="/property/:id" element={<PropertyDetailRoute />} />
             <Route path="/property/:id/chat" element={<PropertyChatRoute />} />
             <Route path="*" element={<Navigate to="/home" replace />} />

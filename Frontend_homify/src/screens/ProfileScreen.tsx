@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Camera, LogOut, User, Loader2, Mail, Building2, AlertTriangle } from 'lucide-react';
+import { Camera, LogOut, User, Loader2, Mail, Building2, AlertTriangle, Shield, MessageSquare, Lock } from 'lucide-react';
 import { PageHeader, inputClass, labelClass } from '@/components/layout/PageHeader';
 import { useAuth } from '@/context/AuthContext';
-import { updateMe, resendVerification } from '@/services/authService';
+import { updateMe, resendVerification, changePassword } from '@/services/authService';
 
 export default function ProfileScreen() {
   const { user, loading, logout, refreshUser } = useAuth();
@@ -15,6 +15,12 @@ export default function ProfileScreen() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    old_password: '',
+    new_password: '',
+    new_password_confirm: '',
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -51,6 +57,28 @@ export default function ProfileScreen() {
       setMessage('Impossible de renvoyer l\'email.');
     } finally {
       setResending(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (passwordForm.new_password !== passwordForm.new_password_confirm) {
+      setMessage('Les nouveaux mots de passe ne correspondent pas.');
+      return;
+    }
+    setChangingPassword(true);
+    setMessage(null);
+    try {
+      await changePassword(
+        passwordForm.old_password,
+        passwordForm.new_password,
+        passwordForm.new_password_confirm,
+      );
+      setPasswordForm({ old_password: '', new_password: '', new_password_confirm: '' });
+      setMessage('Mot de passe mis à jour.');
+    } catch {
+      setMessage('Impossible de changer le mot de passe.');
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -106,6 +134,38 @@ export default function ProfileScreen() {
               <p className="text-sm text-homify-muted">
                 {user.properties_count ?? 0} annonce(s) · Gérer et publier
               </p>
+            </div>
+          </Link>
+        </div>
+      )}
+
+      <div className="max-w-2xl mx-auto mb-6">
+        <Link
+          to="/messages"
+          className="flex items-center gap-4 p-4 bg-homify-card border border-homify-border rounded-modal hover:border-homify-primary/20 transition"
+        >
+          <div className="w-12 h-12 bg-homify-primary/10 rounded-xl flex items-center justify-center">
+            <MessageSquare className="w-6 h-6 text-homify-primary" />
+          </div>
+          <div>
+            <p className="font-bold text-homify-text">Messages reçus</p>
+            <p className="text-sm text-homify-muted">Conversations avec locataires et propriétaires</p>
+          </div>
+        </Link>
+      </div>
+
+      {user?.role === 'ADMIN' && (
+        <div className="max-w-2xl mx-auto mb-6">
+          <Link
+            to="/admin"
+            className="flex items-center gap-4 p-4 bg-homify-primary/10 border border-homify-primary/20 rounded-modal hover:bg-homify-primary/15 transition"
+          >
+            <div className="w-12 h-12 bg-homify-primary/20 rounded-xl flex items-center justify-center">
+              <Shield className="w-6 h-6 text-homify-primary" />
+            </div>
+            <div>
+              <p className="font-bold text-homify-text">Modération admin</p>
+              <p className="text-sm text-homify-muted">Approuver ou rejeter les annonces en attente</p>
             </div>
           </Link>
         </div>
@@ -180,6 +240,48 @@ export default function ProfileScreen() {
           className="w-full bg-homify-primary text-white font-bold py-3.5 rounded-btn mt-2 shadow-sm hover:bg-homify-primary-light transition active:scale-[0.98] disabled:opacity-50"
         >
           {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
+        </button>
+      </div>
+
+      <div className="space-y-4 max-w-2xl mx-auto mt-6 bg-homify-card p-6 md:p-8 rounded-modal shadow-card border border-homify-border">
+        <div className="flex items-center gap-2 mb-2 pb-4 border-b border-homify-border">
+          <Lock className="w-5 h-5 text-homify-primary" />
+          <h2 className="font-bold text-homify-text">Mot de passe</h2>
+        </div>
+        <div>
+          <label className={labelClass}>Mot de passe actuel</label>
+          <input
+            type="password"
+            value={passwordForm.old_password}
+            onChange={(e) => setPasswordForm({ ...passwordForm, old_password: e.target.value })}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Nouveau mot de passe</label>
+          <input
+            type="password"
+            value={passwordForm.new_password}
+            onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Confirmer le nouveau mot de passe</label>
+          <input
+            type="password"
+            value={passwordForm.new_password_confirm}
+            onChange={(e) => setPasswordForm({ ...passwordForm, new_password_confirm: e.target.value })}
+            className={inputClass}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleChangePassword}
+          disabled={changingPassword}
+          className="w-full border border-homify-border text-homify-primary font-semibold py-3 rounded-btn hover:bg-homify-surface transition disabled:opacity-50"
+        >
+          {changingPassword ? 'Mise à jour...' : 'Changer le mot de passe'}
         </button>
 
         <button

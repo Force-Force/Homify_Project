@@ -142,6 +142,10 @@ export const getPropertyById = async (id: number): Promise<Hotel> => {
   return transformDetailToHotel(data);
 };
 
+export const getPropertyDetailRaw = async (id: number): Promise<ApiPropertyDetail> => {
+  return apiFetch<ApiPropertyDetail>(API_ROUTES.properties.details(id));
+};
+
 export const getProperties = async (filters = ''): Promise<Hotel[]> => {
   const { results } = await searchProperties(filters, 1);
   return results;
@@ -199,4 +203,15 @@ export const submitPropertyForReview = async (propertyId: number): Promise<void>
 
 export const markPropertyRented = async (propertyId: number): Promise<void> => {
   await apiFetch(API_ROUTES.properties.markRented(propertyId), { method: 'POST' });
+};
+
+export const deleteProperty = async (propertyId: number): Promise<void> => {
+  await apiFetch(API_ROUTES.properties.details(propertyId), { method: 'DELETE' });
+};
+
+export const getSimilarProperties = async (propertyId: number): Promise<Hotel[]> => {
+  const data = await apiFetch<import('../types/api').ApiProperty[]>(
+    API_ROUTES.properties.similar(propertyId),
+  );
+  return data.map(transformApiToHotel);
 };

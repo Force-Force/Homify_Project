@@ -60,3 +60,12 @@ Frontend — Perspectives d'amélioration ✅ (phase 1 + phase 2)
 - Parcours propriétaire : `/my-properties`, `/property/new` (création + photos + soumission)
 - Section IA : calculateur loyer FCFA, copy Cameroun, chat support localisé
 - UX vérification email : `/verify-pending`, `/verify-email`, signup/signin branchés
+
+Frontend — Phase 3 ✅
+- Boîte de réception messages (`/messages`) + cloche Home
+- Signalement annonce depuis le détail (POST `/reports/`)
+- Annonces similaires sur la fiche bien
+- Édition annonce (`/property/:id/edit`) + suppression soft-delete
+- Changement mot de passe profil (`POST /auth/me/password/`)
+- Dashboard admin modération (`/admin`) — approve/reject pending
+- Recherche intelligente branchée sur l'API réelle (SmartProperty)

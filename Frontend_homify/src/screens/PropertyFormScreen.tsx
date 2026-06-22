@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Loader2, Upload } from 'lucide-react';
 import { getAmenities } from '@/services/amenityService';
 import {
   createProperty,
+  updateProperty,
   uploadPropertyPhotos,
   submitPropertyForReview,
+  getPropertyDetailRaw,
   PropertyFormPayload,
 } from '@/services/propertyService';
 import { AmenityItem } from '@/types/api';
 import { ApiError } from '@/services/apiClient';
+import { PropertyImage } from '@/components/PropertyImage';
 
 const PROPERTY_TYPES = [
   { value: 'APARTMENT', label: 'Appartement' },
@@ -23,8 +26,16 @@ const inputClass =
 
 export default function PropertyFormScreen() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const editId = id ? Number(id) : null;
+  const isEdit = editId !== null && !Number.isNaN(editId);
+
   const [amenities, setAmenities] = useState<AmenityItem[]>([]);
   const [photos, setPhotos] = useState<File[]>([]);
+  const [existingPhotos, setExistingPhotos] = useState<{ id: number; url: string }[]>([]);
+  const [status, setStatus] = useState<string>('DRAFT');
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
+  const [initialLoading, setInitialLoading] = useState(isEdit);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -52,19 +63,80 @@ export default function PropertyFormScreen() {
     getAmenities().then(setAmenities).catch(() => setAmenities([]));
   }, []);
 
-  const toggleAmenity = (id: number) => {
+  useEffect(() => {
+    if (!isEdit || !editId) return;
+    setInitialLoading(true);
+    getPropertyDetailRaw(editId)
+      .then((detail) => {
+        if (!['DRAFT', 'REJECTED'].includes(detail.status)) {
+          setError('Seules les annonces en brouillon ou rejetées peuvent être modifiées.');
+          return;
+        }
+        setStatus(detail.status);
+        setRejectionReason(detail.rejection_reason ?? null);
+        setExistingPhotos(detail.photos.map((p) => ({ id: p.id, url: p.url })));
+        setForm({
+          title: detail.title,
+          description: detail.description,
+          type: detail.type,
+          surface: String(detail.surface),
+          number_of_rooms: String(detail.number_of_rooms),
+          number_of_bedrooms: String(detail.number_of_bedrooms),
+          number_of_bathrooms: String(detail.number_of_bathrooms),
+          furnished: detail.furnished,
+          monthly_rent: detail.monthly_rent,
+          charges: detail.charges ?? '0',
+          charges_included: detail.charges_included,
+          deposit: detail.deposit ?? '0',
+          agency_fees: detail.agency_fees ?? '0',
+          street_address: detail.address.street_address,
+          city: detail.address.city,
+          postal_code: detail.address.postal_code,
+          district: detail.address.district,
+          amenity_ids: detail.amenities.map((a) => a.id),
+        });
+      })
+      .catch(() => setError('Impossible de charger l\'annonce.'))
+      .finally(() => setInitialLoading(false));
+  }, [isEdit, editId]);
+
+  const toggleAmenity = (amenityId: number) => {
     setForm((prev) => ({
       ...prev,
-      amenity_ids: prev.amenity_ids.includes(id)
-        ? prev.amenity_ids.filter((x) => x !== id)
-        : [...prev.amenity_ids, id],
+      amenity_ids: prev.amenity_ids.includes(amenityId)
+        ? prev.amenity_ids.filter((x) => x !== amenityId)
+        : [...prev.amenity_ids, amenityId],
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const buildPayload = (): PropertyFormPayload => ({
+    title: form.title,
+    description: form.description,
+    type: form.type,
+    surface: parseFloat(form.surface),
+    number_of_rooms: parseInt(form.number_of_rooms, 10),
+    number_of_bedrooms: parseInt(form.number_of_bedrooms, 10),
+    number_of_bathrooms: parseInt(form.number_of_bathrooms, 10),
+    furnished: form.furnished,
+    monthly_rent: form.monthly_rent,
+    charges: form.charges,
+    charges_included: form.charges_included,
+    deposit: form.deposit,
+    agency_fees: form.agency_fees,
+    address: {
+      street_address: form.street_address,
+      city: form.city,
+      postal_code: form.postal_code,
+      district: form.district,
+    },
+    amenity_ids: form.amenity_ids,
+  });
+
+  const handleSubmit = async (e: React.FormEvent, submitReview = false) => {
     e.preventDefault();
-    if (photos.length < 3) {
-      setError('Ajoutez au moins 3 photos (JPG/PNG, max 5 Mo chacune).');
+    const totalPhotos = existingPhotos.length + photos.length;
+    if (totalPhotos < 3) {
+      setError('Au moins 3 photos sont requises (existantes + nouvelles).');
       return;
     }
     if (form.description.length < 50) {
@@ -75,44 +147,42 @@ export default function PropertyFormScreen() {
     setLoading(true);
     setError(null);
 
-    const payload: PropertyFormPayload = {
-      title: form.title,
-      description: form.description,
-      type: form.type,
-      surface: parseFloat(form.surface),
-      number_of_rooms: parseInt(form.number_of_rooms, 10),
-      number_of_bedrooms: parseInt(form.number_of_bedrooms, 10),
-      number_of_bathrooms: parseInt(form.number_of_bathrooms, 10),
-      furnished: form.furnished,
-      monthly_rent: form.monthly_rent,
-      charges: form.charges,
-      charges_included: form.charges_included,
-      deposit: form.deposit,
-      agency_fees: form.agency_fees,
-      address: {
-        street_address: form.street_address,
-        city: form.city,
-        postal_code: form.postal_code,
-        district: form.district,
-      },
-      amenity_ids: form.amenity_ids,
-    };
-
     try {
-      const { id } = await createProperty(payload);
-      await uploadPropertyPhotos(id, photos);
-      await submitPropertyForReview(id);
+      let propertyId = editId;
+      if (isEdit && propertyId) {
+        await updateProperty(propertyId, buildPayload());
+        if (photos.length > 0) {
+          await uploadPropertyPhotos(propertyId, photos);
+        }
+        if (submitReview) {
+          await submitPropertyForReview(propertyId);
+        }
+      } else {
+        const created = await createProperty(buildPayload());
+        propertyId = created.id;
+        await uploadPropertyPhotos(propertyId, photos);
+        await submitPropertyForReview(propertyId);
+      }
       navigate('/my-properties');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur lors de la création.');
+      setError(err instanceof ApiError ? err.message : 'Erreur lors de l\'enregistrement.');
     } finally {
       setLoading(false);
     }
   };
 
+  if (initialLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="w-8 h-8 text-homify-primary animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="px-5 md:px-0 pt-2 pb-28 max-w-2xl mx-auto">
       <button
+        type="button"
         onClick={() => navigate(-1)}
         className="inline-flex items-center gap-2 text-sm text-homify-muted hover:text-homify-primary mb-4"
       >
@@ -120,7 +190,15 @@ export default function PropertyFormScreen() {
         Retour
       </button>
 
-      <h1 className="text-2xl font-bold text-homify-text mb-6">Nouvelle annonce</h1>
+      <h1 className="text-2xl font-bold text-homify-text mb-6">
+        {isEdit ? 'Modifier l\'annonce' : 'Nouvelle annonce'}
+      </h1>
+
+      {rejectionReason && (
+        <div className="mb-4 p-3 bg-amber-50 text-amber-800 rounded-btn text-sm border border-amber-200">
+          <strong>Motif de rejet :</strong> {rejectionReason}
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-btn text-sm border border-red-100">
@@ -128,7 +206,10 @@ export default function PropertyFormScreen() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5 bg-homify-card p-6 rounded-modal border border-homify-border">
+      <form
+        onSubmit={(e) => handleSubmit(e, !isEdit)}
+        className="space-y-5 bg-homify-card p-6 rounded-modal border border-homify-border"
+      >
         <div>
           <label className="block text-sm font-semibold mb-1.5">Titre</label>
           <input className={inputClass} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
@@ -217,10 +298,19 @@ export default function PropertyFormScreen() {
         )}
 
         <div>
-          <label className="block text-sm font-semibold mb-2">Photos (min. 3)</label>
+          <label className="block text-sm font-semibold mb-2">
+            Photos ({existingPhotos.length + photos.length} au total, min. 3)
+          </label>
+          {existingPhotos.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {existingPhotos.map((p) => (
+                <PropertyImage key={p.id} src={p.url} alt="" className="w-full h-20 object-cover rounded-btn" />
+              ))}
+            </div>
+          )}
           <label className="flex items-center justify-center gap-2 p-6 border-2 border-dashed border-homify-border rounded-card cursor-pointer hover:border-homify-primary/40 transition">
             <Upload className="w-5 h-5 text-homify-muted" />
-            <span className="text-sm text-homify-muted">{photos.length} photo(s) sélectionnée(s)</span>
+            <span className="text-sm text-homify-muted">{photos.length} nouvelle(s) photo(s)</span>
             <input
               type="file"
               accept="image/jpeg,image/png"
@@ -231,14 +321,37 @@ export default function PropertyFormScreen() {
           </label>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-homify-accent text-white font-bold py-3.5 rounded-btn flex items-center justify-center gap-2 disabled:opacity-50"
-        >
-          {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-          Publier pour modération
-        </button>
+        {isEdit ? (
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-homify-primary text-white font-bold py-3.5 rounded-btn flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              Enregistrer
+            </button>
+            {(status === 'DRAFT' || status === 'REJECTED') && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={(e) => handleSubmit(e, true)}
+                className="flex-1 bg-homify-accent text-white font-bold py-3.5 rounded-btn disabled:opacity-50"
+              >
+                Soumettre
+              </button>
+            )}
+          </div>
+        ) : (
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-homify-accent text-white font-bold py-3.5 rounded-btn flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            Publier pour modération
+          </button>
+        )}
       </form>
     </div>
   );
