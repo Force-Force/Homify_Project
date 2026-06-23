@@ -1,4 +1,3 @@
-import React from 'react';
 import { Home, Heart, Bot, User, Building2 } from 'lucide-react';
 import Dock from '@/components/ui/Dock/Dock';
 import { cn } from '@/lib/utils';

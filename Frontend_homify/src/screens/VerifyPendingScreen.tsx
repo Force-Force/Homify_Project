@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Mail, Loader2, CheckCircle } from 'lucide-react';
+import { Mail, Loader2 } from 'lucide-react';
 import { resendVerification } from '@/services/authService';
 import { ApiError } from '@/services/apiClient';
 

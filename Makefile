@@ -15,7 +15,8 @@ VENV_PIP     := $(VENV)/bin/pip
         dev dev-local dev-frontend dev-backend dev-backend-local \
         backend backend-detached backend-local backend-logs backend-stop backend-down \
         frontend frontend-build \
-        migrate migrate-local superuser superuser-local shell logs stop stop-local clean
+        migrate migrate-local superuser superuser-local shell logs stop stop-local clean \
+        test test-backend test-frontend lint ci smoke prod-up prod-down
 
 # ─── Aide ────────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,13 @@ help:
 	@echo "  Frontend"
 	@echo "  make frontend         Frontend Vite  → http://localhost:$(FRONTEND_PORT)"
 	@echo "  make frontend-build   Build de production"
+	@echo ""
+	@echo "  Qualité & déploiement"
+	@echo "  make test             Tests backend + lint/typecheck frontend"
+	@echo "  make ci               Alias de make test (pipeline locale)"
+	@echo "  make smoke            Smoke test API (backend démarré)"
+	@echo "  make prod-up          Stack prod Docker (nginx + gunicorn + celery)"
+	@echo "  make prod-down        Arrête la stack prod"
 	@echo ""
 	@echo "  Autres (Docker)"
 	@echo "  make migrate          Migrations via Docker"
@@ -88,6 +96,33 @@ frontend:
 
 frontend-build:
 	cd $(FRONTEND_DIR) && npm run build
+
+# ─── Qualité & CI ────────────────────────────────────────────────────────────
+
+test-backend:
+	@test -d $(VENV) || (echo "❌ Venv absent. Lancez: make install-local" && exit 1)
+	cd $(BACKEND_DIR) && $(VENV_PYTHON) manage.py test apps.core.tests --verbosity=1
+
+test-frontend:
+	cd $(FRONTEND_DIR) && npm run lint && npm run typecheck && npm run build
+
+test: test-backend test-frontend
+
+lint: test-frontend
+
+ci: test
+
+smoke:
+	@chmod +x scripts/smoke-test.sh
+	API_BASE=http://localhost:$(BACKEND_PORT)/api ./scripts/smoke-test.sh
+
+prod-up:
+	docker compose -f docker-compose.prod.yml up -d --build
+	@echo "→ Frontend prod : http://localhost:$${FRONTEND_PORT:-80}"
+	@echo "→ API (via nginx) : http://localhost:$${FRONTEND_PORT:-80}/api/"
+
+prod-down:
+	docker compose -f docker-compose.prod.yml down
 
 # ─── Développement (local, sans Docker) ─────────────────────────────────────
 

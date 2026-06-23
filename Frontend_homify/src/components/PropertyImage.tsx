@@ -1,6 +1,6 @@
 // Fichier: src/components/PropertyImage.tsx
-import React, { useState } from 'react';
-import { ImageOff, Home } from 'lucide-react';
+import { useState } from 'react';
+import { Home } from 'lucide-react';
 
 interface Props {
   src?: string | null;

@@ -87,3 +87,13 @@ Frontend — Phase 5 ✅
 - Formulaire annonce : géolocalisation GPS (lat/lng) + suppression photos en édition
 - ChatSupport : mode FAQ local si n8n absent ou indisponible (fallback automatique)
 - Build prod validé (`npm run build`)
+
+Frontend — Phase 6 ✅
+- CI GitHub Actions : tests backend + lint/typecheck/build frontend
+- Tests smoke backend : health, auth, liste annonces publiées
+- Endpoint `GET /api/health/` (liveness/readiness)
+- Settings prod : `DATABASE_URL` PostgreSQL, CORS env, hardening `DEBUG=False`
+- Stack prod : `docker-compose.prod.yml` (Gunicorn + Celery + Nginx SPA)
+- `Backend_homify/.env.example`, `Frontend_homify/Dockerfile`, `scripts/smoke-test.sh`
+- Makefile : `make test`, `make ci`, `make smoke`, `make prod-up/down`
+- README racine avec guide déploiement

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Calculator, ChevronDown, Loader, TrendingUp, AlertCircle } from 'lucide-react';
 
 interface MortgageResult {

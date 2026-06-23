@@ -460,8 +460,16 @@ function Modal({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-homify-text/40 backdrop-blur-sm p-4">
-      <div className="bg-homify-card w-full max-w-md rounded-modal p-6 shadow-2xl border border-homify-border">
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-homify-text/40 backdrop-blur-sm p-4"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="bg-homify-card w-full max-w-md rounded-modal p-6 shadow-2xl border border-homify-border"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+      >
         <h3 className="text-lg font-bold text-homify-text mb-4">{title}</h3>
         {children}
       </div>

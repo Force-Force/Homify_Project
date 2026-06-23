@@ -1,4 +1,3 @@
-import React from 'react';
 import HomifiSignUp from './HomifiSignUp';
 // import Sign_in from './Sign_in';
 

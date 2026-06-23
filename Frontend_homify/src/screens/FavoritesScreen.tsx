@@ -1,6 +1,6 @@
 import React from 'react';
 import { Heart, Loader2 } from 'lucide-react';
-import { RecommendedCard, FavoriteCard } from '../components/Cards';
+import { FavoriteCard } from '../components/Cards';
 import { Hotel } from '../types';
 import { getFavorites, removeFromFavorites } from '../services/propertyService';
 import { PageHeader } from '@/components/layout/PageHeader';
