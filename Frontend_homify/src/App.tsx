@@ -12,6 +12,8 @@ import ProfileScreen from './screens/ProfileScreen';
 import ChatScreen from './screens/ChatScreen';
 import MainAi from './screens/Aisection/MainAi';
 import { FavoritesProvider } from './context/FavoritesContext';
+import { RoleGuard } from './components/RoleGuard';
+import NotFoundScreen from './screens/NotFoundScreen';
 
 const TAB_PATHS: Record<string, string> = {
   Home: '/home',
@@ -94,14 +96,14 @@ export default function App() {
             <Route path="/favorites" element={<FavoritesScreen />} />
             <Route path="/profile" element={<ProfileScreen />} />
             <Route path="/assist" element={<MainAi />} />
-            <Route path="/my-properties" element={<MyPropertiesScreen />} />
+            <Route path="/my-properties" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><MyPropertiesScreen /></RoleGuard>} />
             <Route path="/messages" element={<MessagesScreen />} />
-            <Route path="/admin" element={<AdminModerationScreen />} />
-            <Route path="/property/new" element={<PropertyFormScreen />} />
-            <Route path="/property/:id/edit" element={<PropertyFormScreen />} />
+            <Route path="/admin" element={<RoleGuard roles={['ADMIN']}><AdminModerationScreen /></RoleGuard>} />
+            <Route path="/property/new" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><PropertyFormScreen /></RoleGuard>} />
+            <Route path="/property/:id/edit" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><PropertyFormScreen /></RoleGuard>} />
             <Route path="/property/:id" element={<PropertyDetailRoute />} />
             <Route path="/property/:id/chat" element={<PropertyChatRoute />} />
-            <Route path="*" element={<Navigate to="/home" replace />} />
+            <Route path="*" element={<NotFoundScreen />} />
           </Routes>
         </main>
       </div>

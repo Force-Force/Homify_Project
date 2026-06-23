@@ -215,3 +215,7 @@ export const getSimilarProperties = async (propertyId: number): Promise<Hotel[]>
   );
   return data.map(transformApiToHotel);
 };
+
+export const deletePropertyPhoto = async (propertyId: number, photoId: number): Promise<void> => {
+  await apiFetch(API_ROUTES.properties.deletePhoto(propertyId, photoId), { method: 'DELETE' });
+};

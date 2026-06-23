@@ -69,3 +69,21 @@ Frontend — Phase 3 ✅
 - Changement mot de passe profil (`POST /auth/me/password/`)
 - Dashboard admin modération (`/admin`) — approve/reject pending
 - Recherche intelligente branchée sur l'API réelle (SmartProperty)
+
+Frontend — Phase 4 ✅
+- Analyse de marché API (`marketService`) — stats loyer/surface/type par ville (sans n8n)
+- Admin dashboard complet (`/admin`) : onglets Annonces, Signalements, Utilisateurs
+- Modération signalements : review → resolve/dismiss + actions (reject/unpublish/suspend)
+- Gestion utilisateurs admin : suspendre / réactiver
+- Messagerie : onglets Reçus / Envoyés + suppression message (expéditeur) + marquer lu
+- Suppression compte (`POST /auth/me/delete/`) depuis le profil
+- Suppression photos en édition annonce (`DELETE /properties/{id}/photos/{photoId}/`)
+
+Frontend — Phase 5 ✅
+- Config env : `VITE_API_BASE_URL`, `VITE_N8N_WEBHOOK_URL` (`.env.example`, `routes.ts`)
+- Garde-fous routes : `RoleGuard` (LANDLORD/ADMIN), page 404 (`NotFoundScreen`)
+- Admin publication complète : approve + publish, section « Approuvées — à publier »
+- Landing dynamique : stats + 4 annonces récentes via API publique
+- Formulaire annonce : géolocalisation GPS (lat/lng) + suppression photos en édition
+- ChatSupport : mode FAQ local si n8n absent ou indisponible (fallback automatique)
+- Build prod validé (`npm run build`)

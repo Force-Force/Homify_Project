@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:8000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api';
 
 export const API_ROUTES = {
   auth: {
@@ -12,6 +12,7 @@ export const API_ROUTES = {
     resetPassword: `${API_BASE_URL}/auth/reset-password/`,
     verifyEmail: `${API_BASE_URL}/auth/verify-email/`,
     resendVerification: `${API_BASE_URL}/auth/resend-verification/`,
+    deleteAccount: `${API_BASE_URL}/auth/me/delete/`,
     social: `${API_BASE_URL}/auth/social/`,
   },
   properties: {
@@ -59,8 +60,11 @@ export const API_ROUTES = {
     suspendUser: (id: number | string) => `${API_BASE_URL}/auth/admin/users/${id}/suspend/`,
     activateUser: (id: number | string) => `${API_BASE_URL}/auth/admin/users/${id}/activate/`,
     pendingProperties: `${API_BASE_URL}/properties/admin/properties/pending/`,
+    propertiesList: `${API_BASE_URL}/properties/admin/properties/`,
     approveProperty: (id: number | string) =>
       `${API_BASE_URL}/properties/admin/properties/${id}/approve/`,
+    publishProperty: (id: number | string) =>
+      `${API_BASE_URL}/properties/admin/properties/${id}/publish/`,
     rejectProperty: (id: number | string) =>
       `${API_BASE_URL}/properties/admin/properties/${id}/reject/`,
   },

@@ -32,6 +32,13 @@ export async function getInbox(): Promise<ApiMessage[]> {
   return Array.isArray(data) ? data : data.results;
 }
 
+export async function getSent(): Promise<ApiMessage[]> {
+  const data = await apiFetch<PaginatedResponse<ApiMessage> | ApiMessage[]>(
+    API_ROUTES.messages.sent,
+  );
+  return Array.isArray(data) ? data : data.results;
+}
+
 export async function deleteMessage(messageId: number): Promise<void> {
   await apiFetch(API_ROUTES.messages.details(messageId), { method: 'DELETE' });
 }

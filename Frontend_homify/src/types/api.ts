@@ -111,3 +111,22 @@ export interface ApiMessage {
 export interface UnreadCountResponse {
   unread_count: number;
 }
+
+export interface ApiReport {
+  id: number;
+  property: number | null;
+  property_detail?: ApiProperty;
+  reported_user: number | null;
+  reason: string;
+  description: string;
+  status: 'PENDING' | 'REVIEWED' | 'RESOLVED' | 'DISMISSED';
+  created_at: string;
+  resolved_at: string | null;
+  reporter: {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    full_name?: string;
+  };
+}

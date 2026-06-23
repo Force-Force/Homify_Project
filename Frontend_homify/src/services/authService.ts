@@ -105,6 +105,13 @@ export async function changePassword(
   });
 }
 
+export async function deleteAccount(password: string): Promise<void> {
+  await apiFetch(API_ROUTES.auth.deleteAccount, {
+    method: 'POST',
+    body: JSON.stringify({ password }),
+  });
+}
+
 export async function verifyEmail(token: string): Promise<void> {
   await apiFetch(
     API_ROUTES.auth.verifyEmail,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, Upload } from 'lucide-react';
+import { ArrowLeft, Loader2, Upload, X, MapPin } from 'lucide-react';
 import { getAmenities } from '@/services/amenityService';
 import {
   createProperty,
@@ -8,6 +8,7 @@ import {
   uploadPropertyPhotos,
   submitPropertyForReview,
   getPropertyDetailRaw,
+  deletePropertyPhoto,
   PropertyFormPayload,
 } from '@/services/propertyService';
 import { AmenityItem } from '@/types/api';
@@ -56,8 +57,11 @@ export default function PropertyFormScreen() {
     city: 'Yaoundé',
     postal_code: '00237',
     district: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
     amenity_ids: [] as number[],
   });
+  const [geoLoading, setGeoLoading] = useState(false);
 
   useEffect(() => {
     getAmenities().then(setAmenities).catch(() => setAmenities([]));
@@ -93,6 +97,8 @@ export default function PropertyFormScreen() {
           city: detail.address.city,
           postal_code: detail.address.postal_code,
           district: detail.address.district,
+          latitude: detail.address.latitude ?? null,
+          longitude: detail.address.longitude ?? null,
           amenity_ids: detail.amenities.map((a) => a.id),
         });
       })
@@ -107,6 +113,38 @@ export default function PropertyFormScreen() {
         ? prev.amenity_ids.filter((x) => x !== amenityId)
         : [...prev.amenity_ids, amenityId],
     }));
+  };
+
+  const handleDeletePhoto = async (photoId: number) => {
+    if (!editId || !window.confirm('Supprimer cette photo ?')) return;
+    try {
+      await deletePropertyPhoto(editId, photoId);
+      setExistingPhotos((prev) => prev.filter((p) => p.id !== photoId));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Suppression impossible.');
+    }
+  };
+
+  const handleUseLocation = () => {
+    if (!('geolocation' in navigator)) {
+      setError('Géolocalisation non supportée.');
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((prev) => ({
+          ...prev,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }));
+        setGeoLoading(false);
+      },
+      () => {
+        setError('Impossible d\'obtenir votre position.');
+        setGeoLoading(false);
+      },
+    );
   };
 
   const buildPayload = (): PropertyFormPayload => ({
@@ -128,6 +166,8 @@ export default function PropertyFormScreen() {
       city: form.city,
       postal_code: form.postal_code,
       district: form.district,
+      latitude: form.latitude,
+      longitude: form.longitude,
     },
     amenity_ids: form.amenity_ids,
   });
@@ -273,6 +313,17 @@ export default function PropertyFormScreen() {
             <input className={inputClass} placeholder="Quartier" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} />
             <input className={inputClass} placeholder="Ville" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required />
           </div>
+          <button
+            type="button"
+            onClick={handleUseLocation}
+            disabled={geoLoading}
+            className="mt-2 flex items-center gap-2 text-sm font-medium text-homify-primary hover:underline disabled:opacity-50"
+          >
+            {geoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
+            {form.latitude != null
+              ? `Position enregistrée (${form.latitude.toFixed(4)}, ${form.longitude?.toFixed(4)})`
+              : 'Utiliser ma position GPS'}
+          </button>
         </div>
 
         {amenities.length > 0 && (
@@ -304,7 +355,17 @@ export default function PropertyFormScreen() {
           {existingPhotos.length > 0 && (
             <div className="grid grid-cols-3 gap-2 mb-3">
               {existingPhotos.map((p) => (
-                <PropertyImage key={p.id} src={p.url} alt="" className="w-full h-20 object-cover rounded-btn" />
+                <div key={p.id} className="relative group">
+                  <PropertyImage src={p.url} alt="" className="w-full h-20 object-cover rounded-btn" />
+                  <button
+                    type="button"
+                    onClick={() => handleDeletePhoto(p.id)}
+                    className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition"
+                    aria-label="Supprimer la photo"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
               ))}
             </div>
           )}

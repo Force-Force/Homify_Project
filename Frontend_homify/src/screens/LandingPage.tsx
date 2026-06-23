@@ -8,6 +8,9 @@ import {
 } from 'lucide-react';
 import Aurora from '@/components/ui/Aurora/Aurora';
 import { CAROUSEL_IMAGES } from '@/components/Authentification/carouselData';
+import { searchProperties } from '@/services/propertyService';
+import { Hotel } from '@/types';
+import { PropertyImage } from '@/components/PropertyImage';
 
 const FEATURES = [
   { icon: Search, title: 'Recherche intelligente', description: 'Filtrez par ville, quartier, budget et type de bien en quelques clics.' },
@@ -45,10 +48,10 @@ const FAQ = [
   { q: 'Puis-je contacter un propriétaire directement ?', a: 'Oui, via notre messagerie intégrée une fois connecté à votre compte.' },
 ];
 
-const STATS = [
-  { value: '500+', label: 'Annonces actives' },
-  { value: '2 000+', label: 'Utilisateurs' },
+const DEFAULT_STATS = [
+  { value: '—', label: 'Annonces actives' },
   { value: 'Yaoundé & Douala', label: 'Villes couvertes' },
+  { value: 'FCFA', label: 'Prix transparents' },
   { value: '24/7', label: 'Assistant IA' },
 ];
 
@@ -125,6 +128,25 @@ function LandingHeroCarousel() {
 }
 
 export default function LandingPage() {
+  const [stats, setStats] = useState(DEFAULT_STATS);
+  const [featured, setFeatured] = useState<Hotel[]>([]);
+
+  useEffect(() => {
+    searchProperties('?ordering=-created_at', 1)
+      .then((data) => {
+        setFeatured(data.results.slice(0, 4));
+        if (data.count > 0) {
+          setStats([
+            { value: `${data.count}+`, label: 'Annonces actives' },
+            { value: 'Yaoundé & Douala', label: 'Villes couvertes' },
+            { value: 'FCFA', label: 'Prix transparents' },
+            { value: '24/7', label: 'Assistant IA' },
+          ]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="bg-homify-surface">
       {/* Nav fixe */}
@@ -148,7 +170,7 @@ export default function LandingPage() {
       {/* Stats */}
       <section className="py-12 px-6 bg-homify-card border-b border-homify-border">
         <div className="mx-auto max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-6">
-          {STATS.map(({ value, label }) => (
+          {stats.map(({ value, label }) => (
             <div key={label} className="text-center">
               <p className="text-2xl md:text-3xl font-extrabold text-homify-primary">{value}</p>
               <p className="text-xs md:text-sm text-homify-muted mt-1">{label}</p>
@@ -156,6 +178,38 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      {featured.length > 0 && (
+        <section className="py-16 px-6 bg-homify-surface border-b border-homify-border">
+          <div className="mx-auto max-w-5xl">
+            <div className="flex justify-between items-end mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-homify-text">Annonces récentes</h2>
+                <p className="text-sm text-homify-muted mt-1">Publiées sur Homify en temps réel</p>
+              </div>
+              <Link to="/signin" className="text-sm font-semibold text-homify-primary hover:underline hidden sm:inline">
+                Voir tout →
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {featured.map((p) => (
+                <Link
+                  key={p.id}
+                  to="/signin"
+                  className="rounded-card border border-homify-border bg-homify-card overflow-hidden hover:shadow-card-hover transition-shadow"
+                >
+                  <PropertyImage src={p.imageUrl} alt={p.name} className="w-full h-36 object-cover" />
+                  <div className="p-3">
+                    <p className="font-semibold text-homify-text text-sm truncate">{p.name}</p>
+                    <p className="text-xs text-homify-muted truncate">{p.location}</p>
+                    <p className="text-sm font-bold text-homify-primary mt-1">{p.displayPrice}/mois</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Types de biens */}
       <section className="py-16 md:py-24 px-6">

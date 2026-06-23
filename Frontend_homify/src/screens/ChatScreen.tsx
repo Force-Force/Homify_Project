@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Trash2 } from 'lucide-react';
 import { getPropertyById } from '../services/propertyService';
-import { getThread, sendMessage } from '../services/messageService';
+import { getThread, sendMessage, markAsRead, deleteMessage } from '../services/messageService';
 import { ApiMessage } from '../types/api';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/services/apiClient';
@@ -36,6 +36,9 @@ export default function ChatScreen({ propertyId, onBack }: ChatProps) {
         setPropertyName(property.name);
         setLandlordName(property.landlord?.name ?? 'Propriétaire');
         setMessages(thread);
+        thread
+          .filter((m) => !m.is_read && m.recipient.id === user?.id)
+          .forEach((m) => { markAsRead(m.id).catch(() => {}); });
       } catch {
         setError('Impossible de charger la conversation.');
       } finally {
@@ -43,7 +46,17 @@ export default function ChatScreen({ propertyId, onBack }: ChatProps) {
       }
     };
     load();
-  }, [propertyId]);
+  }, [propertyId, user?.id]);
+
+  const handleDelete = async (messageId: number) => {
+    if (!window.confirm('Supprimer ce message ?')) return;
+    try {
+      await deleteMessage(messageId);
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Suppression impossible.');
+    }
+  };
 
   const handleSend = async () => {
     const content = inputText.trim();
@@ -104,18 +117,28 @@ export default function ChatScreen({ propertyId, onBack }: ChatProps) {
         {messages.map((msg) => {
           const isSender = msg.sender.id === user?.id;
           return (
-            <div key={msg.id} className={`flex ${isSender ? 'justify-end' : 'justify-start'}`}>
+            <div key={msg.id} className={`flex ${isSender ? 'justify-end' : 'justify-start'} group`}>
               <div
-                className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm ${
+                className={`relative max-w-[75%] px-4 py-3 rounded-2xl text-sm ${
                   isSender
                     ? 'bg-homify-primary text-white rounded-br-sm'
                     : 'bg-homify-card text-homify-text rounded-bl-sm border border-homify-border shadow-sm'
                 }`}
               >
                 <p>{msg.content}</p>
-                <p className={`text-[10px] mt-1 ${isSender ? 'text-white/70' : 'text-homify-muted'}`}>
-                  {formatTime(msg.sent_at)}
-                </p>
+                <div className={`flex items-center justify-between gap-2 mt-1 ${isSender ? 'text-white/70' : 'text-homify-muted'}`}>
+                  <p className="text-[10px]">{formatTime(msg.sent_at)}</p>
+                  {isSender && (
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(msg.id)}
+                      className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-red-200 transition"
+                      aria-label="Supprimer"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );

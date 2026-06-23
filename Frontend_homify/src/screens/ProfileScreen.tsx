@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Camera, LogOut, User, Loader2, Mail, Building2, AlertTriangle, Shield, MessageSquare, Lock } from 'lucide-react';
 import { PageHeader, inputClass, labelClass } from '@/components/layout/PageHeader';
 import { useAuth } from '@/context/AuthContext';
-import { updateMe, resendVerification, changePassword } from '@/services/authService';
+import { updateMe, resendVerification, changePassword, deleteAccount } from '@/services/authService';
 
 export default function ProfileScreen() {
   const { user, loading, logout, refreshUser } = useAuth();
@@ -21,6 +21,9 @@ export default function ProfileScreen() {
     new_password_confirm: '',
   });
   const [changingPassword, setChangingPassword] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -79,6 +82,24 @@ export default function ProfileScreen() {
       setMessage('Impossible de changer le mot de passe.');
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      setMessage('Entrez votre mot de passe pour confirmer.');
+      return;
+    }
+    setDeletingAccount(true);
+    setMessage(null);
+    try {
+      await deleteAccount(deletePassword);
+      await logout();
+      window.location.href = '/';
+    } catch {
+      setMessage('Suppression impossible. Vérifiez votre mot de passe.');
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -283,7 +304,52 @@ export default function ProfileScreen() {
         >
           {changingPassword ? 'Mise à jour...' : 'Changer le mot de passe'}
         </button>
+      </div>
 
+      <div className="space-y-4 max-w-2xl mx-auto mt-6 bg-homify-card p-6 md:p-8 rounded-modal shadow-card border border-red-100">
+        <h2 className="font-bold text-red-600">Zone dangereuse</h2>
+        <p className="text-sm text-homify-muted">
+          La suppression de votre compte est définitive. Vos annonces seront retirées.
+        </p>
+        {!showDeleteConfirm ? (
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="w-full border border-red-200 text-red-600 font-semibold py-3 rounded-btn hover:bg-red-50 transition"
+          >
+            Supprimer mon compte
+          </button>
+        ) : (
+          <>
+            <input
+              type="password"
+              placeholder="Mot de passe actuel"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              className={inputClass}
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); }}
+                className="flex-1 py-3 rounded-btn border border-homify-border text-homify-muted font-medium"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deletingAccount}
+                className="flex-1 py-3 rounded-btn bg-red-600 text-white font-semibold disabled:opacity-50"
+              >
+                {deletingAccount ? 'Suppression...' : 'Confirmer'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="max-w-2xl mx-auto mt-6">
         <button
           onClick={handleLogout}
           className="w-full flex items-center justify-center gap-2 border border-homify-border text-homify-muted font-semibold py-3 rounded-btn hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition"

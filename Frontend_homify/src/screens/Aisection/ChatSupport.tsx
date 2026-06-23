@@ -13,6 +13,51 @@ interface Message {
   actionData?: unknown;
 }
 
+const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL as string | undefined;
+
+function getLocalFaqResponse(message: string): {
+  response: string;
+  intent: string;
+  hasAction?: boolean;
+  actionType?: Message['actionType'];
+} {
+  const m = message.toLowerCase();
+  if (m.includes('bastos') || m.includes('akwa') || m.includes('yaoundé') || m.includes('douala') || m.includes('studio') || m.includes('appart') || m.includes('maison') || m.includes('logement') || m.includes('louer')) {
+    return {
+      response: 'Consultez les annonces publiées sur Homify avec nos filtres par ville, quartier et budget. Je peux vous y rediriger.',
+      intent: 'property_search',
+      hasAction: true,
+      actionType: 'property_search',
+    };
+  }
+  if (m.includes('loyer') || m.includes('budget') || m.includes('fcfa') || m.includes('salaire') || m.includes('revenu')) {
+    return {
+      response: 'La règle usuelle au Cameroun est de ne pas dépasser 30 % de votre revenu net pour le loyer. Utilisez notre calculateur pour une estimation précise.',
+      intent: 'rent_calculation',
+      hasAction: true,
+      actionType: 'rent_calc',
+    };
+  }
+  if (m.includes('marché') || m.includes('prix') || m.includes('analyse') || m.includes('tendance')) {
+    return {
+      response: 'Notre analyse de marché calcule les loyers moyens à partir des annonces réelles publiées sur Homify.',
+      intent: 'market_analysis',
+      hasAction: true,
+      actionType: 'market_analysis',
+    };
+  }
+  if (m.includes('gratuit') || m.includes('inscription') || m.includes('compte')) {
+    return {
+      response: 'Homify est gratuit pour les locataires. Les propriétaires peuvent publier après vérification email. Inscrivez-vous depuis la page d\'accueil.',
+      intent: 'general',
+    };
+  }
+  return {
+    response: 'Je suis l\'assistant Homify (mode local). Posez-moi une question sur la location à Yaoundé ou Douala, votre budget loyer, ou parcourez directement les annonces et outils dans l\'onglet Assistant.',
+    intent: 'general',
+  };
+}
+
 const ChatSupport = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -20,7 +65,7 @@ const ChatSupport = () => {
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL || 'http://localhost:5678/webhook/chatbot';
+  const N8N_ENABLED = Boolean(N8N_WEBHOOK_URL?.trim());
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -41,6 +86,7 @@ const ChatSupport = () => {
   }, []);
 
   const sendMessageToN8n = async (message: string) => {
+    if (!N8N_WEBHOOK_URL) throw new Error('n8n non configuré');
     const response = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -114,24 +160,31 @@ const ChatSupport = () => {
     setError('');
 
     try {
-      const { response: aiResponse, intent, marketData } = await sendMessageToN8n(userMessageText);
+      const result = N8N_ENABLED
+        ? await sendMessageToN8n(userMessageText).catch(() => getLocalFaqResponse(userMessageText))
+        : getLocalFaqResponse(userMessageText);
 
-      let hasAction = false;
-      let actionType: Message['actionType'];
+      const { response: aiResponse, intent, marketData } = 'marketData' in result
+        ? result as { response: string; intent: string; marketData?: unknown }
+        : { ...result, marketData: undefined };
+
+      let hasAction = 'hasAction' in result ? result.hasAction : false;
+      let actionType: Message['actionType'] = 'actionType' in result ? result.actionType : undefined;
       let actionData: unknown = null;
 
-      if (intent === 'market_analysis' && marketData) {
-        hasAction = true;
-        actionType = 'market_analysis';
-        actionData = marketData;
-      } else if (intent === 'property_search') {
-        hasAction = true;
-        actionType = 'property_search';
-        actionData = { query: userMessageText };
-      } else if (intent === 'mortgage_calculation' || intent === 'rent_calculation') {
-        hasAction = true;
-        actionType = 'rent_calc';
-        actionData = { query: userMessageText };
+      if (!hasAction) {
+        if (intent === 'market_analysis') {
+          hasAction = true;
+          actionType = 'market_analysis';
+        } else if (intent === 'property_search') {
+          hasAction = true;
+          actionType = 'property_search';
+          actionData = { query: userMessageText };
+        } else if (intent === 'mortgage_calculation' || intent === 'rent_calculation') {
+          hasAction = true;
+          actionType = 'rent_calc';
+          actionData = { query: userMessageText };
+        }
       }
 
       const aiMessage: Message = {
@@ -148,14 +201,16 @@ const ChatSupport = () => {
 
       setMessages((prev) => [...prev, aiMessage]);
     } catch {
-      setError('Connexion impossible. Vérifiez votre réseau ou réessayez.');
-      const errorMessage: Message = {
+      const local = getLocalFaqResponse(userMessageText);
+      setMessages((prev) => [...prev, {
         id: Date.now() + 1,
-        text: 'Désolé, je n\'arrive pas à me connecter pour le moment. Réessayez dans un instant, ou utilisez la recherche et le calculateur de loyer directement.',
+        text: local.response,
         sender: 'ai',
         timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+        intent: local.intent,
+        hasAction: local.hasAction,
+        actionType: local.actionType,
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -326,7 +381,7 @@ const ChatSupport = () => {
           </button>
         </div>
         <p className="text-[10px] text-homify-muted mt-1.5 text-center">
-          Assistant IA · Yaoundé, Douala et environs
+          {N8N_ENABLED ? 'Assistant IA · n8n + FAQ local' : 'Assistant Homify · mode FAQ local (Cameroun)'}
         </p>
       </div>
     </div>
