@@ -12,6 +12,7 @@ import { searchProperties } from '../services/propertyService';
 import { getUnreadCount } from '../services/messageService';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
 import { useFavorites } from '@/context/FavoritesContext';
+import { useSettings } from '@/context/SettingsContext';
 
 interface Filters {
   type: string;
@@ -60,14 +61,18 @@ const DEFAULT_FILTERS: Filters = {
 export default function HomeScreen() {
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { settings } = useSettings();
   const [properties, setProperties] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [locationName, setLocationName] = useState('Localisation...');
+  const [locationName, setLocationName] = useState(settings.defaultCity || 'Localisation...');
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [filters, setFilters] = useState<Filters>({
+    ...DEFAULT_FILTERS,
+    city: settings.defaultCity,
+  });
+  const [viewMode, setViewMode] = useState<'list' | 'map'>(settings.defaultViewMode);
   const [activeId, setActiveId] = useState<number | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [page, setPage] = useState(1);

@@ -10,13 +10,16 @@ import ResetPass from './components/Authentification/ResetPass';
 import VerifyEmailScreen from './screens/VerifyEmailScreen';
 import VerifyPendingScreen from './screens/VerifyPendingScreen';
 import { AuthProvider } from './context/AuthContext';
+import { SettingsProvider } from './context/SettingsContext';
 import { isAuthenticated } from './services/apiClient';
 import './index.css';
 
 function AuthenticatedApp() {
   return (
     <AuthProvider>
-      <App />
+      <SettingsProvider>
+        <App />
+      </SettingsProvider>
     </AuthProvider>
   );
 }

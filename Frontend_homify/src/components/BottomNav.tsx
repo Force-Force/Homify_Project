@@ -19,7 +19,7 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
       ? [{ name: 'MyProperties', label: 'Mes annonces', icon: Building2 }]
       : [{ name: 'Search', label: 'Recherche', icon: Home }]),
     { name: 'Assist', label: 'Assistant', icon: Bot },
-    { name: 'Profile', label: 'Profil', icon: User },
+    { name: 'Profile', label: 'Compte', icon: User },
   ];
 
   const dockItems = NAV_ITEMS.map((item) => ({
