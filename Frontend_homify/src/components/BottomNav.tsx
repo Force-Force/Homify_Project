@@ -8,6 +8,7 @@ import { getUnreadCount } from '@/services/messageService';
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  suppressMobileDock?: boolean;
 }
 
 type NavItem = {
@@ -17,7 +18,7 @@ type NavItem = {
   badge?: number;
 };
 
-export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
+export const BottomNav = ({ activeTab, onTabChange, suppressMobileDock = false }: BottomNavProps) => {
   const { user } = useAuth();
   const isLandlord = user?.role === 'LANDLORD' || user?.role === 'ADMIN';
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -57,7 +58,7 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
 
   return (
     <>
-      <Dock items={dockItems} />
+      {!suppressMobileDock && <Dock items={dockItems} />}
 
       <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-64 md:flex-col md:border-r md:border-homify-border md:bg-homify-card md:px-4 md:pt-10 md:shadow-sm">
         <div className="mb-8 px-3">

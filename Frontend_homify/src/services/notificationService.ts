@@ -63,7 +63,7 @@ export function notificationActionPath(notification: AppNotification): string | 
   const path = notification.metadata?.action_path;
   if (typeof path === 'string' && path.startsWith('/')) return path;
   if (notification.message_id && notification.property_id) {
-    return `/property/${notification.property_id}/chat`;
+    return `/messages/${notification.property_id}`;
   }
   if (notification.property_id) return `/property/${notification.property_id}`;
   return null;

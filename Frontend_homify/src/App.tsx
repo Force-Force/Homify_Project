@@ -5,7 +5,8 @@ import FavoritesScreen from './screens/FavoritesScreen';
 import PropertyDetailsScreen from './screens/PropertyDetailsScreen';
 import PropertyFormScreen from './screens/PropertyFormScreen';
 import MyPropertiesScreen from './screens/MyPropertiesScreen';
-import MessagesScreen from './screens/MessagesScreen';
+import MessagesLayout from './screens/MessagesLayout';
+import MessagesChatRoute from './screens/MessagesChatRoute';
 import AdminModerationScreen from './screens/AdminModerationScreen';
 import ProfileHubScreen from './screens/profile/ProfileHubScreen';
 import PersonalInfoScreen from './screens/profile/PersonalInfoScreen';
@@ -14,7 +15,6 @@ import NotificationsScreen from './screens/profile/NotificationsScreen';
 import PreferencesScreen from './screens/profile/PreferencesScreen';
 import AboutScreen from './screens/profile/AboutScreen';
 import NotificationsInboxScreen from './screens/NotificationsInboxScreen';
-import ChatScreen from './screens/ChatScreen';
 import MainAi from './screens/Aisection/MainAi';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { RoleGuard } from './components/RoleGuard';
@@ -52,25 +52,23 @@ function PropertyDetailRoute() {
     <PropertyDetailsScreen
       propertyId={propertyId}
       onBack={() => navigate(-1)}
-      onOpenChat={() => navigate(`/property/${propertyId}/chat`)}
+      onOpenChat={() => navigate(`/messages/${propertyId}`)}
     />
   );
 }
 
 function PropertyChatRoute() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const propertyId = Number(id);
-
-  if (!propertyId) return <Navigate to="/home" replace />;
-
-  return <ChatScreen propertyId={propertyId} onBack={() => navigate(`/property/${propertyId}`)} />;
+  if (!id) return <Navigate to="/messages" replace />;
+  return <Navigate to={`/messages/${id}`} replace />;
 }
 
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const activeTab = tabFromPath(location.pathname);
+  const isMessagesChatPath = /^\/messages\/\d+/.test(location.pathname);
+  const isMessagesRoute = location.pathname.startsWith('/messages');
   const isChatRoute = location.pathname.includes('/chat');
   const isDetailRoute =
     location.pathname.startsWith('/property/') &&
@@ -86,12 +84,20 @@ export default function App() {
   return (
     <FavoritesProvider>
       <div className="min-h-screen bg-homify-surface font-sans">
-        {!isChatRoute && <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />}
+        <BottomNav
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          suppressMobileDock={isMessagesChatPath}
+        />
 
         <main
           className={
             isHomeLayout && !isDetailRoute
               ? 'md:ml-64 md:w-[calc(100%-16rem)] md:h-screen md:overflow-hidden'
+              : isMessagesRoute
+                ? isMessagesChatPath
+                  ? 'h-dvh overflow-hidden md:ml-64 md:w-[calc(100%-16rem)] md:h-screen md:overflow-hidden md:p-0 md:max-w-none'
+                  : 'px-5 pt-2 pb-28 md:ml-64 md:w-[calc(100%-16rem)] md:h-screen md:overflow-hidden md:p-0 md:pb-0 md:max-w-none'
               : isDetailRoute
                 ? 'pt-4 md:pt-8 md:ml-64 md:w-[calc(100%-16rem)] md:max-w-6xl md:mx-auto md:px-6 lg:px-8'
                 : 'pt-6 md:pt-8 md:ml-64 md:w-[calc(100%-16rem)] md:max-w-5xl md:mx-auto md:px-8'
@@ -109,7 +115,9 @@ export default function App() {
             <Route path="/profile/about" element={<AboutScreen />} />
             <Route path="/assist" element={<MainAi />} />
             <Route path="/my-properties" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><MyPropertiesScreen /></RoleGuard>} />
-            <Route path="/messages" element={<MessagesScreen />} />
+            <Route path="/messages" element={<MessagesLayout />}>
+              <Route path=":propertyId" element={<MessagesChatRoute />} />
+            </Route>
             <Route path="/notifications" element={<NotificationsInboxScreen />} />
             <Route path="/admin" element={<RoleGuard roles={['ADMIN']}><AdminModerationScreen /></RoleGuard>} />
             <Route path="/property/new" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><PropertyFormScreen /></RoleGuard>} />

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { ArrowLeft, Send, Loader2, Trash2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Trash2, ExternalLink, PanelLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getPropertyById } from '../services/propertyService';
 import { getThread, sendMessage, markThreadRead, deleteMessage } from '../services/messageService';
@@ -7,10 +7,12 @@ import { ApiMessage } from '../types/api';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/services/apiClient';
 import { PropertyImage } from '@/components/PropertyImage';
+import { useMessagesLayout } from '@/context/MessagesLayoutContext';
 
 interface ChatProps {
   propertyId: number;
-  onBack: () => void;
+  onBack?: () => void;
+  embedded?: boolean;
 }
 
 const POLL_MS = 12_000;
@@ -44,9 +46,10 @@ function groupByDay(messages: ApiMessage[]) {
   return groups;
 }
 
-export default function ChatScreen({ propertyId, onBack }: ChatProps) {
+export default function ChatScreen({ propertyId, onBack, embedded = false }: ChatProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const messagesLayout = useMessagesLayout();
   const [propertyName, setPropertyName] = useState('');
   const [propertyPhoto, setPropertyPhoto] = useState<string | null>(null);
   const [contactName, setContactName] = useState('');
@@ -149,18 +152,36 @@ export default function ChatScreen({ propertyId, onBack }: ChatProps) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-homify-surface">
+      <div className={`flex justify-center items-center bg-homify-surface ${embedded ? 'h-full min-h-[280px]' : 'h-screen'}`}>
         <Loader2 className="w-8 h-8 text-homify-primary animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen bg-homify-surface md:ml-64">
-      <div className="px-4 py-3 border-b border-homify-border flex items-center gap-3 bg-homify-card shadow-sm z-10">
-        <button type="button" onClick={onBack} className="p-2 -ml-2 hover:bg-homify-surface rounded-full transition">
-          <ArrowLeft className="w-5 h-5 text-homify-text" />
-        </button>
+    <div className={`flex flex-col bg-homify-surface ${embedded ? 'h-full min-h-0' : 'h-screen'}`}>
+      <div className="px-4 py-3 border-b border-homify-border flex items-center gap-3 bg-homify-card shadow-sm z-10 shrink-0">
+        {embedded && messagesLayout?.sidebarCollapsed && (
+          <button
+            type="button"
+            onClick={messagesLayout.toggleSidebar}
+            className="hidden md:flex p-2 -ml-1 hover:bg-homify-surface rounded-full transition text-homify-muted hover:text-homify-primary"
+            aria-label="Afficher la liste des conversations"
+            title="Afficher la liste"
+          >
+            <PanelLeft className="w-5 h-5" />
+          </button>
+        )}
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className={`p-2 -ml-2 hover:bg-homify-surface rounded-full transition ${embedded ? 'md:hidden' : ''}`}
+            aria-label="Retour"
+          >
+            <ArrowLeft className="w-5 h-5 text-homify-text" />
+          </button>
+        )}
         <button
           type="button"
           onClick={() => navigate(`/property/${propertyId}`)}
@@ -249,7 +270,7 @@ export default function ChatScreen({ propertyId, onBack }: ChatProps) {
         <div ref={bottomRef} />
       </div>
 
-      <div className="p-3 bg-homify-card border-t border-homify-border">
+      <div className="p-3 bg-homify-card border-t border-homify-border shrink-0">
         <div className="flex items-center gap-2">
           <input
             type="text"
