@@ -10,6 +10,7 @@ import { SettingsRow, SettingsSection } from '@/components/settings/SettingsRow'
 import { useAuth } from '@/context/AuthContext';
 import { useFavorites } from '@/context/FavoritesContext';
 import { getUnreadCount } from '@/services/messageService';
+import { getNotificationUnreadCount } from '@/services/notificationService';
 import { resendVerification } from '@/services/authService';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -26,12 +27,14 @@ function formatMemberSince(dateStr: string) {
 export default function ProfileHubScreen() {
   const { user, loading, logout } = useAuth();
   const { favoriteIds } = useFavorites();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [resending, setResending] = useState(false);
   const [banner, setBanner] = useState<string | null>(null);
 
   useEffect(() => {
-    getUnreadCount().then(setUnreadCount).catch(() => setUnreadCount(0));
+    getUnreadCount().then(setUnreadMessages).catch(() => setUnreadMessages(0));
+    getNotificationUnreadCount().then(setUnreadNotifications).catch(() => setUnreadNotifications(0));
   }, []);
 
   const handleResendVerification = async () => {
@@ -130,14 +133,18 @@ export default function ProfileHubScreen() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-homify-border">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-5 border-t border-homify-border">
           <Link to="/favorites" className="text-center p-2 rounded-btn hover:bg-homify-surface transition">
             <p className="text-lg font-bold text-homify-primary">{favoriteIds.size}</p>
             <p className="text-[11px] text-homify-muted">Favoris</p>
           </Link>
           <Link to="/messages" className="text-center p-2 rounded-btn hover:bg-homify-surface transition">
-            <p className="text-lg font-bold text-homify-primary">{unreadCount}</p>
-            <p className="text-[11px] text-homify-muted">Non lus</p>
+            <p className="text-lg font-bold text-homify-primary">{unreadMessages}</p>
+            <p className="text-[11px] text-homify-muted">Messages</p>
+          </Link>
+          <Link to="/notifications" className="text-center p-2 rounded-btn hover:bg-homify-surface transition">
+            <p className="text-lg font-bold text-homify-primary">{unreadNotifications}</p>
+            <p className="text-[11px] text-homify-muted">Alertes</p>
           </Link>
           {isLandlord ? (
             <Link to="/my-properties" className="text-center p-2 rounded-btn hover:bg-homify-surface transition">
@@ -171,7 +178,14 @@ export default function ProfileHubScreen() {
       <SettingsSection title="Application">
         <SettingsRow
           icon={Bell}
-          title="Notifications"
+          title="Centre de notifications"
+          subtitle="Historique de vos alertes"
+          to="/notifications"
+          badge={unreadNotifications}
+        />
+        <SettingsRow
+          icon={Bell}
+          title="Préférences de notification"
           subtitle="Emails et alertes messages"
           to="/profile/notifications"
         />
@@ -189,7 +203,7 @@ export default function ProfileHubScreen() {
           title="Messages"
           subtitle="Conversations avec propriétaires et locataires"
           to="/messages"
-          badge={unreadCount}
+          badge={unreadMessages}
         />
         <SettingsRow
           icon={Heart}

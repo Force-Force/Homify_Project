@@ -17,7 +17,7 @@ class NotificationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = NotificationSerializer
 
     def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user).select_related('property', 'message')
+        return Notification.objects.filter(user=self.request.user).select_related('related_property', 'message')
 
     @action(detail=False, methods=['get'])
     def unread_count(self, request):

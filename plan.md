@@ -97,3 +97,11 @@ Frontend — Phase 6 ✅
 - `Backend_homify/.env.example`, `Frontend_homify/Dockerfile`, `scripts/smoke-test.sh`
 - Makefile : `make test`, `make ci`, `make smoke`, `make prod-up/down`
 - README racine avec guide déploiement
+
+Backend — Notifications ✅
+- App `apps/notifications` : modèles `Notification` + `NotificationPreference`
+- API : liste, unread_count, mark_read, mark_all_read, preferences GET/PATCH
+- Dispatch unifié : notification in-app + email (selon préférences utilisateur)
+- Branché sur messages, approve/reject/publish annonces
+- Tests API notifications (3) + smoke existants
+- Frontend : `/notifications` (inbox), préférences sync backend, cloche Home

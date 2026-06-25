@@ -54,12 +54,13 @@ class Notification(models.Model):
     notification_type = models.CharField(max_length=30, choices=TYPE_CHOICES)
     title = models.CharField(max_length=200)
     body = models.TextField()
-    property = models.ForeignKey(
+    related_property = models.ForeignKey(
         'properties.Property',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='notifications',
+        verbose_name='Annonce',
     )
     message = models.ForeignKey(
         'chat.Message',

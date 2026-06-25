@@ -5,6 +5,7 @@ from .models import Notification, NotificationPreference
 
 class NotificationSerializer(serializers.ModelSerializer):
     is_read = serializers.BooleanField(read_only=True)
+    property_id = serializers.IntegerField(source='related_property_id', read_only=True, allow_null=True)
 
     class Meta:
         model = Notification

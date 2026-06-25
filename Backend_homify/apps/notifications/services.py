@@ -51,7 +51,7 @@ class NotificationDispatchService:
             notification_type=notification_type,
             title=title,
             body=body,
-            property=property_obj,
+            related_property=property_obj,
             message=message_obj,
             metadata=meta,
         )

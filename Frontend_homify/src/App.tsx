@@ -12,6 +12,7 @@ import PersonalInfoScreen from './screens/profile/PersonalInfoScreen';
 import SecurityScreen from './screens/profile/SecurityScreen';
 import NotificationsScreen from './screens/profile/NotificationsScreen';
 import PreferencesScreen from './screens/profile/PreferencesScreen';
+import AboutScreen from './screens/profile/AboutScreen';
 import NotificationsInboxScreen from './screens/NotificationsInboxScreen';
 import ChatScreen from './screens/ChatScreen';
 import MainAi from './screens/Aisection/MainAi';
@@ -30,6 +31,7 @@ const TAB_PATHS: Record<string, string> = {
 
 function tabFromPath(pathname: string): string {
   if (pathname.startsWith('/messages')) return 'Messages';
+  if (pathname.startsWith('/notifications')) return 'Notifications';
   if (pathname.startsWith('/admin')) return 'Admin';
   if (pathname.startsWith('/my-properties') || pathname.startsWith('/property/new') || pathname.includes('/edit')) return 'MyProperties';
   if (pathname.startsWith('/favorites')) return 'Favorites';
@@ -107,6 +109,7 @@ export default function App() {
             <Route path="/assist" element={<MainAi />} />
             <Route path="/my-properties" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><MyPropertiesScreen /></RoleGuard>} />
             <Route path="/messages" element={<MessagesScreen />} />
+            <Route path="/notifications" element={<NotificationsInboxScreen />} />
             <Route path="/admin" element={<RoleGuard roles={['ADMIN']}><AdminModerationScreen /></RoleGuard>} />
             <Route path="/property/new" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><PropertyFormScreen /></RoleGuard>} />
             <Route path="/property/:id/edit" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><PropertyFormScreen /></RoleGuard>} />

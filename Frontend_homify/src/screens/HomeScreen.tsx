@@ -9,7 +9,7 @@ import { RecommendedCard } from '../components/Cards';
 import PriceMap from '../components/PriceMap';
 import { Hotel } from '../types';
 import { searchProperties } from '../services/propertyService';
-import { getUnreadCount } from '../services/messageService';
+import { getNotificationUnreadCount } from '../services/notificationService';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
 import { useFavorites } from '@/context/FavoritesContext';
 import { useSettings } from '@/context/SettingsContext';
@@ -74,7 +74,7 @@ export default function HomeScreen() {
   });
   const [viewMode, setViewMode] = useState<'list' | 'map'>(settings.defaultViewMode);
   const [activeId, setActiveId] = useState<number | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [hasNext, setHasNext] = useState(false);
@@ -82,9 +82,9 @@ export default function HomeScreen() {
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
-    getUnreadCount()
-      .then(setUnreadCount)
-      .catch(() => setUnreadCount(0));
+    getNotificationUnreadCount()
+      .then(setNotificationCount)
+      .catch(() => setNotificationCount(0));
   }, []);
 
   const buildQueryString = useCallback((customSearch?: string, customFilters?: Filters): string => {
@@ -240,13 +240,15 @@ export default function HomeScreen() {
             </div>
             <button
               type="button"
-              onClick={() => navigate('/messages')}
+              onClick={() => navigate('/notifications')}
               className="relative p-2 md:p-1.5 bg-homify-surface rounded-full border border-homify-border hover:border-homify-accent/40 transition-colors shrink-0"
-              aria-label="Messages"
+              aria-label="Notifications"
             >
               <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-homify-primary" />
-              {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-homify-accent rounded-full" />
+              {notificationCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-homify-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {notificationCount > 9 ? '9+' : notificationCount}
+                </span>
               )}
             </button>
           </header>

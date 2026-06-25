@@ -33,7 +33,7 @@ jobs:
           DJANGO_SETTINGS_MODULE: rental_project.settings
 
       - name: Run tests
-        run: python manage.py test apps.core.tests --verbosity=2
+        run: python manage.py test apps.core.tests apps.notifications.tests --verbosity=2
         env:
           DJANGO_SETTINGS_MODULE: rental_project.settings
 
