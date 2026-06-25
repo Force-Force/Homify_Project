@@ -22,7 +22,7 @@ export const RecommendedCard = ({
 }: RecommendedCardProps) => (
   <SpotlightCard
     onClick={onClick}
-    className="min-w-[260px] shrink-0 p-0 group"
+    className="w-full p-0 group"
     spotlightColor="rgba(224, 122, 95, 0.12)"
   >
     <div className="relative mb-0 overflow-hidden h-44">

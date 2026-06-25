@@ -329,10 +329,11 @@ export default function HomeScreen() {
 
           {properties.length > 0 ? (
             <>
-              <div className="flex overflow-x-auto pb-4 gap-4 scrollbar-hide md:grid md:grid-cols-2 md:overflow-visible md:gap-4 md:pb-6">
+              <div className="flex flex-col gap-4 pb-4 md:grid md:grid-cols-2 md:gap-4 md:pb-6">
                 {properties.map((hotel, index) => (
                   <div
                     key={hotel.id}
+                    className="w-full"
                     onMouseEnter={() => setActiveId(hotel.id)}
                     onMouseLeave={() => setActiveId(null)}
                   >
