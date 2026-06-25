@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/messages/', include('apps.chat.urls')),
     path('api/amenities/', include('apps.amenities.urls')),
     path('api/reports/', include('apps.reports.urls')),
+    path('api/notifications/', include('apps.notifications.urls')),
 ]
 
 if settings.DEBUG:

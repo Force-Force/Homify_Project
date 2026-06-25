@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'apps.favorites',
     'apps.reports',
     'apps.amenities',
+    'apps.notifications',
 ]
 
 MIDDLEWARE = [

@@ -67,6 +67,7 @@ def generate_photo_thumbnail_task(self, photo_id):
 @shared_task
 def notify_property_rejected_task(property_id, reason=''):
     """Notify landlord when their property is rejected."""
+    from apps.notifications.services import NotificationDispatchService
     from apps.properties.models import Property
 
     try:
@@ -75,24 +76,34 @@ def notify_property_rejected_task(property_id, reason=''):
         return
 
     landlord = prop.landlord
-    body = (
+    title = 'Annonce rejetée'
+    body = f'Votre annonce « {prop.title} » a été rejetée.'
+    if reason:
+        body += f' Motif : {reason}'
+    email_body = (
         f"Bonjour {landlord.first_name},\n\n"
         f"Votre annonce « {prop.title} » a été rejetée.\n"
     )
     if reason:
-        body += f"\nMotif : {reason}\n"
-    body += "\nVous pouvez la modifier et la resoumettre depuis votre espace propriétaire.\n\n— L'équipe Homify"
+        email_body += f"\nMotif : {reason}\n"
+    email_body += "\nVous pouvez la modifier et la resoumettre depuis votre espace propriétaire.\n\n— L'équipe Homify"
 
-    send_email_task.delay(
-        'Homify — Annonce rejetée',
+    NotificationDispatchService.notify(
+        landlord,
+        'PROPERTY_REJECTED',
+        title,
         body,
-        landlord.email,
+        property_obj=prop,
+        metadata={'action_path': f'/property/{prop.id}/edit', 'reason': reason},
+        email_subject='Homify — Annonce rejetée',
+        email_body=email_body,
     )
 
 
 @shared_task
 def notify_property_approved_task(property_id):
     """Notify landlord when property is approved (awaiting publish)."""
+    from apps.notifications.services import NotificationDispatchService
     from apps.properties.models import Property
 
     try:
@@ -101,21 +112,30 @@ def notify_property_approved_task(property_id):
         return
 
     landlord = prop.landlord
-    body = (
+    title = 'Annonce approuvée'
+    body = f'« {prop.title} » a été approuvée et sera publiée prochainement.'
+    email_body = (
         f"Bonjour {landlord.first_name},\n\n"
         f"Votre annonce « {prop.title} » a été approuvée par notre équipe.\n"
         f"Elle sera publiée prochainement sur la plateforme.\n\n— L'équipe Homify"
     )
-    send_email_task.delay(
-        'Homify — Annonce approuvée',
+
+    NotificationDispatchService.notify(
+        landlord,
+        'PROPERTY_APPROVED',
+        title,
         body,
-        landlord.email,
+        property_obj=prop,
+        metadata={'action_path': '/my-properties'},
+        email_subject='Homify — Annonce approuvée',
+        email_body=email_body,
     )
 
 
 @shared_task
 def notify_property_published_task(property_id):
     """Notify landlord when property goes live."""
+    from apps.notifications.services import NotificationDispatchService
     from apps.properties.models import Property
 
     try:
@@ -124,20 +144,29 @@ def notify_property_published_task(property_id):
         return
 
     landlord = prop.landlord
-    body = (
+    title = 'Annonce publiée'
+    body = f'« {prop.title} » est maintenant en ligne sur Homify.'
+    email_body = (
         f"Bonjour {landlord.first_name},\n\n"
         f"Votre annonce « {prop.title} » est maintenant en ligne sur Homify !\n\n— L'équipe Homify"
     )
-    send_email_task.delay(
-        'Homify — Annonce publiée',
+
+    NotificationDispatchService.notify(
+        landlord,
+        'PROPERTY_PUBLISHED',
+        title,
         body,
-        landlord.email,
+        property_obj=prop,
+        metadata={'action_path': f'/property/{prop.id}'},
+        email_subject='Homify — Annonce publiée',
+        email_body=email_body,
     )
 
 
 @shared_task
 def notify_new_message_task(message_id):
     """Notify recipient of a new message."""
+    from apps.notifications.services import NotificationDispatchService
     from apps.chat.models import Message
 
     try:
@@ -146,17 +175,28 @@ def notify_new_message_task(message_id):
         return
 
     recipient = message.recipient
+    title = 'Nouveau message'
     body = (
+        f'{message.sender.get_full_name()} vous a écrit concernant « {message.property.title} ».'
+    )
+    email_body = (
         f"Bonjour {recipient.first_name},\n\n"
         f"Vous avez reçu un nouveau message de {message.sender.get_full_name()} "
         f"concernant « {message.property.title} ».\n\n"
         f"Sujet : {message.subject}\n\n"
         f"Connectez-vous à Homify pour répondre.\n\n— L'équipe Homify"
     )
-    send_email_task.delay(
-        f'Homify — Nouveau message : {message.subject}',
+
+    NotificationDispatchService.notify(
+        recipient,
+        'MESSAGE',
+        title,
         body,
-        recipient.email,
+        property_obj=message.property,
+        message_obj=message,
+        metadata={'action_path': f'/property/{message.property_id}/chat'},
+        email_subject=f'Homify — Nouveau message : {message.subject}',
+        email_body=email_body,
     )
 
 

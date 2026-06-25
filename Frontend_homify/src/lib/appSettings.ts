@@ -1,17 +1,11 @@
 export interface AppSettings {
   defaultCity: string;
   defaultViewMode: 'list' | 'map';
-  emailNotifications: boolean;
-  messageAlerts: boolean;
-  newListingAlerts: boolean;
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   defaultCity: 'Yaoundé',
   defaultViewMode: 'list',
-  emailNotifications: true,
-  messageAlerts: true,
-  newListingAlerts: false,
 };
 
 const STORAGE_KEY = 'homify_app_settings';

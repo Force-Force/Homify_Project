@@ -12,7 +12,7 @@ import PersonalInfoScreen from './screens/profile/PersonalInfoScreen';
 import SecurityScreen from './screens/profile/SecurityScreen';
 import NotificationsScreen from './screens/profile/NotificationsScreen';
 import PreferencesScreen from './screens/profile/PreferencesScreen';
-import AboutScreen from './screens/profile/AboutScreen';
+import NotificationsInboxScreen from './screens/NotificationsInboxScreen';
 import ChatScreen from './screens/ChatScreen';
 import MainAi from './screens/Aisection/MainAi';
 import { FavoritesProvider } from './context/FavoritesContext';

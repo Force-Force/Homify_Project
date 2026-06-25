@@ -25,7 +25,8 @@ export const API_ROUTES = {
     similar: (id: number | string) => `${API_BASE_URL}/properties/${id}/similar/`,
     submitForReview: (id: number | string) =>
       `${API_BASE_URL}/properties/${id}/submit_for_review/`,
-    markRented: (id: number | string) => `${API_BASE_URL}/properties/${id}/mark_rented/`,
+    markRented: (id: number | string) =>
+      `${API_BASE_URL}/properties/${id}/mark_rented/`,
   },
   favorites: {
     list: `${API_BASE_URL}/favorites/`,
@@ -43,6 +44,13 @@ export const API_ROUTES = {
       `${API_BASE_URL}/messages/thread/${propertyId}/`,
     markAsRead: (id: number | string) => `${API_BASE_URL}/messages/${id}/mark_as_read/`,
     unreadCount: `${API_BASE_URL}/messages/unread_count/`,
+  },
+  notifications: {
+    list: `${API_BASE_URL}/notifications/`,
+    unreadCount: `${API_BASE_URL}/notifications/unread_count/`,
+    markRead: (id: number | string) => `${API_BASE_URL}/notifications/${id}/mark_read/`,
+    markAllRead: `${API_BASE_URL}/notifications/mark_all_read/`,
+    preferences: `${API_BASE_URL}/notifications/preferences/`,
   },
   amenities: {
     list: `${API_BASE_URL}/amenities/`,
