@@ -31,7 +31,7 @@ export default {
       },
       zIndex: {
         map: '1',
-        modal: '1000',
+        modal: '1100',
       },
     },
   },

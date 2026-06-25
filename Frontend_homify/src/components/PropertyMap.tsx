@@ -78,7 +78,7 @@ export const PropertyMap = ({ lat, lng, address }: MapProps) => {
 
         <button
           onClick={openExternalMap}
-          className="absolute bottom-3 left-3 z-[400] bg-homify-card/95 backdrop-blur-sm text-homify-primary text-xs font-bold py-2 px-3 rounded-btn shadow-card border border-homify-border flex items-center gap-1.5 hover:bg-white transition"
+          className="absolute bottom-3 left-3 z-10 bg-homify-card/95 backdrop-blur-sm text-homify-primary text-xs font-bold py-2 px-3 rounded-btn shadow-card border border-homify-border flex items-center gap-1.5 hover:bg-white transition"
         >
           <ExternalLink className="w-3 h-3" />
           Ouvrir GPS

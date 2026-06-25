@@ -388,7 +388,7 @@ export default function HomeScreen() {
         {viewMode === 'map' && (
           <button
             onClick={() => setViewMode('list')}
-            className="md:hidden absolute top-6 left-6 z-[1000] bg-homify-card p-3 rounded-full shadow-card border border-homify-border"
+            className="md:hidden absolute top-6 left-6 z-20 bg-homify-card p-3 rounded-full shadow-card border border-homify-border"
             aria-label="Retour à la liste"
           >
             <List className="w-5 h-5 text-homify-primary" />
