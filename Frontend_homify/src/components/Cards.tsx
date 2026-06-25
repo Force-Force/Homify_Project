@@ -95,7 +95,7 @@ export const FavoriteCard = ({ hotel, onClick, onRemove }: FavoriteCardProps) =>
           e.stopPropagation();
           onRemove?.();
         }}
-        className="absolute top-4 right-4 bg-white/30 backdrop-blur-sm p-2 rounded-full z-10 hover:bg-white/50 transition"
+        className="absolute top-4 right-4 bg-homify-card/30 backdrop-blur-sm p-2 rounded-full z-10 hover:bg-homify-card/50 transition"
         aria-label="Retirer des favoris"
       >
         <Heart className="w-5 h-5 text-homify-accent fill-homify-accent" />
