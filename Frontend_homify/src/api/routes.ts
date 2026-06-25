@@ -44,6 +44,9 @@ export const API_ROUTES = {
       `${API_BASE_URL}/messages/thread/${propertyId}/`,
     markAsRead: (id: number | string) => `${API_BASE_URL}/messages/${id}/mark_as_read/`,
     unreadCount: `${API_BASE_URL}/messages/unread_count/`,
+    conversations: `${API_BASE_URL}/messages/conversations/`,
+    markThreadRead: (propertyId: number | string) =>
+      `${API_BASE_URL}/messages/thread/${propertyId}/mark_read/`,
   },
   notifications: {
     list: `${API_BASE_URL}/notifications/`,

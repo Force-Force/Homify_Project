@@ -13,7 +13,7 @@ from apps.core.services import MessagingPolicyService
 from apps.core.utils import business_error_response
 
 from .models import Message
-from .serializers import MessageSerializer, MessageCreateSerializer
+from .serializers import MessageSerializer, MessageCreateSerializer, ConversationSerializer
 
 
 class MessageViewSet(viewsets.ModelViewSet):
@@ -106,6 +106,58 @@ class MessageViewSet(viewsets.ModelViewSet):
         ).count()
 
         return Response({'unread_count': count})
+
+    @action(detail=False, methods=['get'])
+    def conversations(self, request):
+        """Grouped threads — one entry per property the user participates in."""
+        user = request.user
+        base_qs = self.get_queryset()
+        property_ids = (
+            base_qs.values_list('property_id', flat=True)
+            .distinct()
+            .order_by('-property_id')
+        )
+
+        threads = []
+        for property_id in property_ids:
+            thread_messages = (
+                base_qs.filter(property_id=property_id)
+                .select_related('sender', 'recipient', 'property', 'property__landlord')
+                .order_by('-sent_at')
+            )
+            last_message = thread_messages.first()
+            if not last_message:
+                continue
+
+            if last_message.sender_id == user.id:
+                contact = last_message.recipient
+            else:
+                contact = last_message.sender
+
+            unread_count = thread_messages.filter(recipient=user, is_read=False).count()
+
+            threads.append({
+                'property_id': property_id,
+                'property_detail': last_message.property,
+                'contact': contact,
+                'last_message': last_message,
+                'unread_count': unread_count,
+                'updated_at': last_message.sent_at,
+            })
+
+        threads.sort(key=lambda item: item['updated_at'], reverse=True)
+        serializer = ConversationSerializer(threads, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='thread/(?P<property_id>[^/.]+)/mark_read')
+    def mark_thread_read(self, request, property_id=None):
+        """Mark all messages in a property thread as read for the current user."""
+        updated = Message.objects.filter(
+            property_id=property_id,
+            recipient=request.user,
+            is_read=False,
+        ).update(is_read=True, read_at=timezone.now())
+        return Response({'marked_read': updated})
 
     @action(detail=False, methods=['get'], url_path='thread/(?P<property_id>[^/.]+)')
     def thread(self, request, property_id=None):

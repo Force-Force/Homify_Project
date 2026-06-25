@@ -25,6 +25,17 @@ class MessageSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'sender', 'is_read', 'sent_at', 'read_at')
 
 
+class ConversationSerializer(serializers.Serializer):
+    """Grouped thread summary for the inbox."""
+
+    property_id = serializers.IntegerField()
+    property_detail = PropertyListSerializer()
+    contact = UserSerializer()
+    last_message = MessageSerializer()
+    unread_count = serializers.IntegerField()
+    updated_at = serializers.DateTimeField()
+
+
 class MessageCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating messages."""
 

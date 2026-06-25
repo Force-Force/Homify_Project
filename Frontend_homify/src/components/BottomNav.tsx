@@ -1,29 +1,55 @@
-import { Home, Heart, Bot, User, Building2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Home, Heart, Bot, User, Building2, MessageSquare } from 'lucide-react';
 import Dock from '@/components/ui/Dock/Dock';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import { getUnreadCount } from '@/services/messageService';
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
+type NavItem = {
+  name: string;
+  label: string;
+  icon: typeof Home;
+  badge?: number;
+};
+
 export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   const { user } = useAuth();
   const isLandlord = user?.role === 'LANDLORD' || user?.role === 'ADMIN';
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
-  const NAV_ITEMS = [
+  useEffect(() => {
+    if (!user) return;
+    getUnreadCount()
+      .then(setUnreadMessages)
+      .catch(() => setUnreadMessages(0));
+  }, [user, activeTab]);
+
+  const NAV_ITEMS: NavItem[] = [
     { name: 'Home', label: 'Accueil', icon: Home },
     { name: 'Favorites', label: 'Favoris', icon: Heart },
+    { name: 'Messages', label: 'Messages', icon: MessageSquare, badge: unreadMessages },
     ...(isLandlord
       ? [{ name: 'MyProperties', label: 'Mes annonces', icon: Building2 }]
-      : [{ name: 'Search', label: 'Recherche', icon: Home }]),
-    { name: 'Assist', label: 'Assistant', icon: Bot },
+      : [{ name: 'Assist', label: 'Assistant', icon: Bot }]),
     { name: 'Profile', label: 'Compte', icon: User },
   ];
 
   const dockItems = NAV_ITEMS.map((item) => ({
-    icon: <item.icon className={activeTab === item.name ? 'text-white' : 'text-homify-primary'} />,
+    icon: (
+      <div className="relative">
+        <item.icon className={activeTab === item.name ? 'text-white' : 'text-homify-primary'} />
+        {(item.badge ?? 0) > 0 && activeTab !== item.name && (
+          <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 bg-homify-accent text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+            {(item.badge ?? 0) > 9 ? '9+' : item.badge}
+          </span>
+        )}
+      </div>
+    ),
     label: item.label,
     onClick: () => onTabChange(item.name),
     active: activeTab === item.name,
@@ -42,6 +68,7 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
         <nav className="flex flex-col gap-1.5">
           {NAV_ITEMS.map((item) => {
             const isActive = activeTab === item.name;
+            const badge = item.badge ?? 0;
             return (
               <button
                 key={item.name}
@@ -54,7 +81,15 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
                 )}
               >
                 <item.icon className={cn('h-5 w-5', isActive && 'text-white')} />
-                <span>{item.label}</span>
+                <span className="flex-1 text-left">{item.label}</span>
+                {badge > 0 && (
+                  <span className={cn(
+                    'text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px]',
+                    isActive ? 'bg-white/20 text-white' : 'bg-homify-accent text-white',
+                  )}>
+                    {badge > 9 ? '9+' : badge}
+                  </span>
+                )}
               </button>
             );
           })}

@@ -1,6 +1,10 @@
 import { API_ROUTES } from '../api/routes';
-import { ApiMessage, PaginatedResponse, UnreadCountResponse } from '../types/api';
+import { ApiMessage, ConversationThread, PaginatedResponse, UnreadCountResponse } from '../types/api';
 import { apiFetch } from './apiClient';
+
+export async function getConversations(): Promise<ConversationThread[]> {
+  return apiFetch<ConversationThread[]>(API_ROUTES.messages.conversations);
+}
 
 export async function getThread(propertyId: number): Promise<ApiMessage[]> {
   const data = await apiFetch<PaginatedResponse<ApiMessage> | ApiMessage[]>(
@@ -45,4 +49,8 @@ export async function deleteMessage(messageId: number): Promise<void> {
 
 export async function markAsRead(messageId: number): Promise<void> {
   await apiFetch(API_ROUTES.messages.markAsRead(messageId), { method: 'POST' });
+}
+
+export async function markThreadRead(propertyId: number): Promise<void> {
+  await apiFetch(API_ROUTES.messages.markThreadRead(propertyId), { method: 'POST' });
 }

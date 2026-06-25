@@ -33,6 +33,9 @@ Chat / Messages ✅ (corrigé)
 - Messagerie bidirectionnelle : tenant → landlord, landlord → dernier locataire du fil
 - Messages non modifiables ; suppression réservée à l'expéditeur
 - Notification email async à la réception (Celery)
+- API conversations : `GET /api/messages/conversations/` (fil par bien, dernier message, contact, unread)
+- Marquer fil lu : `POST /api/messages/thread/{property_id}/mark_read/`
+- Tests : `apps.chat.tests` (conversations + mark_thread_read)
 
 Reports (signalements) ✅ (corrigé)
 - Workflow PENDING → REVIEWED → RESOLVED/DISMISSED (review obligatoire avant resolve/dismiss)
@@ -61,8 +64,14 @@ Frontend — Perspectives d'amélioration ✅ (phase 1 + phase 2)
 - Section IA : calculateur loyer FCFA, copy Cameroun, chat support localisé
 - UX vérification email : `/verify-pending`, `/verify-email`, signup/signin branchés
 
+Frontend — Messagerie intégrée ✅
+- Onglet **Messages** dans la navigation (badge unread sur mobile + sidebar)
+- Boîte de réception par conversation (`/messages`) : recherche, photo bien, badge non-lus
+- Écran chat (`/property/:id/chat`) : scroll auto, polling 12s, regroupement par date, suggestions
+- Lien vers fiche bien depuis le chat ; marquage lu à l'ouverture du fil
+- Routes : `/messages`, `/property/:id/chat` ; onglet Messages actif sur les deux
+
 Frontend — Phase 3 ✅
-- Boîte de réception messages (`/messages`) + cloche Home
 - Signalement annonce depuis le détail (POST `/reports/`)
 - Annonces similaires sur la fiche bien
 - Édition annonce (`/property/:id/edit`) + suppression soft-delete

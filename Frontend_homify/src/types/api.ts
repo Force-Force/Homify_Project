@@ -112,6 +112,15 @@ export interface UnreadCountResponse {
   unread_count: number;
 }
 
+export interface ConversationThread {
+  property_id: number;
+  property_detail?: ApiProperty;
+  contact: { id: number; first_name: string; last_name: string; full_name?: string };
+  last_message: ApiMessage;
+  unread_count: number;
+  updated_at: string;
+}
+
 export interface ApiReport {
   id: number;
   property: number | null;

@@ -23,7 +23,7 @@ import NotFoundScreen from './screens/NotFoundScreen';
 const TAB_PATHS: Record<string, string> = {
   Home: '/home',
   Favorites: '/favorites',
-  Search: '/home',
+  Messages: '/messages',
   MyProperties: '/my-properties',
   Assist: '/assist',
   Profile: '/profile',
@@ -31,6 +31,7 @@ const TAB_PATHS: Record<string, string> = {
 
 function tabFromPath(pathname: string): string {
   if (pathname.startsWith('/messages')) return 'Messages';
+  if (pathname.includes('/chat')) return 'Messages';
   if (pathname.startsWith('/notifications')) return 'Notifications';
   if (pathname.startsWith('/admin')) return 'Admin';
   if (pathname.startsWith('/my-properties') || pathname.startsWith('/property/new') || pathname.includes('/edit')) return 'MyProperties';
