@@ -15,11 +15,33 @@ make dev-local       # backend :8000 + frontend :5173
 
 Copiez `Frontend_homify/.env.example` vers `Frontend_homify/.env.local` si vous devez surcharger l’URL API.
 
+### Données de démonstration
+
+```bash
+make seed-demo-local   # ou: make seed-demo (Docker)
+```
+
+Mot de passe commun : **`Demo1234!`**
+
+| Email | Rôle |
+|-------|------|
+| `admin@demo.homify.cm` | Admin (modération `/admin`) |
+| `marie.proprio@demo.homify.cm` | Propriétaire (10 annonces) |
+| `paul.proprio@demo.homify.cm` | Propriétaire (10 annonces) |
+| `sophie.loc@demo.homify.cm` | Locataire (favoris + messages) |
+| `jean.loc@demo.homify.cm` | Locataire |
+| `aminata.loc@demo.homify.cm` | Locataire |
+
+Inclut : **20 annonces** (publiées, en attente, brouillon, louées…), favoris, fils de messages, notifications et un signalement pour l’admin.
+
+Pour réinitialiser : `python manage.py seed_demo --reset`
+
 ## Commandes utiles
 
 | Commande | Description |
 |----------|-------------|
 | `make dev-local` | Dev backend SQLite + frontend Vite |
+| `make seed-demo-local` | Utilisateurs + annonces + interactions demo |
 | `make dev` | Dev avec Docker (PostgreSQL + Redis) |
 | `make test` | Tests backend + lint/typecheck/build frontend |
 | `make smoke` | Smoke test API (backend démarré) |
