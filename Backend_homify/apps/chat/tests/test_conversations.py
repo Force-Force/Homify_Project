@@ -68,3 +68,21 @@ class ConversationApiTests(APITestCase):
         self.assertEqual(response.data['marked_read'], 1)
         msg.refresh_from_db()
         self.assertTrue(msg.is_read)
+
+    def test_create_message_returns_full_payload(self):
+        self.client.force_authenticate(user=self.tenant)
+        response = self.client.post(
+            '/api/messages/',
+            {
+                'property_id': self.prop.id,
+                'subject': 'Disponibilité',
+                'content': 'Bonjour, est-ce que ce studio est toujours disponible ?',
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('id', response.data)
+        self.assertIn('sender', response.data)
+        self.assertIn('recipient', response.data)
+        self.assertIn('sent_at', response.data)
+        self.assertEqual(response.data['sender']['id'], self.tenant.id)

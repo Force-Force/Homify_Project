@@ -131,7 +131,11 @@ export default function ChatScreen({ propertyId, onBack }: ChatProps) {
         subject: messages.length ? `Re: ${propertyName}` : `Contact — ${propertyName}`,
         content,
       });
-      setMessages((prev) => [...prev, msg]);
+      if (msg?.sender?.id != null && msg.sent_at) {
+        setMessages((prev) => [...prev, msg]);
+      } else {
+        await loadThread(true);
+      }
       setInputText('');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Envoi impossible.');
@@ -210,6 +214,7 @@ export default function ChatScreen({ propertyId, onBack }: ChatProps) {
             </p>
             <div className="space-y-3">
               {group.items.map((msg) => {
+                if (!msg.sender?.id || !msg.sent_at) return null;
                 const isSender = msg.sender.id === user?.id;
                 return (
                   <div key={msg.id} className={`flex ${isSender ? 'justify-end' : 'justify-start'} group`}>
@@ -252,7 +257,12 @@ export default function ChatScreen({ propertyId, onBack }: ChatProps) {
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Écrivez votre message..."
             className="flex-1 bg-homify-surface text-homify-text rounded-full px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-homify-primary/20 border border-homify-border"
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && !sending && handleSend()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && !sending) {
+                e.preventDefault();
+                void handleSend();
+              }
+            }}
           />
           <button
             type="button"
