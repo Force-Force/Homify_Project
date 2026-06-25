@@ -17,9 +17,7 @@ import './index.css';
 function AuthenticatedApp() {
   return (
     <AuthProvider>
-      <SettingsProvider>
-        <App />
-      </SettingsProvider>
+      <App />
     </AuthProvider>
   );
 }
@@ -30,26 +28,28 @@ function Root() {
   return (
     <React.StrictMode>
       <BrowserRouter>
-        <Routes>
-          {authed ? (
-            <>
-              <Route path="/*" element={<AuthenticatedApp />} />
-              <Route path="*" element={<Navigate to="/home" replace />} />
-            </>
-          ) : (
-            <>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/signin" element={<HomifiSignIn />} />
-              <Route path="/signup" element={<HomifiSignUp />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPass />} />
-              <Route path="/verify-email" element={<VerifyEmailScreen />} />
-              <Route path="/verify-pending" element={<VerifyPendingScreen />} />
-              <Route path="/Reset-passode" element={<Navigate to="/reset-password" replace />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </>
-          )}
-        </Routes>
+        <SettingsProvider>
+          <Routes>
+            {authed ? (
+              <>
+                <Route path="/*" element={<AuthenticatedApp />} />
+                <Route path="*" element={<Navigate to="/home" replace />} />
+              </>
+            ) : (
+              <>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/signin" element={<HomifiSignIn />} />
+                <Route path="/signup" element={<HomifiSignUp />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPass />} />
+                <Route path="/verify-email" element={<VerifyEmailScreen />} />
+                <Route path="/verify-pending" element={<VerifyPendingScreen />} />
+                <Route path="/Reset-passode" element={<Navigate to="/reset-password" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </>
+            )}
+          </Routes>
+        </SettingsProvider>
       </BrowserRouter>
     </React.StrictMode>
   );

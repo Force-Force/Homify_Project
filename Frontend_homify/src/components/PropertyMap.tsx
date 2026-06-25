@@ -61,7 +61,7 @@ export const PropertyMap = ({ lat, lng, address }: MapProps) => {
           <button
             type="button"
             onClick={() => mapRef.current?.zoomIn()}
-            className="flex h-8 w-8 items-center justify-center rounded-btn bg-homify-card/95 backdrop-blur-sm border border-homify-border text-homify-primary shadow-card hover:bg-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-btn bg-homify-card/95 backdrop-blur-sm border border-homify-border text-homify-primary shadow-card hover:bg-homify-surface transition-colors"
             aria-label="Zoom avant"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -69,7 +69,7 @@ export const PropertyMap = ({ lat, lng, address }: MapProps) => {
           <button
             type="button"
             onClick={() => mapRef.current?.zoomOut()}
-            className="flex h-8 w-8 items-center justify-center rounded-btn bg-homify-card/95 backdrop-blur-sm border border-homify-border text-homify-primary shadow-card hover:bg-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-btn bg-homify-card/95 backdrop-blur-sm border border-homify-border text-homify-primary shadow-card hover:bg-homify-surface transition-colors"
             aria-label="Zoom arrière"
           >
             <Minus className="h-3.5 w-3.5" />
@@ -78,7 +78,7 @@ export const PropertyMap = ({ lat, lng, address }: MapProps) => {
 
         <button
           onClick={openExternalMap}
-          className="absolute bottom-3 left-3 z-10 bg-homify-card/95 backdrop-blur-sm text-homify-primary text-xs font-bold py-2 px-3 rounded-btn shadow-card border border-homify-border flex items-center gap-1.5 hover:bg-white transition"
+          className="absolute bottom-3 left-3 z-10 bg-homify-card/95 backdrop-blur-sm text-homify-primary text-xs font-bold py-2 px-3 rounded-btn shadow-card border border-homify-border flex items-center gap-1.5 hover:bg-homify-surface transition"
         >
           <ExternalLink className="w-3 h-3" />
           Ouvrir GPS

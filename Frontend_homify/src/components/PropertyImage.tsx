@@ -14,12 +14,11 @@ export const PropertyImage = ({ src, alt, className = "" }: Props) => {
   // Si pas d'URL ou si erreur de chargement
   if (!src || hasError) {
     return (
-      <div className={`flex flex-col items-center justify-center bg-gray-100 text-gray-400 ${className}`}>
-        <div className="bg-white p-3 rounded-full mb-2 shadow-sm">
-            {/* On affiche une petite maison pour rester dans le thème */}
-            <Home className="w-6 h-6 text-gray-300" />
+      <div className={`flex flex-col items-center justify-center bg-homify-border/30 text-homify-muted ${className}`}>
+        <div className="bg-homify-card p-3 rounded-full mb-2 shadow-sm">
+            <Home className="w-6 h-6 text-homify-muted/60" />
         </div>
-        <span className="text-xs font-medium text-gray-400">Image indisponible</span>
+        <span className="text-xs font-medium text-homify-muted">Image indisponible</span>
       </div>
     );
   }

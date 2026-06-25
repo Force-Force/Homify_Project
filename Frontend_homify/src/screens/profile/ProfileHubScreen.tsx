@@ -191,8 +191,8 @@ export default function ProfileHubScreen() {
         />
         <SettingsRow
           icon={SlidersHorizontal}
-          title="Préférences de recherche"
-          subtitle="Ville par défaut, affichage carte"
+          title="Préférences"
+          subtitle="Thème, ville par défaut, affichage carte"
           to="/profile/preferences"
         />
       </SettingsSection>
@@ -248,7 +248,7 @@ export default function ProfileHubScreen() {
       <button
         type="button"
         onClick={handleLogout}
-        className="w-full flex items-center justify-center gap-2 border border-homify-border text-homify-muted font-semibold py-3.5 rounded-modal hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition mt-2"
+        className="w-full flex items-center justify-center gap-2 border border-homify-border text-homify-muted font-semibold py-3.5 rounded-modal hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-950/40 dark:hover:text-red-400 dark:hover:border-red-900 transition mt-2"
       >
         <LogOut className="w-4 h-4" />
         Se déconnecter

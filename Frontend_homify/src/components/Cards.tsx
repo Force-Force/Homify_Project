@@ -36,7 +36,7 @@ export const RecommendedCard = ({
           e.stopPropagation();
           onFavoriteToggle?.(e);
         }}
-        className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm hover:text-homify-accent transition-colors z-10"
+        className="absolute top-2.5 right-2.5 bg-homify-card/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm hover:text-homify-accent transition-colors z-10"
         aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
       >
         <Heart

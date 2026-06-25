@@ -1,19 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         homify: {
-          primary: '#1B4332',
-          'primary-light': '#2D6A4F',
-          accent: '#E07A5F',
-          'accent-hover': '#C96A52',
-          surface: '#FAFAF8',
-          card: '#FFFFFF',
-          text: '#1A1A2E',
-          muted: '#6B7280',
-          border: '#E5E7EB',
+          primary: 'rgb(var(--h-primary) / <alpha-value>)',
+          'primary-light': 'rgb(var(--h-primary-light) / <alpha-value>)',
+          accent: 'rgb(var(--h-accent) / <alpha-value>)',
+          'accent-hover': 'rgb(var(--h-accent-hover) / <alpha-value>)',
+          surface: 'rgb(var(--h-surface) / <alpha-value>)',
+          card: 'rgb(var(--h-card) / <alpha-value>)',
+          text: 'rgb(var(--h-text) / <alpha-value>)',
+          muted: 'rgb(var(--h-muted) / <alpha-value>)',
+          border: 'rgb(var(--h-border) / <alpha-value>)',
         },
       },
       fontFamily: {
@@ -25,9 +26,9 @@ export default {
         modal: '24px',
       },
       boxShadow: {
-        card: '0 1px 3px rgba(27, 67, 50, 0.06), 0 4px 12px rgba(27, 67, 50, 0.04)',
-        'card-hover': '0 4px 16px rgba(27, 67, 50, 0.12)',
-        dock: '0 8px 32px rgba(27, 67, 50, 0.18)',
+        card: 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
+        dock: 'var(--shadow-dock)',
       },
       zIndex: {
         map: '1',
