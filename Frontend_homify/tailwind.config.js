@@ -29,6 +29,10 @@ export default {
         'card-hover': '0 4px 16px rgba(27, 67, 50, 0.12)',
         dock: '0 8px 32px rgba(27, 67, 50, 0.18)',
       },
+      zIndex: {
+        map: '1',
+        modal: '1000',
+      },
     },
   },
   plugins: [],

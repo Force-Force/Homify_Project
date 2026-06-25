@@ -170,7 +170,7 @@ export default function PriceMap({ properties, activeId, onMarkerClick, classNam
           <MapInstanceCapture onReady={(map) => { mapRef.current = map; }} />
         </MapContainer>
 
-        <div className="absolute bottom-4 right-4 z-[1000] flex flex-col gap-1.5 pointer-events-auto">
+        <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1.5 pointer-events-auto">
           <button
             type="button"
             onClick={() => mapRef.current?.zoomIn()}

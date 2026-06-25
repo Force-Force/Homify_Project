@@ -329,7 +329,7 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
       </div>
 
       {showReport && (
-        <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-modal flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
           <div className="bg-homify-card w-full md:w-[440px] rounded-t-modal md:rounded-modal p-6 shadow-2xl">
             <h3 className="text-xl font-bold text-homify-text mb-4">Signaler cette annonce</h3>
             {reportMessage && (
@@ -374,7 +374,7 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
       )}
 
       {showModal && (
-        <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-modal flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
           <div className="bg-homify-card w-full md:w-[400px] rounded-t-modal md:rounded-modal p-6 shadow-2xl">
             <div className="w-10 h-1 bg-homify-border rounded-full mx-auto mb-5 md:hidden" />
             <h3 className="text-xl font-bold text-homify-text mb-1 text-center">Contacter le propriétaire</h3>

@@ -90,6 +90,39 @@ input[type='range']::-moz-range-thumb {
 }
 
 /* ── Homify map styling ── */
+.homify-map-container {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+}
+
+/* Leaflet panes use z-index 200–700 by default — keep them inside the map layer */
+.homify-map-container .leaflet-pane,
+.homify-map-container .leaflet-map-pane,
+.homify-map-container .leaflet-tile-pane {
+  z-index: 1 !important;
+}
+
+.homify-map-container .leaflet-overlay-pane {
+  z-index: 2 !important;
+}
+
+.homify-map-container .leaflet-shadow-pane {
+  z-index: 3 !important;
+}
+
+.homify-map-container .leaflet-marker-pane {
+  z-index: 4 !important;
+}
+
+.homify-map-container .leaflet-tooltip-pane {
+  z-index: 5 !important;
+}
+
+.homify-map-container .leaflet-popup-pane {
+  z-index: 6 !important;
+}
+
 .homify-map-container .leaflet-container {
   background: #eef2ef;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;

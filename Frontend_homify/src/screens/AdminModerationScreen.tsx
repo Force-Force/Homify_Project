@@ -461,7 +461,7 @@ function Modal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-homify-text/40 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-modal flex items-center justify-center bg-homify-text/40 backdrop-blur-sm p-4"
       onClick={onClose}
       role="presentation"
     >

@@ -57,7 +57,7 @@ export const PropertyMap = ({ lat, lng, address }: MapProps) => {
           <MapInstanceCapture onReady={(map) => { mapRef.current = map; }} />
         </MapContainer>
 
-        <div className="absolute bottom-3 right-3 z-[400] flex flex-col gap-1.5">
+        <div className="absolute bottom-3 right-3 z-10 flex flex-col gap-1.5">
           <button
             type="button"
             onClick={() => mapRef.current?.zoomIn()}
