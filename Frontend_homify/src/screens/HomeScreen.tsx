@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin, Bell, Search, SlidersHorizontal, Loader2, X, Check, Sparkles,
@@ -80,6 +80,9 @@ export default function HomeScreen() {
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const scrollRef = useRef<HTMLElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [headerCompact, setHeaderCompact] = useState(false);
 
   useEffect(() => {
     getNotificationUnreadCount()
@@ -206,7 +209,12 @@ export default function HomeScreen() {
 
   const goToPage = (nextPage: number) => {
     fetchProperties(buildQueryString(searchQuery.trim() || undefined), nextPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (window.innerWidth < 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    setHeaderCompact(false);
   };
 
   const hasActiveFilters = () =>
@@ -220,14 +228,81 @@ export default function HomeScreen() {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / 20));
 
+  useEffect(() => {
+    const onScroll = () => {
+      if (window.innerWidth >= 768) return;
+      setHeaderCompact(window.scrollY > 48);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const handleListScroll = () => {
+    if (window.innerWidth < 768) return;
+    const top = scrollRef.current?.scrollTop ?? 0;
+    setHeaderCompact(top > 48);
+  };
+
+  const expandMobileHeader = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setHeaderCompact(false);
+    window.setTimeout(() => searchInputRef.current?.focus(), 280);
+  };
+
+  const notificationButton = (size: 'sm' | 'md' = 'md') => (
+    <button
+      type="button"
+      onClick={() => navigate('/notifications')}
+      className={`relative bg-homify-surface rounded-full border border-homify-border hover:border-homify-accent/40 transition-colors shrink-0 ${
+        size === 'sm' ? 'p-2' : 'p-2 md:p-1.5'
+      }`}
+      aria-label="Notifications"
+    >
+      <Bell className={size === 'sm' ? 'w-4 h-4 text-homify-primary' : 'w-4 h-4 md:w-3.5 md:h-3.5 text-homify-primary'} />
+      {notificationCount > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-homify-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+          {notificationCount > 9 ? '9+' : notificationCount}
+        </span>
+      )}
+    </button>
+  );
+
   return (
-    <div className="flex flex-col md:flex-row h-full md:h-screen overflow-hidden pb-28 md:pb-0">
+    <div className="flex flex-col md:flex-row md:h-screen md:overflow-hidden pb-28 md:pb-0">
+      {headerCompact && (
+        <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-homify-card border-b border-homify-border shadow-sm">
+          <div className="flex items-center gap-2 px-4 py-2.5">
+            <span className="text-base font-extrabold tracking-tight text-homify-primary shrink-0">
+              Homify
+            </span>
+            <button
+              type="button"
+              onClick={expandMobileHeader}
+              className="flex-1 min-w-0 flex items-center gap-1.5 px-2.5 py-2 rounded-btn bg-homify-surface border border-homify-border text-left"
+              aria-label="Localisation et recherche"
+            >
+              <MapPin className="w-3.5 h-3.5 text-homify-accent shrink-0" />
+              <span className="truncate text-xs font-semibold text-homify-primary">{locationName}</span>
+            </button>
+            <button
+              type="button"
+              onClick={expandMobileHeader}
+              className="p-2 rounded-btn bg-homify-primary text-white shrink-0"
+              aria-label="Rechercher"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+            {notificationButton('sm')}
+          </div>
+        </div>
+      )}
+
       <div
-        className={`flex flex-col min-w-0 md:w-[58%] md:max-w-[58%] md:h-full md:overflow-hidden ${
-          viewMode === 'map' ? 'hidden md:flex' : 'flex flex-1'
+        className={`flex flex-col min-w-0 md:w-[58%] md:max-w-[58%] md:h-full md:overflow-hidden md:min-h-0 ${
+          viewMode === 'map' ? 'hidden md:flex' : 'flex'
         }`}
       >
-        <div className="flex-none bg-homify-card border-b border-homify-border px-5 md:px-6 py-4 md:py-3 space-y-3 md:space-y-2.5">
+        <div className="hidden md:block flex-none bg-homify-card border-b border-homify-border px-5 md:px-6 py-4 md:py-3 space-y-3 md:space-y-2.5">
           <header className="flex justify-between items-center">
             <div className="min-w-0">
               <p className="text-homify-muted text-[10px] md:text-xs font-medium uppercase tracking-wider">
@@ -238,25 +313,8 @@ export default function HomeScreen() {
                 <span className="truncate">{locationName}</span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => navigate('/notifications')}
-              className="relative p-2 md:p-1.5 bg-homify-surface rounded-full border border-homify-border hover:border-homify-accent/40 transition-colors shrink-0"
-              aria-label="Notifications"
-            >
-              <Bell className="w-4 h-4 md:w-3.5 md:h-3.5 text-homify-primary" />
-              {notificationCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-homify-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {notificationCount > 9 ? '9+' : notificationCount}
-                </span>
-              )}
-            </button>
+            {notificationButton()}
           </header>
-
-          <div className="md:hidden">
-            <h1 className="text-2xl font-extrabold text-homify-text tracking-tight">Bonjour 👋</h1>
-            <p className="text-homify-muted text-sm mt-1">Trouvez le logement idéal près de chez vous</p>
-          </div>
 
           <div className="flex gap-2 md:gap-2.5">
             <div className="flex-1 relative min-w-0">
@@ -303,7 +361,77 @@ export default function HomeScreen() {
           </div>
         </div>
 
-        <section className="flex-1 overflow-y-auto px-5 md:px-6 py-4 md:py-5 min-h-0">
+        <div className="md:hidden bg-homify-card border-b border-homify-border px-5 py-4 space-y-3">
+          <header className="flex justify-between items-center gap-3">
+            <div className="min-w-0">
+              <p className="text-homify-muted text-[10px] font-medium uppercase tracking-wider">
+                Localisation
+              </p>
+              <div className="flex items-center gap-1.5 text-homify-primary font-bold text-base mt-0.5">
+                <MapPin className="w-3.5 h-3.5 text-homify-accent shrink-0" />
+                <span className="truncate">{locationName}</span>
+              </div>
+            </div>
+            {notificationButton('sm')}
+          </header>
+
+          <div>
+            <h1 className="text-2xl font-extrabold text-homify-text tracking-tight">Bonjour 👋</h1>
+            <p className="text-homify-muted text-sm mt-1">Trouvez le logement idéal près de chez vous</p>
+          </div>
+
+          <div className="flex gap-2">
+            <div className="flex-1 relative min-w-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-homify-muted w-4 h-4" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Rechercher un quartier, une ville..."
+                className="w-full pl-9 pr-3 py-2.5 bg-homify-surface rounded-btn border border-homify-border
+                           focus:outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40
+                           text-sm placeholder:text-homify-muted/70 transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={() => setShowFilters(true)}
+              className="bg-homify-primary p-2.5 rounded-btn text-white hover:bg-homify-primary-light transition shadow-sm shrink-0"
+              aria-label="Filtres"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+            {PROPERTY_TYPES.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => {
+                  const newType = filters.type === value ? '' : value;
+                  const newFilters = { ...filters, type: newType };
+                  setFilters(newFilters);
+                  setPage(1);
+                  fetchProperties(buildQueryString(undefined, newFilters), 1);
+                }}
+                className={`shrink-0 px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                  filters.type === value
+                    ? 'bg-homify-accent text-white border-homify-accent'
+                    : 'bg-homify-surface text-homify-muted border-homify-border hover:border-homify-primary/30'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <section
+          ref={scrollRef}
+          onScroll={handleListScroll}
+          className="md:flex-1 md:overflow-y-auto md:min-h-0 md:px-6 md:py-5"
+        >
+          <div className="px-5 md:px-0 py-4 md:py-0">
           {error && (
             <div className="mb-4 p-3.5 bg-red-50 text-red-600 rounded-btn text-sm text-center border border-red-100">
               {error}
@@ -383,6 +511,7 @@ export default function HomeScreen() {
               </div>
             )
           )}
+          </div>
         </section>
       </div>
 
