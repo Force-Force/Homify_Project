@@ -338,7 +338,7 @@ export default function HomeScreen() {
             <button
               onClick={() => setShowFilters(true)}
               className="bg-homify-primary p-2.5 md:p-2 rounded-btn text-white hover:bg-homify-primary-light transition shadow-sm shrink-0"
-              aria-label="Filtres"
+              aria-label={t('home.filters')}
             >
               <SlidersHorizontal className="w-4 h-4" />
             </button>
@@ -402,7 +402,7 @@ export default function HomeScreen() {
             <button
               onClick={() => setShowFilters(true)}
               className="bg-homify-primary p-2.5 rounded-btn text-white hover:bg-homify-primary-light transition shadow-sm shrink-0"
-              aria-label="Filtres"
+              aria-label={t('home.filters')}
             >
               <SlidersHorizontal className="w-4 h-4" />
             </button>
@@ -549,15 +549,15 @@ export default function HomeScreen() {
           onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
           className="bg-homify-primary text-white px-6 py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 hover:bg-homify-primary-light transition"
         >
-          {viewMode === 'list' ? (
+              {viewMode === 'list' ? (
             <>
               <MapIcon className="w-4 h-4" />
-              Carte
+              {t('home.toggleMap')}
             </>
           ) : (
             <>
               <List className="w-4 h-4" />
-              Liste
+              {t('home.toggleList')}
             </>
           )}
         </button>
@@ -567,7 +567,7 @@ export default function HomeScreen() {
         <div className="fixed inset-0 z-modal flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
           <div className="homify-modal-panel md:w-[480px] h-[85vh] md:h-auto md:max-h-[85vh] flex flex-col">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-homify-text">Filtres</h3>
+              <h3 className="text-xl font-bold text-homify-text">{t('home.filters')}</h3>
               <button
                 onClick={() => setShowFilters(false)}
                 className="p-2 bg-homify-surface rounded-full hover:bg-homify-border/50 transition"
@@ -578,7 +578,7 @@ export default function HomeScreen() {
 
             <div className="flex-1 overflow-y-auto space-y-6 pr-1">
               <div>
-                <label className="block text-sm font-semibold text-homify-text mb-2">Type de bien</label>
+                <label className="block text-sm font-semibold text-homify-text mb-2">{t('home.propertyType')}</label>
                 <div className="grid grid-cols-2 gap-2.5">
                   {PROPERTY_TYPES.map(({ value, label }) => (
                     <button
@@ -597,18 +597,18 @@ export default function HomeScreen() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-homify-text mb-2">Budget (FCFA)</label>
+                <label className="block text-sm font-semibold text-homify-text mb-2">{t('home.budget')}</label>
                 <div className="flex gap-3">
                   <input
                     type="number"
-                    placeholder="Min"
+                    placeholder={t('common.min')}
                     className="flex-1 homify-field-compact"
                     value={filters.minPrice}
                     onChange={(e) => updateFilter('minPrice', e.target.value)}
                   />
                   <input
                     type="number"
-                    placeholder="Max"
+                    placeholder={t('common.max')}
                     className="flex-1 homify-field-compact"
                     value={filters.maxPrice}
                     onChange={(e) => updateFilter('maxPrice', e.target.value)}
@@ -618,7 +618,7 @@ export default function HomeScreen() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-semibold text-homify-text mb-2">Chambres (min.)</label>
+                  <label className="block text-sm font-semibold text-homify-text mb-2">{t('home.bedroomsMin')}</label>
                   <input
                     type="number"
                     min="0"
@@ -629,7 +629,7 @@ export default function HomeScreen() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-homify-text mb-2">Salles de bain (min.)</label>
+                  <label className="block text-sm font-semibold text-homify-text mb-2">{t('home.bathroomsMin')}</label>
                   <input
                     type="number"
                     min="0"
@@ -642,7 +642,7 @@ export default function HomeScreen() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-homify-text mb-2">Surface min. (m²)</label>
+                <label className="block text-sm font-semibold text-homify-text mb-2">{t('home.surfaceMin')}</label>
                 <input
                   type="number"
                   min="0"
@@ -654,7 +654,7 @@ export default function HomeScreen() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-homify-text mb-2">Meublé</label>
+                <label className="block text-sm font-semibold text-homify-text mb-2">{t('home.furnished')}</label>
                 <select
                   className={`w-full ${selectClass}`}
                   value={filters.furnished}
