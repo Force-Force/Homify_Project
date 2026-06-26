@@ -1,15 +1,18 @@
 import { Loader2, MessageSquare, Search, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ConversationThread } from '@/types/api';
 import { PropertyImage } from '@/components/PropertyImage';
+import { useSettings } from '@/context/SettingsContext';
+import { getDateLocale } from '@/lib/locale';
 
-function formatWhen(iso: string) {
+function formatWhen(iso: string, locale: string) {
   const date = new Date(iso);
   const now = new Date();
   const isToday = date.toDateString() === now.toDateString();
   if (isToday) {
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   }
-  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
 }
 
 interface ConversationListProps {
@@ -39,23 +42,27 @@ export function ConversationList({
   onBrowse,
   onToggleCollapse,
 }: ConversationListProps) {
+  const { t } = useTranslation();
+  const { locale } = useSettings();
+  const dateLocale = getDateLocale(locale);
+
   return (
     <div className="flex flex-col h-full min-h-0">
       <div className={`shrink-0 border-b border-homify-border bg-homify-card ${collapsed ? 'px-2 py-3' : 'px-5 py-4 md:px-4'}`}>
         {!collapsed && (
           <>
             <div className="md:hidden mb-3">
-              <p className="text-homify-muted text-[10px] font-medium uppercase tracking-wider">Messagerie</p>
-              <h1 className="text-xl font-bold text-homify-text">Messages</h1>
+              <p className="text-homify-muted text-[10px] font-medium uppercase tracking-wider">{t('messages.messaging')}</p>
+              <h1 className="text-xl font-bold text-homify-text">{t('messages.title')}</h1>
               <p className="text-xs text-homify-muted mt-0.5">
-                {totalUnread > 0 ? `${totalUnread} non lu(s)` : 'Vos conversations par annonce'}
+                {totalUnread > 0 ? t('messages.unread', { count: totalUnread }) : t('messages.conversationsDefault')}
               </p>
             </div>
             <div className="hidden md:flex items-start justify-between gap-2 mb-3">
               <div className="min-w-0">
-                <h2 className="text-lg font-bold text-homify-text">Messages</h2>
+                <h2 className="text-lg font-bold text-homify-text">{t('messages.title')}</h2>
                 <p className="text-xs text-homify-muted">
-                  {totalUnread > 0 ? `${totalUnread} non lu(s)` : `${threads.length} conversation(s)`}
+                  {totalUnread > 0 ? t('messages.unread', { count: totalUnread }) : t('messages.conversationCount', { count: threads.length })}
                 </p>
               </div>
               {onToggleCollapse && (
@@ -63,8 +70,8 @@ export function ConversationList({
                   type="button"
                   onClick={onToggleCollapse}
                   className="p-2 rounded-btn border border-homify-border text-homify-muted hover:text-homify-primary hover:border-homify-primary/30 transition shrink-0"
-                  aria-label="Réduire la liste"
-                  title="Réduire la liste"
+                  aria-label={t('messages.collapseList')}
+                  title={t('messages.collapseList')}
                 >
                   <PanelLeftClose className="w-4 h-4" />
                 </button>
@@ -76,7 +83,7 @@ export function ConversationList({
                 type="search"
                 value={query}
                 onChange={(e) => onQueryChange(e.target.value)}
-                placeholder="Rechercher..."
+                placeholder={t('messages.searchPlaceholder')}
                 className="w-full pl-10 pr-3 py-2.5 bg-homify-surface border border-homify-border rounded-btn text-sm text-homify-text outline-none focus:ring-2 focus:ring-homify-primary/20"
               />
             </div>
@@ -90,8 +97,8 @@ export function ConversationList({
                 type="button"
                 onClick={onToggleCollapse}
                 className="p-2 rounded-btn border border-homify-border text-homify-muted hover:text-homify-primary hover:border-homify-primary/30 transition"
-                aria-label="Agrandir la liste"
-                title="Agrandir la liste"
+                aria-label={t('messages.expandList')}
+                title={t('messages.expandList')}
               >
                 <PanelLeftOpen className="w-4 h-4" />
               </button>
@@ -115,12 +122,10 @@ export function ConversationList({
             <div className="text-center py-12 px-6 m-4 bg-homify-card rounded-modal border border-homify-border">
               <MessageSquare className="w-10 h-10 text-homify-muted/40 mx-auto mb-3" />
               <p className="font-medium text-homify-text mb-1">
-                {query ? 'Aucun résultat' : 'Aucune conversation'}
+                {query ? t('messages.noSearchResults') : t('messages.emptyTitle')}
               </p>
               <p className="text-sm text-homify-muted mb-4">
-                {query
-                  ? 'Essayez un autre mot-clé.'
-                  : 'Contactez un propriétaire depuis une annonce.'}
+                {query ? t('messages.noSearchHint') : t('messages.emptyHint')}
               </p>
               {!query && onBrowse && (
                 <button
@@ -128,7 +133,7 @@ export function ConversationList({
                   onClick={onBrowse}
                   className="text-sm font-semibold text-homify-primary hover:underline"
                 >
-                  Parcourir les annonces
+                  {t('messages.browseListings')}
                 </button>
               )}
             </div>
@@ -187,7 +192,7 @@ export function ConversationList({
                         {title}
                       </p>
                       <span className="text-[10px] text-homify-muted shrink-0">
-                        {formatWhen(thread.updated_at)}
+                        {formatWhen(thread.updated_at, dateLocale)}
                       </span>
                     </div>
                     <p className="text-xs text-homify-muted truncate">{contact}</p>

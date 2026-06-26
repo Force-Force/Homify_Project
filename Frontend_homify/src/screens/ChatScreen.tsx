@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getPropertyById } from '../services/propertyService';
 import { getThread, sendMessage, markThreadRead, deleteMessage } from '../services/messageService';
 import { ApiMessage } from '../types/api';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/services/apiClient';
 import { PropertyImage } from '@/components/PropertyImage';
@@ -49,6 +50,7 @@ function groupByDay(messages: ApiMessage[]) {
 export default function ChatScreen({ propertyId, onBack, embedded = false }: ChatProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const messagesLayout = useMessagesLayout();
   const [propertyName, setPropertyName] = useState('');
   const [propertyPhoto, setPropertyPhoto] = useState<string | null>(null);
@@ -276,7 +278,7 @@ export default function ChatScreen({ propertyId, onBack, embedded = false }: Cha
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Écrivez votre message..."
+            placeholder={t('messages.inputPlaceholder')}
             className="flex-1 homify-field-compact rounded-full px-4 py-3"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !sending) {
@@ -295,7 +297,7 @@ export default function ChatScreen({ propertyId, onBack, embedded = false }: Cha
           </button>
         </div>
         <p className={`text-[10px] mt-1.5 px-2 ${charCount >= MIN_CHARS ? 'text-homify-muted' : 'text-homify-accent'}`}>
-          {charCount}/{MIN_CHARS} caractères minimum · max 3 messages / 24h par annonce
+          {t('messages.minChars', { count: charCount, min: MIN_CHARS })}
         </p>
       </div>
     </div>
