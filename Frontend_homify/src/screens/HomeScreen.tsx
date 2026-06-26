@@ -57,8 +57,18 @@ const DEFAULT_FILTERS: Filters = {
 
 export default function HomeScreen() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { settings } = useSettings();
+
+  const PROPERTY_TYPES = useMemo(
+    () => PROPERTY_TYPE_VALUES.map((value) => ({ value, label: t(`home.types.${value}`) })),
+    [t],
+  );
+  const SORT_OPTIONS = useMemo(
+    () => SORT_OPTION_VALUES.map(({ value, key }) => ({ value, label: t(`home.sort.${key}`) })),
+    [t],
+  );
   const [properties, setProperties] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -303,7 +313,7 @@ export default function HomeScreen() {
           <header className="flex justify-between items-center">
             <div className="min-w-0">
               <p className="text-homify-muted text-[10px] md:text-xs font-medium uppercase tracking-wider">
-                Localisation
+                {t('home.location')}
               </p>
               <div className="flex items-center gap-1.5 text-homify-primary font-bold text-base md:text-sm mt-0.5">
                 <MapPin className="w-3.5 h-3.5 md:w-3 md:h-3 text-homify-accent shrink-0" />
@@ -318,7 +328,7 @@ export default function HomeScreen() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-homify-muted w-4 h-4" />
               <input
                 type="text"
-                placeholder="Rechercher un quartier, une ville..."
+                placeholder={t('home.searchPlaceholder')}
                 className="w-full pl-9 pr-3 py-2.5 md:py-2 homify-field-compact
                            focus:outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40"
                 value={searchQuery}
@@ -361,7 +371,7 @@ export default function HomeScreen() {
           <header className="flex justify-between items-center gap-3">
             <div className="min-w-0">
               <p className="text-homify-muted text-[10px] font-medium uppercase tracking-wider">
-                Localisation
+                {t('home.location')}
               </p>
               <div className="flex items-center gap-1.5 text-homify-primary font-bold text-base mt-0.5">
                 <MapPin className="w-3.5 h-3.5 text-homify-accent shrink-0" />
@@ -382,7 +392,7 @@ export default function HomeScreen() {
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Rechercher un quartier, une ville..."
+                placeholder={t('home.searchPlaceholder')}
                 className="w-full pl-9 pr-3 py-2.5 homify-field-compact
                            focus:outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40"
                 value={searchQuery}
