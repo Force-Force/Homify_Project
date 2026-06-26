@@ -660,17 +660,17 @@ export default function HomeScreen() {
                   value={filters.furnished}
                   onChange={(e) => updateFilter('furnished', e.target.value)}
                 >
-                  <option value="">Indifférent</option>
-                  <option value="true">Meublé uniquement</option>
-                  <option value="false">Non meublé uniquement</option>
+                  <option value="">{t('home.furnishedAny')}</option>
+                  <option value="true">{t('home.furnishedYes')}</option>
+                  <option value="false">{t('home.furnishedNo')}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-homify-text mb-2">Ville</label>
+                <label className="block text-sm font-semibold text-homify-text mb-2">{t('home.city')}</label>
                 <input
                   type="text"
-                  placeholder="Ex: Yaoundé, Douala..."
+                  placeholder={t('home.cityPlaceholder')}
                   className="w-full homify-field-compact"
                   value={filters.city}
                   onChange={(e) => updateFilter('city', e.target.value)}
@@ -678,10 +678,10 @@ export default function HomeScreen() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-homify-text mb-2">Quartier</label>
+                <label className="block text-sm font-semibold text-homify-text mb-2">{t('home.district')}</label>
                 <input
                   type="text"
-                  placeholder="Ex: Bastos, Akwa..."
+                  placeholder={t('home.districtPlaceholder')}
                   className="w-full homify-field-compact"
                   value={filters.district}
                   onChange={(e) => updateFilter('district', e.target.value)}
@@ -700,18 +700,18 @@ export default function HomeScreen() {
                   <div className="flex-1">
                     <span className="text-sm font-semibold text-homify-text flex items-center gap-1.5">
                       <Navigation className="w-4 h-4 text-homify-accent" />
-                      Près de moi
+                      {t('home.nearMe')}
                     </span>
                     <p className="text-xs text-homify-muted mt-0.5">
                       {userCoords
-                        ? 'Annonces dans un rayon autour de votre position'
-                        : 'Autorisez la géolocalisation pour activer ce filtre'}
+                        ? t('home.nearMeActive')
+                        : t('home.nearMeDisabled')}
                     </p>
                   </div>
                 </label>
                 {filters.nearMe && userCoords && (
                   <div className="mt-3">
-                    <label className="block text-xs font-medium text-homify-muted mb-1">Rayon (km)</label>
+                    <label className="block text-xs font-medium text-homify-muted mb-1">{t('home.radiusKm')}</label>
                     <input
                       type="number"
                       min="1"
@@ -725,7 +725,7 @@ export default function HomeScreen() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-homify-text mb-2">Trier par</label>
+                <label className="block text-sm font-semibold text-homify-text mb-2">{t('home.sortBy')}</label>
                 <select
                   className={`w-full ${selectClass}`}
                   value={filters.ordering}
