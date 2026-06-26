@@ -14,6 +14,8 @@
           var raw = localStorage.getItem('homify_app_settings');
           var settings = raw ? JSON.parse(raw) : {};
           var theme = settings.theme || 'light';
+          var locale = settings.locale === 'en' ? 'en' : 'fr';
+          document.documentElement.lang = locale;
           var dark =
             theme === 'dark' ||
             (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);

@@ -1,4 +1,5 @@
 import { Facebook, Apple } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { authInputClass } from '@/lib/formStyles';
 
 export { authInputClass };
@@ -9,13 +10,14 @@ interface SocialButtonsProps {
 }
 
 export function SocialButtons({ onSocial, mode = 'signup' }: SocialButtonsProps) {
-  const label = mode === 'signup' ? "s'inscrire" : 'se connecter';
+  const { t } = useTranslation();
+  const action = mode === 'signup' ? t('auth.socialSignUp') : t('auth.socialSignIn');
 
   return (
     <>
       <div className="flex items-center my-6">
         <div className="flex-grow h-px bg-homify-border" />
-        <span className="mx-3 text-sm text-homify-muted">ou {label} avec</span>
+        <span className="mx-3 text-sm text-homify-muted">{t('auth.socialWith', { action })}</span>
         <div className="flex-grow h-px bg-homify-border" />
       </div>
 
@@ -24,7 +26,7 @@ export function SocialButtons({ onSocial, mode = 'signup' }: SocialButtonsProps)
           type="button"
           onClick={() => onSocial('Facebook')}
           className="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
-          aria-label={`${label} avec Facebook`}
+          aria-label={`${action} Facebook`}
         >
           <Facebook className="w-5 h-5 text-white" />
         </button>
@@ -32,7 +34,7 @@ export function SocialButtons({ onSocial, mode = 'signup' }: SocialButtonsProps)
           type="button"
           onClick={() => onSocial('Google')}
           className="w-12 h-12 rounded-full bg-homify-card hover:bg-homify-surface border border-homify-border flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
-          aria-label={`${label} avec Google`}
+          aria-label={`${action} Google`}
         >
           <svg className="w-6 h-6" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -45,7 +47,7 @@ export function SocialButtons({ onSocial, mode = 'signup' }: SocialButtonsProps)
           type="button"
           onClick={() => onSocial('Apple')}
           className="w-12 h-12 rounded-full bg-black hover:bg-gray-800 flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
-          aria-label={`${label} avec Apple`}
+          aria-label={`${action} Apple`}
         >
           <Apple className="w-5 h-5 text-white" />
         </button>

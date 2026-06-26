@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   MapPin, Bell, Search, SlidersHorizontal, Loader2, X, Check, Sparkles,
   Map as MapIcon, List, ChevronLeft, ChevronRight, Navigation,
@@ -30,19 +31,14 @@ interface Filters {
   radiusKm: string;
 }
 
-const PROPERTY_TYPES = [
-  { value: 'HOUSE', label: 'Maison' },
-  { value: 'APARTMENT', label: 'Appartement' },
-  { value: 'STUDIO', label: 'Studio' },
-  { value: 'ROOM', label: 'Chambre' },
-];
+const PROPERTY_TYPE_VALUES = ['HOUSE', 'APARTMENT', 'STUDIO', 'ROOM'] as const;
 
-const SORT_OPTIONS = [
-  { value: '-created_at', label: 'Plus récents' },
-  { value: 'monthly_rent', label: 'Prix croissant' },
-  { value: '-monthly_rent', label: 'Prix décroissant' },
-  { value: 'surface', label: 'Surface croissante' },
-];
+const SORT_OPTION_VALUES = [
+  { value: '-created_at', key: 'newest' },
+  { value: 'monthly_rent', key: 'priceAsc' },
+  { value: '-monthly_rent', key: 'priceDesc' },
+  { value: 'surface', key: 'surfaceAsc' },
+] as const;
 
 const DEFAULT_FILTERS: Filters = {
   type: '',

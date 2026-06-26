@@ -13,6 +13,7 @@ import { AuthProvider } from './context/AuthContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { isAuthenticated } from './services/apiClient';
 import './index.css';
+import './i18n';
 
 function AuthenticatedApp() {
   return (

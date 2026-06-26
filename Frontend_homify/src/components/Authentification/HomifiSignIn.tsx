@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Eye, EyeOff, Loader2, Mail } from 'lucide-react';
 import { login } from '../../services/authService';
 import { ApiError } from '../../services/apiClient';
@@ -8,6 +9,7 @@ import MobileCarousel from './MobileCarossel';
 import { SocialButtons, authInputClass } from './SocialButtons';
 
 const HomifiSignIn = () => {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
   const [loading, setLoading] = useState(false);
@@ -27,12 +29,12 @@ const HomifiSignIn = () => {
       if (err instanceof ApiError) {
         if (err.code === 'email_not_verified') {
           setEmailNotVerified(true);
-          setError('Votre email n\'est pas encore vérifié. Consultez votre boîte mail ou renvoyez le lien.');
+          setError(t('auth.emailNotVerified'));
         } else {
-          setError(err.message || 'Identifiants incorrects. Veuillez réessayer.');
+          setError(err.message || t('auth.wrongCredentials'));
         }
       } else {
-        setError('Erreur de connexion. Veuillez réessayer.');
+        setError(t('auth.loginError'));
       }
     } finally {
       setLoading(false);
@@ -45,7 +47,7 @@ const HomifiSignIn = () => {
   };
 
   const handleSocialSignIn = () => {
-    setError('Connexion sociale bientôt disponible.');
+    setError(t('auth.socialSoon'));
   };
 
   return (
@@ -63,12 +65,12 @@ const HomifiSignIn = () => {
             className="inline-flex items-center gap-2 text-homify-muted hover:text-homify-primary mb-6 text-sm font-medium transition"
           >
             <ArrowLeft className="w-4 h-4" />
-            Retour
+            {t('auth.back')}
           </Link>
 
           <div className="bg-homify-card rounded-modal shadow-card p-8 border border-homify-border">
-            <h2 className="text-2xl font-bold text-homify-text mb-1">Bon retour !</h2>
-            <p className="text-homify-muted text-sm mb-6">Connectez-vous à votre compte Homify</p>
+            <h2 className="text-2xl font-bold text-homify-text mb-1">{t('auth.welcomeBack')}</h2>
+            <p className="text-homify-muted text-sm mb-6">{t('auth.signInSubtitle')}</p>
 
             {error && (
               <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-btn text-sm border border-red-100">
@@ -79,7 +81,7 @@ const HomifiSignIn = () => {
                     className="mt-2 flex items-center gap-1.5 text-homify-primary font-medium hover:underline"
                   >
                     <Mail className="w-4 h-4" />
-                    Renvoyer l'email de vérification
+                    {t('auth.resendVerification')}
                   </Link>
                 )}
               </div>
@@ -87,7 +89,7 @@ const HomifiSignIn = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-homify-text mb-1.5">Email</label>
+                <label className="block text-sm font-medium text-homify-text mb-1.5">{t('auth.email')}</label>
                 <input
                   type="email"
                   name="email"
@@ -100,7 +102,7 @@ const HomifiSignIn = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-homify-text mb-1.5">Mot de passe</label>
+                <label className="block text-sm font-medium text-homify-text mb-1.5">{t('auth.password')}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -130,10 +132,10 @@ const HomifiSignIn = () => {
                     onChange={handleChange}
                     className="rounded border-homify-border text-homify-primary focus:ring-homify-primary/20"
                   />
-                  Se souvenir de moi
+                  {t('auth.rememberMe')}
                 </label>
                 <Link to="/forgot-password" className="text-homify-primary font-medium hover:underline">
-                  Mot de passe oublié ?
+                  {t('auth.forgotPassword')}
                 </Link>
               </div>
 
@@ -143,16 +145,16 @@ const HomifiSignIn = () => {
                 className="w-full bg-homify-primary text-white font-bold py-3 rounded-btn hover:bg-homify-primary-light transition disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                Se connecter
+                {loading ? t('auth.signingIn') : t('auth.signIn')}
               </button>
             </form>
 
             <SocialButtons onSocial={handleSocialSignIn} />
 
             <p className="text-center text-sm text-homify-muted mt-6">
-              Pas encore de compte ?{' '}
+              {t('auth.noAccount')}{' '}
               <Link to="/signup" className="text-homify-primary font-semibold hover:underline">
-                S'inscrire
+                {t('auth.signUp')}
               </Link>
             </p>
           </div>

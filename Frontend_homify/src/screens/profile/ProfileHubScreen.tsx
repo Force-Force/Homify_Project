@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   User, LogOut, Mail, Building2, AlertTriangle, Shield, MessageSquare,
   Heart, Lock, Bell, SlidersHorizontal, HelpCircle, ChevronRight,
@@ -12,19 +13,12 @@ import { useFavorites } from '@/context/FavoritesContext';
 import { getUnreadCount } from '@/services/messageService';
 import { getNotificationUnreadCount } from '@/services/notificationService';
 import { resendVerification } from '@/services/authService';
-
-const ROLE_LABELS: Record<string, string> = {
-  TENANT: 'Locataire',
-  LANDLORD: 'Propriétaire',
-  ADMIN: 'Administrateur',
-  VISITOR: 'Visiteur',
-};
-
-function formatMemberSince(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-}
+import { useSettings } from '@/context/SettingsContext';
+import { getDateLocale } from '@/lib/locale';
 
 export default function ProfileHubScreen() {
+  const { t } = useTranslation();
+  const { locale } = useSettings();
   const { user, loading, logout } = useAuth();
   const { favoriteIds } = useFavorites();
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -43,9 +37,9 @@ export default function ProfileHubScreen() {
     setBanner(null);
     try {
       await resendVerification(user.email);
-      setBanner('Email de vérification renvoyé.');
+      setBanner(t('profile.verificationSent'));
     } catch {
-      setBanner('Impossible de renvoyer l\'email.');
+      setBanner(t('profile.verificationFailed'));
     } finally {
       setResending(false);
     }
@@ -67,8 +61,8 @@ export default function ProfileHubScreen() {
   if (!user) {
     return (
       <div className="px-5 pt-8 text-center">
-        <p className="text-homify-muted mb-4">Connectez-vous pour accéder à votre compte.</p>
-        <Link to="/signin" className="text-homify-primary font-semibold hover:underline">Se connecter</Link>
+        <p className="text-homify-muted mb-4">{t('profile.signInPrompt')}</p>
+        <Link to="/signin" className="text-homify-primary font-semibold hover:underline">{t('profile.signInLink')}</Link>
       </div>
     );
   }
@@ -77,7 +71,7 @@ export default function ProfileHubScreen() {
 
   return (
     <div className="px-5 md:px-0 pt-2 pb-28 max-w-2xl mx-auto">
-      <PageHeader greeting="Mon espace" title="Compte & paramètres" showNotifications={false} />
+      <PageHeader greeting={t('profile.greeting')} title={t('profile.title')} showNotifications={false} />
 
       {banner && (
         <div className="mb-4 p-3 bg-homify-surface text-homify-primary text-sm rounded-btn border border-homify-border">
@@ -89,9 +83,9 @@ export default function ProfileHubScreen() {
         <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-modal flex gap-3">
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-amber-900">Email non vérifié</p>
-            <p className="text-xs text-amber-800 mt-1">
-              Vérifiez votre adresse pour contacter les propriétaires et publier des annonces.
+            <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">{t('profile.emailUnverified')}</p>
+            <p className="text-xs text-amber-800 dark:text-amber-300/90 mt-1">
+              {t('profile.emailUnverifiedHint')}
             </p>
             <button
               type="button"
@@ -100,7 +94,7 @@ export default function ProfileHubScreen() {
               className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-homify-primary hover:underline disabled:opacity-50"
             >
               <Mail className="w-4 h-4" />
-              {resending ? 'Envoi...' : 'Renvoyer l\'email'}
+              {resending ? t('common.sending') : t('profile.resendEmail')}
             </button>
           </div>
         </div>
@@ -117,17 +111,22 @@ export default function ProfileHubScreen() {
             <p className="text-sm text-homify-muted truncate">{user.email}</p>
             <div className="flex flex-wrap gap-2 mt-2">
               <span className="text-[11px] font-semibold uppercase tracking-wide bg-homify-primary/10 text-homify-primary px-2 py-0.5 rounded-full">
-                {ROLE_LABELS[user.role] ?? user.role}
+                {t(`roles.${user.role}`, { defaultValue: user.role })}
               </span>
               <span className="text-[11px] text-homify-muted">
-                Membre depuis {formatMemberSince(user.created_at)}
+                {t('profile.memberSince', {
+                  date: new Date(user.created_at).toLocaleDateString(getDateLocale(locale), {
+                    month: 'long',
+                    year: 'numeric',
+                  }),
+                })}
               </span>
             </div>
           </div>
           <Link
             to="/profile/personal"
             className="p-2 rounded-btn border border-homify-border text-homify-muted hover:text-homify-primary hover:border-homify-primary/30 transition shrink-0"
-            aria-label="Modifier le profil"
+            aria-label={t('profile.editProfile')}
           >
             <ChevronRight className="w-5 h-5" />
           </Link>
@@ -136,86 +135,86 @@ export default function ProfileHubScreen() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-5 border-t border-homify-border">
           <Link to="/favorites" className="text-center p-2 rounded-btn hover:bg-homify-surface transition">
             <p className="text-lg font-bold text-homify-primary">{favoriteIds.size}</p>
-            <p className="text-[11px] text-homify-muted">Favoris</p>
+            <p className="text-[11px] text-homify-muted">{t('profile.statsFavorites')}</p>
           </Link>
           <Link to="/messages" className="text-center p-2 rounded-btn hover:bg-homify-surface transition">
             <p className="text-lg font-bold text-homify-primary">{unreadMessages}</p>
-            <p className="text-[11px] text-homify-muted">Messages</p>
+            <p className="text-[11px] text-homify-muted">{t('profile.statsMessages')}</p>
           </Link>
           <Link to="/notifications" className="text-center p-2 rounded-btn hover:bg-homify-surface transition">
             <p className="text-lg font-bold text-homify-primary">{unreadNotifications}</p>
-            <p className="text-[11px] text-homify-muted">Alertes</p>
+            <p className="text-[11px] text-homify-muted">{t('profile.statsAlerts')}</p>
           </Link>
           {isLandlord ? (
             <Link to="/my-properties" className="text-center p-2 rounded-btn hover:bg-homify-surface transition">
               <p className="text-lg font-bold text-homify-primary">{user.properties_count ?? 0}</p>
-              <p className="text-[11px] text-homify-muted">Annonces</p>
+              <p className="text-[11px] text-homify-muted">{t('profile.statsListings')}</p>
             </Link>
           ) : (
             <Link to="/assist" className="text-center p-2 rounded-btn hover:bg-homify-surface transition">
               <Sparkles className="w-5 h-5 text-homify-primary mx-auto" />
-              <p className="text-[11px] text-homify-muted mt-1">Assistant</p>
+              <p className="text-[11px] text-homify-muted mt-1">{t('profile.statsAssistant')}</p>
             </Link>
           )}
         </div>
       </div>
 
-      <SettingsSection title="Mon compte">
+      <SettingsSection title={t('profile.sectionAccount')}>
         <SettingsRow
           icon={User}
-          title="Informations personnelles"
-          subtitle="Nom, téléphone, email"
+          title={t('profile.personalInfo')}
+          subtitle={t('profile.personalInfoSub')}
           to="/profile/personal"
         />
         <SettingsRow
           icon={Lock}
-          title="Sécurité"
-          subtitle="Mot de passe et suppression du compte"
+          title={t('profile.security')}
+          subtitle={t('profile.securitySub')}
           to="/profile/security"
         />
       </SettingsSection>
 
-      <SettingsSection title="Application">
+      <SettingsSection title={t('profile.sectionApp')}>
         <SettingsRow
           icon={Bell}
-          title="Centre de notifications"
-          subtitle="Historique de vos alertes"
+          title={t('profile.notificationCenter')}
+          subtitle={t('profile.notificationCenterSub')}
           to="/notifications"
           badge={unreadNotifications}
         />
         <SettingsRow
           icon={Bell}
-          title="Préférences de notification"
-          subtitle="Emails et alertes messages"
+          title={t('profile.notificationPrefs')}
+          subtitle={t('profile.notificationPrefsSub')}
           to="/profile/notifications"
         />
         <SettingsRow
           icon={SlidersHorizontal}
-          title="Préférences"
-          subtitle="Thème, ville par défaut, affichage carte"
+          title={t('profile.preferences')}
+          subtitle={t('profile.preferencesSub')}
           to="/profile/preferences"
         />
       </SettingsSection>
 
-      <SettingsSection title="Activité">
+      <SettingsSection title={t('profile.sectionActivity')}>
         <SettingsRow
           icon={MessageSquare}
-          title="Messages"
-          subtitle="Conversations avec propriétaires et locataires"
+          title={t('nav.messages')}
+          subtitle={t('profile.messagesSub')}
           to="/messages"
           badge={unreadMessages}
         />
         <SettingsRow
           icon={Heart}
-          title="Mes favoris"
-          subtitle={`${favoriteIds.size} annonce(s) sauvegardée(s)`}
+          title={t('profile.myFavorites')}
+          subtitle={t('profile.myFavoritesSub', { count: favoriteIds.size })}
           to="/favorites"
         />
         {isLandlord && (
           <SettingsRow
             icon={Building2}
-            title="Mes annonces"
-            subtitle="Créer, modifier et suivre vos biens"
+            title={t('profile.myListings')}
+            subtitle={t('profile.myListingsSub')}
             to="/my-properties"
             iconClassName="bg-homify-accent/10"
           />
@@ -223,24 +222,24 @@ export default function ProfileHubScreen() {
         {user.role === 'ADMIN' && (
           <SettingsRow
             icon={Shield}
-            title="Modération admin"
-            subtitle="Annonces, signalements, utilisateurs"
+            title={t('profile.adminModeration')}
+            subtitle={t('profile.adminModerationSub')}
             to="/admin"
           />
         )}
       </SettingsSection>
 
-      <SettingsSection title="Aide">
+      <SettingsSection title={t('profile.sectionHelp')}>
         <SettingsRow
           icon={Sparkles}
-          title="Assistant Homify"
-          subtitle="Calculateur loyer, analyse marché, FAQ"
+          title={t('profile.homifyAssistant')}
+          subtitle={t('profile.homifyAssistantSub')}
           to="/assist"
         />
         <SettingsRow
           icon={HelpCircle}
-          title="À propos"
-          subtitle="Version, support et informations légales"
+          title={t('profile.about')}
+          subtitle={t('profile.aboutSub')}
           to="/profile/about"
         />
       </SettingsSection>
@@ -251,7 +250,7 @@ export default function ProfileHubScreen() {
         className="w-full flex items-center justify-center gap-2 border border-homify-border text-homify-muted font-semibold py-3.5 rounded-modal hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-950/40 dark:hover:text-red-400 dark:hover:border-red-900 transition mt-2"
       >
         <LogOut className="w-4 h-4" />
-        Se déconnecter
+        {t('profile.logout')}
       </button>
     </div>
   );

@@ -1,34 +1,72 @@
-import { MapPin, List, Map as MapIcon, RotateCcw, Sun, Moon, Monitor } from 'lucide-react';
+import { MapPin, List, Map as MapIcon, RotateCcw, Sun, Moon, Monitor, Languages } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { SettingsLayout, SettingsPanel } from '@/components/settings/SettingsLayout';
 import { labelClass, selectClass } from '@/lib/formStyles';
 import { useSettings } from '@/context/SettingsContext';
-import { CITY_OPTIONS, ThemeMode } from '@/lib/appSettings';
+import { AppLocale, CITY_OPTIONS, ThemeMode } from '@/lib/appSettings';
 import { cn } from '@/lib/utils';
 
-const THEME_OPTIONS: { value: ThemeMode; label: string; description: string; icon: typeof Sun }[] = [
-  { value: 'light', label: 'Clair', description: 'Fond clair, texte foncé', icon: Sun },
-  { value: 'dark', label: 'Sombre', description: 'Reposant pour les yeux', icon: Moon },
-  { value: 'system', label: 'Système', description: 'Suit l\'appareil', icon: Monitor },
+const LOCALE_OPTIONS: { value: AppLocale; labelKey: string; descKey: string }[] = [
+  { value: 'fr', labelKey: 'preferences.langFr', descKey: 'preferences.langFrDesc' },
+  { value: 'en', labelKey: 'preferences.langEn', descKey: 'preferences.langEnDesc' },
 ];
 
 export default function PreferencesScreen() {
-  const { settings, updateSettings, resetSettings, setTheme, resolvedTheme } = useSettings();
+  const { t } = useTranslation();
+  const { settings, updateSettings, resetSettings, setTheme, setLocale, resolvedTheme } = useSettings();
+
+  const THEME_OPTIONS: { value: ThemeMode; labelKey: string; descKey: string; icon: typeof Sun }[] = [
+    { value: 'light', labelKey: 'preferences.themeLight', descKey: 'preferences.themeLightDesc', icon: Sun },
+    { value: 'dark', labelKey: 'preferences.themeDark', descKey: 'preferences.themeDarkDesc', icon: Moon },
+    { value: 'system', labelKey: 'preferences.themeSystem', descKey: 'preferences.themeSystemDesc', icon: Monitor },
+  ];
+
+  const activeLanguageLabel = settings.locale === 'en' ? t('preferences.langEn') : t('preferences.langFr');
+  const activeThemeLabel = resolvedTheme === 'dark' ? t('preferences.themeDark') : t('preferences.themeLight');
 
   return (
     <SettingsLayout
-      title="Préférences"
-      subtitle="Apparence, recherche et affichage par défaut."
+      title={t('preferences.title')}
+      subtitle={t('preferences.subtitle')}
     >
       <SettingsPanel className="mb-6">
         <div className="flex items-center gap-2 mb-4">
-          <Sun className="w-5 h-5 text-homify-primary" />
-          <h2 className="font-bold text-homify-text">Thème</h2>
+          <Languages className="w-5 h-5 text-homify-primary" />
+          <h2 className="font-bold text-homify-text">{t('preferences.language')}</h2>
         </div>
         <p className="text-sm text-homify-muted mb-4">
-          Thème actif : <span className="font-semibold text-homify-text">{resolvedTheme === 'dark' ? 'Sombre' : 'Clair'}</span>
+          {t('preferences.languageActive', { language: activeLanguageLabel })}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {LOCALE_OPTIONS.map(({ value, labelKey, descKey }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setLocale(value)}
+              className={cn(
+                'flex flex-col items-start gap-2 p-4 rounded-btn border-2 transition text-left',
+                settings.locale === value
+                  ? 'border-homify-primary bg-homify-primary/5'
+                  : 'border-homify-border hover:border-homify-primary/30',
+              )}
+            >
+              <span className="text-sm font-semibold text-homify-text">{t(labelKey)}</span>
+              <span className="text-xs text-homify-muted leading-snug">{t(descKey)}</span>
+            </button>
+          ))}
+        </div>
+      </SettingsPanel>
+
+      <SettingsPanel className="mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Sun className="w-5 h-5 text-homify-primary" />
+          <h2 className="font-bold text-homify-text">{t('preferences.theme')}</h2>
+        </div>
+        <p className="text-sm text-homify-muted mb-4">
+          {t('preferences.themeActive', { theme: activeThemeLabel })}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {THEME_OPTIONS.map(({ value, label, description, icon: Icon }) => (
+          {THEME_OPTIONS.map(({ value, labelKey, descKey, icon: Icon }) => (
             <button
               key={value}
               type="button"
@@ -41,8 +79,8 @@ export default function PreferencesScreen() {
               )}
             >
               <Icon className={cn('w-6 h-6', settings.theme === value ? 'text-homify-primary' : 'text-homify-muted')} />
-              <span className="text-sm font-semibold text-homify-text">{label}</span>
-              <span className="text-xs text-homify-muted leading-snug">{description}</span>
+              <span className="text-sm font-semibold text-homify-text">{t(labelKey)}</span>
+              <span className="text-xs text-homify-muted leading-snug">{t(descKey)}</span>
             </button>
           ))}
         </div>
@@ -51,9 +89,9 @@ export default function PreferencesScreen() {
       <SettingsPanel className="mb-6">
         <div className="flex items-center gap-2 mb-4">
           <MapPin className="w-5 h-5 text-homify-primary" />
-          <h2 className="font-bold text-homify-text">Ville par défaut</h2>
+          <h2 className="font-bold text-homify-text">{t('preferences.defaultCity')}</h2>
         </div>
-        <label className={labelClass}>Afficher en priorité les annonces de</label>
+        <label className={labelClass}>{t('preferences.defaultCityLabel')}</label>
         <select
           value={settings.defaultCity}
           onChange={(e) => updateSettings({ defaultCity: e.target.value })}
@@ -64,20 +102,20 @@ export default function PreferencesScreen() {
           ))}
         </select>
         <p className="text-xs text-homify-muted mt-2">
-          Appliquée au filtre ville sur la page d&apos;accueil.
+          {t('preferences.defaultCityHint')}
         </p>
       </SettingsPanel>
 
       <SettingsPanel>
         <div className="flex items-center gap-2 mb-4">
           <List className="w-5 h-5 text-homify-primary" />
-          <h2 className="font-bold text-homify-text">Affichage par défaut</h2>
+          <h2 className="font-bold text-homify-text">{t('preferences.defaultView')}</h2>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {([
-            { value: 'list' as const, label: 'Liste', icon: List },
-            { value: 'map' as const, label: 'Carte', icon: MapIcon },
-          ]).map(({ value, label, icon: Icon }) => (
+            { value: 'list' as const, labelKey: 'common.list', icon: List },
+            { value: 'map' as const, labelKey: 'common.map', icon: MapIcon },
+          ]).map(({ value, labelKey, icon: Icon }) => (
             <button
               key={value}
               type="button"
@@ -90,7 +128,7 @@ export default function PreferencesScreen() {
               )}
             >
               <Icon className="w-6 h-6" />
-              <span className="text-sm font-semibold">{label}</span>
+              <span className="text-sm font-semibold">{t(labelKey)}</span>
             </button>
           ))}
         </div>
@@ -102,7 +140,7 @@ export default function PreferencesScreen() {
         className="mt-6 w-full flex items-center justify-center gap-2 text-sm font-medium text-homify-muted hover:text-homify-primary py-3 transition"
       >
         <RotateCcw className="w-4 h-4" />
-        Réinitialiser les préférences
+        {t('preferences.reset')}
       </button>
     </SettingsLayout>
   );

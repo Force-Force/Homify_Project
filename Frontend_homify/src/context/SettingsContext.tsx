@@ -1,11 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import i18n from '@/i18n';
 import {
   AppSettings,
+  AppLocale,
   DEFAULT_APP_SETTINGS,
   loadAppSettings,
   saveAppSettings,
   ThemeMode,
 } from '@/lib/appSettings';
+import { applyLocale } from '@/lib/locale';
 import { applyTheme, resolveTheme } from '@/lib/theme';
 
 interface SettingsContextValue {
@@ -15,6 +18,8 @@ interface SettingsContextValue {
   theme: ThemeMode;
   resolvedTheme: 'light' | 'dark';
   setTheme: (theme: ThemeMode) => void;
+  locale: AppLocale;
+  setLocale: (locale: AppLocale) => void;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -41,6 +46,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return () => media.removeEventListener('change', onChange);
   }, [settings.theme]);
 
+  useEffect(() => {
+    void i18n.changeLanguage(settings.locale);
+    applyLocale(settings.locale);
+    document.title = i18n.t('meta.title');
+  }, [settings.locale]);
+
   const updateSettings = useCallback((patch: Partial<AppSettings>) => {
     setSettings((prev) => {
       const next = { ...prev, ...patch };
@@ -51,6 +62,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = useCallback((theme: ThemeMode) => {
     updateSettings({ theme });
+  }, [updateSettings]);
+
+  const setLocale = useCallback((locale: AppLocale) => {
+    updateSettings({ locale });
   }, [updateSettings]);
 
   const resetSettings = useCallback(() => {
@@ -67,6 +82,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         theme: settings.theme,
         resolvedTheme,
         setTheme,
+        locale: settings.locale,
+        setLocale,
       }}
     >
       {children}

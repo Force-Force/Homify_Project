@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Home, Heart, Bot, User, Building2, MessageSquare } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import Dock from '@/components/ui/Dock/Dock';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -19,6 +20,7 @@ type NavItem = {
 };
 
 export const BottomNav = ({ activeTab, onTabChange, suppressMobileDock = false }: BottomNavProps) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const isLandlord = user?.role === 'LANDLORD' || user?.role === 'ADMIN';
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -30,15 +32,15 @@ export const BottomNav = ({ activeTab, onTabChange, suppressMobileDock = false }
       .catch(() => setUnreadMessages(0));
   }, [user, activeTab]);
 
-  const NAV_ITEMS: NavItem[] = [
-    { name: 'Home', label: 'Accueil', icon: Home },
-    { name: 'Favorites', label: 'Favoris', icon: Heart },
-    { name: 'Messages', label: 'Messages', icon: MessageSquare, badge: unreadMessages },
+  const NAV_ITEMS: NavItem[] = useMemo(() => [
+    { name: 'Home', label: t('nav.home'), icon: Home },
+    { name: 'Favorites', label: t('nav.favorites'), icon: Heart },
+    { name: 'Messages', label: t('nav.messages'), icon: MessageSquare, badge: unreadMessages },
     ...(isLandlord
-      ? [{ name: 'MyProperties', label: 'Mes annonces', icon: Building2 }]
-      : [{ name: 'Assist', label: 'Assistant', icon: Bot }]),
-    { name: 'Profile', label: 'Compte', icon: User },
-  ];
+      ? [{ name: 'MyProperties', label: t('nav.myListings'), icon: Building2 }]
+      : [{ name: 'Assist', label: t('nav.assistant'), icon: Bot }]),
+    { name: 'Profile', label: t('nav.account'), icon: User },
+  ], [t, isLandlord, unreadMessages]);
 
   const dockItems = NAV_ITEMS.map((item) => ({
     icon: (
@@ -63,7 +65,7 @@ export const BottomNav = ({ activeTab, onTabChange, suppressMobileDock = false }
       <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-64 md:flex-col md:border-r md:border-homify-border md:bg-homify-card md:px-4 md:pt-10 md:shadow-sm">
         <div className="mb-8 px-3">
           <h1 className="text-2xl font-extrabold tracking-tight text-homify-primary">Homify</h1>
-          <p className="mt-0.5 text-xs text-homify-muted">Trouvez votre chez-vous</p>
+          <p className="mt-0.5 text-xs text-homify-muted">{t('nav.tagline')}</p>
         </div>
 
         <nav className="flex flex-col gap-1.5">
@@ -102,9 +104,9 @@ export const BottomNav = ({ activeTab, onTabChange, suppressMobileDock = false }
               onClick={() => onTabChange('MyProperties')}
               className="w-full text-left rounded-card bg-homify-accent/10 border border-homify-accent/20 p-4 hover:bg-homify-accent/15 transition"
             >
-              <p className="text-xs font-semibold text-homify-accent">Espace propriétaire</p>
+              <p className="text-xs font-semibold text-homify-accent">{t('nav.landlordSpace')}</p>
               <p className="mt-1 text-[11px] text-homify-muted">
-                {user?.properties_count ?? 0} annonce(s) · Publier un bien
+                {t('nav.landlordHint', { count: user?.properties_count ?? 0 })}
               </p>
             </button>
           </div>
@@ -112,9 +114,9 @@ export const BottomNav = ({ activeTab, onTabChange, suppressMobileDock = false }
 
         <div className="mt-auto mb-8 px-3">
           <div className="rounded-card bg-homify-surface p-4">
-            <p className="text-xs font-semibold text-homify-primary">Assistant IA</p>
+            <p className="text-xs font-semibold text-homify-primary">{t('nav.aiAssistant')}</p>
             <p className="mt-1 text-[11px] leading-relaxed text-homify-muted">
-              Analyse de marché, budget loyer et recherche au Cameroun.
+              {t('nav.aiHint')}
             </p>
           </div>
         </div>
