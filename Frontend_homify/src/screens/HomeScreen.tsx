@@ -741,7 +741,7 @@ export default function HomeScreen() {
                 onClick={resetFilters}
                 className="w-full bg-homify-surface text-homify-muted font-semibold py-3 rounded-btn border border-homify-border hover:bg-homify-border/30 transition text-sm"
               >
-                Réinitialiser les filtres
+                {t('home.resetFilters')}
               </button>
             </div>
 
@@ -751,7 +751,7 @@ export default function HomeScreen() {
                 className="w-full bg-homify-accent text-white font-bold py-3.5 rounded-btn hover:bg-homify-accent-hover transition flex justify-center items-center gap-2"
               >
                 <Check className="w-5 h-5" />
-                Afficher les résultats
+                {t('home.showResults')}
               </button>
             </div>
           </div>
