@@ -14,6 +14,7 @@ import {
 import { AmenityItem } from '@/types/api';
 import { ApiError } from '@/services/apiClient';
 import { PropertyImage } from '@/components/PropertyImage';
+import { inputClassCompact, textareaClass, selectClass } from '@/lib/formStyles';
 
 const PROPERTY_TYPES = [
   { value: 'APARTMENT', label: 'Appartement' },
@@ -21,9 +22,6 @@ const PROPERTY_TYPES = [
   { value: 'STUDIO', label: 'Studio' },
   { value: 'ROOM', label: 'Chambre' },
 ];
-
-const inputClass =
-  'w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm';
 
 export default function PropertyFormScreen() {
   const navigate = useNavigate();
@@ -252,13 +250,13 @@ export default function PropertyFormScreen() {
       >
         <div>
           <label className="block text-sm font-semibold mb-1.5">Titre</label>
-          <input className={inputClass} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+          <input className={inputClassCompact} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
         </div>
 
         <div>
           <label className="block text-sm font-semibold mb-1.5">Description</label>
           <textarea
-            className={`${inputClass} min-h-[100px]`}
+            className={textareaClass}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             required
@@ -269,7 +267,7 @@ export default function PropertyFormScreen() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-semibold mb-1.5">Type</label>
-            <select className={inputClass} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+            <select className={selectClass} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
               {PROPERTY_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
@@ -277,7 +275,7 @@ export default function PropertyFormScreen() {
           </div>
           <div>
             <label className="block text-sm font-semibold mb-1.5">Surface (m²)</label>
-            <input type="number" className={inputClass} value={form.surface} onChange={(e) => setForm({ ...form, surface: e.target.value })} required />
+            <input type="number" className={inputClassCompact} value={form.surface} onChange={(e) => setForm({ ...form, surface: e.target.value })} required />
           </div>
         </div>
 
@@ -285,7 +283,7 @@ export default function PropertyFormScreen() {
           {(['number_of_rooms', 'number_of_bedrooms', 'number_of_bathrooms'] as const).map((key) => (
             <div key={key}>
               <label className="block text-xs font-semibold mb-1.5 capitalize">{key.replace(/_/g, ' ')}</label>
-              <input type="number" min={0} className={inputClass} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} required />
+              <input type="number" min={0} className={inputClassCompact} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} required />
             </div>
           ))}
         </div>
@@ -293,11 +291,11 @@ export default function PropertyFormScreen() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-semibold mb-1.5">Loyer mensuel (FCFA)</label>
-            <input className={inputClass} value={form.monthly_rent} onChange={(e) => setForm({ ...form, monthly_rent: e.target.value })} required />
+            <input className={inputClassCompact} value={form.monthly_rent} onChange={(e) => setForm({ ...form, monthly_rent: e.target.value })} required />
           </div>
           <div>
             <label className="block text-sm font-semibold mb-1.5">Charges (FCFA)</label>
-            <input className={inputClass} value={form.charges} onChange={(e) => setForm({ ...form, charges: e.target.value })} />
+            <input className={inputClassCompact} value={form.charges} onChange={(e) => setForm({ ...form, charges: e.target.value })} />
           </div>
         </div>
 
@@ -308,10 +306,10 @@ export default function PropertyFormScreen() {
 
         <div>
           <label className="block text-sm font-semibold mb-1.5">Adresse</label>
-          <input className={`${inputClass} mb-2`} placeholder="Rue" value={form.street_address} onChange={(e) => setForm({ ...form, street_address: e.target.value })} required />
+          <input className={`${inputClassCompact} mb-2`} placeholder="Rue" value={form.street_address} onChange={(e) => setForm({ ...form, street_address: e.target.value })} required />
           <div className="grid grid-cols-2 gap-2">
-            <input className={inputClass} placeholder="Quartier" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} />
-            <input className={inputClass} placeholder="Ville" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required />
+            <input className={inputClassCompact} placeholder="Quartier" value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} />
+            <input className={inputClassCompact} placeholder="Ville" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required />
           </div>
           <button
             type="button"

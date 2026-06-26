@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { TrendingUp, Loader2, MapPin, Home, BarChart3 } from 'lucide-react';
 import { getMarketStats, MarketStats, TYPE_LABELS } from '@/services/marketService';
+import { inputClassCompact, selectClass } from '@/lib/formStyles';
 
 const CITIES = ['Yaoundé', 'Douala', 'Bafoussam', 'Garoua'];
 
@@ -30,9 +31,6 @@ export default function MarketAnalysis() {
     }
   };
 
-  const inputClass =
-    'w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm';
-
   return (
     <div className="space-y-5">
       <p className="text-sm text-homify-muted">
@@ -42,7 +40,7 @@ export default function MarketAnalysis() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-semibold text-homify-text mb-1.5">Ville</label>
-          <select className={inputClass} value={city} onChange={(e) => setCity(e.target.value)}>
+          <select className={selectClass} value={city} onChange={(e) => setCity(e.target.value)}>
             {CITIES.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -51,7 +49,7 @@ export default function MarketAnalysis() {
         <div>
           <label className="block text-sm font-semibold text-homify-text mb-1.5">Quartier (optionnel)</label>
           <input
-            className={inputClass}
+            className={inputClassCompact}
             placeholder="Ex: Bastos, Akwa..."
             value={district}
             onChange={(e) => setDistrict(e.target.value)}

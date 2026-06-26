@@ -86,7 +86,7 @@ export default function ProfileHubScreen() {
       )}
 
       {user && !user.email_verified && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-modal flex gap-3">
+        <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-modal flex gap-3">
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-amber-900">Email non vérifié</p>

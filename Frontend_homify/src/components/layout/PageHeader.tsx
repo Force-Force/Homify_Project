@@ -30,7 +30,4 @@ export function PageHeader({ greeting, title, subtitle, showNotifications = true
   );
 }
 
-export const inputClass =
-  'w-full p-4 bg-homify-surface border border-homify-border rounded-btn text-homify-text outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40 transition text-sm';
-
-export const labelClass = 'block text-sm font-semibold text-homify-text mb-2';
+export { inputClass, labelClass, inputClassCompact, textareaClass, selectClass, authInputClass } from '@/lib/formStyles';

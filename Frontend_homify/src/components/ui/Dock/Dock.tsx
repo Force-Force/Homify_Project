@@ -90,7 +90,7 @@ function DockItem({
         'relative inline-flex items-center justify-center rounded-2xl border shadow-sm transition-colors',
         active
           ? 'bg-homify-primary border-homify-primary text-white'
-          : 'bg-white/90 border-homify-border text-homify-muted hover:border-homify-primary/30',
+          : 'bg-homify-card/90 border-homify-border text-homify-muted hover:border-homify-primary/30',
         className
       )}
       tabIndex={0}
@@ -133,7 +133,7 @@ function DockLabel({ children, className = '', isHovered }: DockLabelProps) {
           transition={{ duration: 0.15 }}
           className={cn(
             'absolute -top-7 left-1/2 w-fit whitespace-nowrap rounded-lg',
-            'border border-homify-border bg-white px-2 py-0.5 text-[10px] font-medium text-homify-text shadow-sm',
+            'border border-homify-border bg-homify-card px-2 py-0.5 text-[10px] font-medium text-homify-text shadow-sm',
             className
           )}
           role="tooltip"
@@ -200,7 +200,7 @@ export default function Dock({
         }}
         className={cn(
           'pointer-events-auto mb-4 flex items-end gap-2 rounded-2xl border border-homify-border/60',
-          'bg-white/80 px-3 pb-2 pt-2 shadow-dock backdrop-blur-xl',
+          'bg-homify-card/80 px-3 pb-2 pt-2 shadow-dock backdrop-blur-xl',
           className
         )}
         style={{ height: panelHeight }}

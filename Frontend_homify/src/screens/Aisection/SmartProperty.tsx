@@ -5,6 +5,7 @@ import { searchProperties } from '@/services/propertyService';
 import { RecommendedCard } from '@/components/Cards';
 import { useFavorites } from '@/context/FavoritesContext';
 import { Hotel } from '@/types';
+import { inputClassCompact, selectClass } from '@/lib/formStyles';
 
 const CITIES = ['Yaoundé', 'Douala', 'Bafoussam', 'Garoua'];
 
@@ -48,9 +49,6 @@ export default function SmartPropertySearch() {
     }
   };
 
-  const inputClass =
-    'w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm';
-
   return (
     <div className="space-y-5">
       <p className="text-sm text-homify-muted">
@@ -60,7 +58,7 @@ export default function SmartPropertySearch() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-semibold text-homify-text mb-1.5">Ville</label>
-          <select className={inputClass} value={city} onChange={(e) => setCity(e.target.value)}>
+          <select className={selectClass} value={city} onChange={(e) => setCity(e.target.value)}>
             {CITIES.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -69,7 +67,7 @@ export default function SmartPropertySearch() {
         <div>
           <label className="block text-sm font-semibold text-homify-text mb-1.5">Quartier</label>
           <input
-            className={inputClass}
+            className={inputClassCompact}
             placeholder="Ex: Bastos, Akwa..."
             value={district}
             onChange={(e) => setDistrict(e.target.value)}
@@ -77,19 +75,19 @@ export default function SmartPropertySearch() {
         </div>
         <div>
           <label className="block text-sm font-semibold text-homify-text mb-1.5">Budget min. (FCFA)</label>
-          <input type="number" className={inputClass} value={minPrice} onChange={(e) => setMinPrice(e.target.value)} />
+          <input type="number" className={inputClassCompact} value={minPrice} onChange={(e) => setMinPrice(e.target.value)} />
         </div>
         <div>
           <label className="block text-sm font-semibold text-homify-text mb-1.5">Budget max. (FCFA)</label>
-          <input type="number" className={inputClass} value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
+          <input type="number" className={inputClassCompact} value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
         </div>
         <div>
           <label className="block text-sm font-semibold text-homify-text mb-1.5">Chambres (min.)</label>
-          <input type="number" min="0" className={inputClass} value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} />
+          <input type="number" min="0" className={inputClassCompact} value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} />
         </div>
         <div>
           <label className="block text-sm font-semibold text-homify-text mb-1.5">Meublé</label>
-          <select className={inputClass} value={furnished} onChange={(e) => setFurnished(e.target.value)}>
+          <select className={selectClass} value={furnished} onChange={(e) => setFurnished(e.target.value)}>
             <option value="">Indifférent</option>
             <option value="true">Meublé</option>
             <option value="false">Non meublé</option>

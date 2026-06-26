@@ -12,6 +12,7 @@ import { getPropertyById, getSimilarProperties } from '../services/propertyServi
 import { createReport, ReportReason } from '../services/reportService';
 import { useFavorites } from '@/context/FavoritesContext';
 import { ApiError } from '@/services/apiClient';
+import { selectClass, textareaClass } from '@/lib/formStyles';
 
 interface DetailsProps {
   propertyId: number;
@@ -330,7 +331,7 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
 
       {showReport && (
         <div className="fixed inset-0 z-modal flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
-          <div className="bg-homify-card w-full md:w-[440px] rounded-t-modal md:rounded-modal p-6 shadow-2xl">
+          <div className="homify-modal-panel md:w-[440px] rounded-t-modal md:rounded-modal">
             <h3 className="text-xl font-bold text-homify-text mb-4">Signaler cette annonce</h3>
             {reportMessage && (
               <p className={`text-sm mb-3 ${reportMessage.includes('envoyé') ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -338,7 +339,7 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
               </p>
             )}
             <select
-              className="w-full p-3 mb-3 bg-homify-surface rounded-btn border border-homify-border text-sm"
+              className={`w-full mb-3 ${selectClass}`}
               value={reportReason}
               onChange={(e) => setReportReason(e.target.value as ReportReason)}
             >
@@ -347,7 +348,7 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
               ))}
             </select>
             <textarea
-              className="w-full p-3 mb-4 bg-homify-surface rounded-btn border border-homify-border text-sm min-h-[100px]"
+              className={`w-full mb-4 ${textareaClass}`}
               placeholder="Décrivez le problème (min. 20 caractères)..."
               value={reportDescription}
               onChange={(e) => setReportDescription(e.target.value)}
@@ -375,7 +376,7 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
 
       {showModal && (
         <div className="fixed inset-0 z-modal flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
-          <div className="bg-homify-card w-full md:w-[400px] rounded-t-modal md:rounded-modal p-6 shadow-2xl">
+          <div className="homify-modal-panel md:w-[400px] rounded-t-modal md:rounded-modal">
             <div className="w-10 h-1 bg-homify-border rounded-full mx-auto mb-5 md:hidden" />
             <h3 className="text-xl font-bold text-homify-text mb-1 text-center">Contacter le propriétaire</h3>
             <p className="text-homify-muted text-center mb-6 text-sm">Comment souhaitez-vous entrer en contact ?</p>
@@ -384,7 +385,7 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
               {whatsappPhone && (
                 <button
                   onClick={handleWhatsApp}
-                  className="w-full flex items-center justify-center gap-3 p-4 bg-green-50 text-green-700 rounded-btn font-semibold hover:bg-green-100 transition border border-green-200"
+                  className="w-full flex items-center justify-center gap-3 p-4 bg-green-500/10 text-green-700 dark:text-green-300 rounded-btn font-semibold hover:bg-green-500/20 transition border border-green-500/30"
                 >
                   <MessageCircle className="w-5 h-5" />
                   WhatsApp

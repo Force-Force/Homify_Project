@@ -23,6 +23,7 @@ import {
 import { ApiPropertyDetail, ApiReport } from '@/types/api';
 import { PropertyImage } from '@/components/PropertyImage';
 import { ApiError } from '@/services/apiClient';
+import { selectClass, textareaClass } from '@/lib/formStyles';
 
 type AdminTab = 'properties' | 'reports' | 'users';
 
@@ -413,7 +414,7 @@ export default function AdminModerationScreen() {
       {rejectId && (
         <Modal onClose={() => setRejectId(null)} title="Motif de rejet">
           <textarea
-            className="w-full p-3 mb-4 bg-homify-surface rounded-btn border border-homify-border text-sm min-h-[100px]"
+            className={`w-full mb-4 ${textareaClass}`}
             placeholder="Expliquez au propriétaire..."
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
@@ -425,7 +426,7 @@ export default function AdminModerationScreen() {
       {resolveId && (
         <Modal onClose={() => setResolveId(null)} title="Résoudre le signalement">
           <select
-            className="w-full p-3 mb-4 bg-homify-surface rounded-btn border border-homify-border text-sm"
+            className={`w-full mb-4 ${selectClass}`}
             value={resolveAction}
             onChange={(e) => setResolveAction(e.target.value as ResolveAction | '')}
           >
@@ -466,7 +467,7 @@ function Modal({
       role="presentation"
     >
       <div
-        className="bg-homify-card w-full max-w-md rounded-modal p-6 shadow-2xl border border-homify-border"
+        className="bg-homify-card w-full max-w-md rounded-modal p-6 shadow-2xl border border-homify-border text-homify-text"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
       >

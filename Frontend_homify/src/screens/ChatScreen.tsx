@@ -277,7 +277,7 @@ export default function ChatScreen({ propertyId, onBack, embedded = false }: Cha
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Écrivez votre message..."
-            className="flex-1 bg-homify-surface text-homify-text rounded-full px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-homify-primary/20 border border-homify-border"
+            className="flex-1 homify-field-compact rounded-full px-4 py-3"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !sending) {
                 e.preventDefault();

@@ -1,4 +1,7 @@
 import { Facebook, Apple } from 'lucide-react';
+import { authInputClass } from '@/lib/formStyles';
+
+export { authInputClass };
 
 interface SocialButtonsProps {
   onSocial: (provider: string) => void;
@@ -28,7 +31,7 @@ export function SocialButtons({ onSocial, mode = 'signup' }: SocialButtonsProps)
         <button
           type="button"
           onClick={() => onSocial('Google')}
-          className="w-12 h-12 rounded-full bg-white hover:bg-gray-50 border border-homify-border flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
+          className="w-12 h-12 rounded-full bg-homify-card hover:bg-homify-surface border border-homify-border flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
           aria-label={`${label} avec Google`}
         >
           <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -50,6 +53,3 @@ export function SocialButtons({ onSocial, mode = 'signup' }: SocialButtonsProps)
     </>
   );
 }
-
-export const authInputClass =
-  'w-full h-14 border border-homify-border rounded-btn px-4 text-base text-homify-text bg-white focus:outline-none focus:ring-2 focus:ring-homify-primary/30 focus:border-transparent transition-all placeholder:text-homify-muted/60';

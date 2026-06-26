@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .homify-field {
+    @apply w-full bg-homify-surface border border-homify-border rounded-btn text-homify-text text-sm outline-none transition placeholder:text-homify-muted/70 focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40;
+  }
+
+  .homify-field-compact {
+    @apply homify-field p-3;
+  }
+
+  .homify-modal-panel {
+    @apply bg-homify-card w-full rounded-t-modal md:rounded-modal p-6 shadow-2xl border border-homify-border text-homify-text;
+  }
+}
+
 @layer base {
   :root {
     --h-primary: 27 67 50;
@@ -51,6 +65,38 @@
 
   body {
     @apply bg-homify-surface text-homify-text transition-colors duration-200;
+  }
+
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):not([type='hidden']),
+  textarea,
+  select {
+    color: rgb(var(--h-text));
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: rgb(var(--h-muted) / 0.7);
+  }
+
+  select option {
+    background-color: rgb(var(--h-card));
+    color: rgb(var(--h-text));
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: rgb(var(--h-text));
+    -webkit-box-shadow: 0 0 0 1000px rgb(var(--h-surface)) inset;
+    box-shadow: 0 0 0 1000px rgb(var(--h-surface)) inset;
+    caret-color: rgb(var(--h-text));
+    transition: background-color 5000s ease-in-out 0s;
   }
 }
 

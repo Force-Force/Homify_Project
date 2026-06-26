@@ -369,7 +369,7 @@ const ChatSupport = () => {
             placeholder="Posez votre question sur la location au Cameroun..."
             rows={1}
             disabled={isLoading}
-            className="flex-1 px-3 py-2.5 bg-homify-surface rounded-btn border border-homify-border resize-none focus:outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm disabled:opacity-50"
+            className="flex-1 homify-field-compact resize-none disabled:opacity-50"
           />
           <button
             type="button"

@@ -1,6 +1,6 @@
 import { MapPin, List, Map as MapIcon, RotateCcw, Sun, Moon, Monitor } from 'lucide-react';
 import { SettingsLayout, SettingsPanel } from '@/components/settings/SettingsLayout';
-import { labelClass } from '@/components/layout/PageHeader';
+import { labelClass, selectClass } from '@/lib/formStyles';
 import { useSettings } from '@/context/SettingsContext';
 import { CITY_OPTIONS, ThemeMode } from '@/lib/appSettings';
 import { cn } from '@/lib/utils';
@@ -57,7 +57,7 @@ export default function PreferencesScreen() {
         <select
           value={settings.defaultCity}
           onChange={(e) => updateSettings({ defaultCity: e.target.value })}
-          className="w-full p-4 bg-homify-surface border border-homify-border rounded-btn text-homify-text text-sm outline-none focus:ring-2 focus:ring-homify-primary/20"
+          className={`w-full p-4 ${selectClass}`}
         >
           {CITY_OPTIONS.map((city) => (
             <option key={city} value={city}>{city}</option>

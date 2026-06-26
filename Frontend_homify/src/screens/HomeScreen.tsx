@@ -12,6 +12,7 @@ import { searchProperties } from '../services/propertyService';
 import { getNotificationUnreadCount } from '../services/notificationService';
 import { StaggeredItem } from '@/components/ui/StaggeredItem';
 import { useFavorites } from '@/context/FavoritesContext';
+import { selectClass } from '@/lib/formStyles';
 import { useSettings } from '@/context/SettingsContext';
 
 interface Filters {
@@ -322,9 +323,8 @@ export default function HomeScreen() {
               <input
                 type="text"
                 placeholder="Rechercher un quartier, une ville..."
-                className="w-full pl-9 pr-3 py-2.5 md:py-2 bg-homify-surface rounded-btn border border-homify-border
-                           focus:outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40
-                           text-sm placeholder:text-homify-muted/70 transition-all"
+                className="w-full pl-9 pr-3 py-2.5 md:py-2 homify-field-compact
+                           focus:outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -387,9 +387,8 @@ export default function HomeScreen() {
                 ref={searchInputRef}
                 type="text"
                 placeholder="Rechercher un quartier, une ville..."
-                className="w-full pl-9 pr-3 py-2.5 bg-homify-surface rounded-btn border border-homify-border
-                           focus:outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40
-                           text-sm placeholder:text-homify-muted/70 transition-all"
+                className="w-full pl-9 pr-3 py-2.5 homify-field-compact
+                           focus:outline-none focus:ring-2 focus:ring-homify-primary/20 focus:border-homify-primary/40"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -560,7 +559,7 @@ export default function HomeScreen() {
 
       {showFilters && (
         <div className="fixed inset-0 z-modal flex items-end md:items-center justify-center bg-homify-text/40 backdrop-blur-sm">
-          <div className="bg-homify-card w-full md:w-[480px] h-[85vh] md:h-auto md:max-h-[85vh] md:rounded-modal rounded-t-modal p-6 shadow-2xl flex flex-col">
+          <div className="homify-modal-panel md:w-[480px] h-[85vh] md:h-auto md:max-h-[85vh] flex flex-col">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-homify-text">Filtres</h3>
               <button
@@ -597,14 +596,14 @@ export default function HomeScreen() {
                   <input
                     type="number"
                     placeholder="Min"
-                    className="flex-1 p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                    className="flex-1 homify-field-compact"
                     value={filters.minPrice}
                     onChange={(e) => updateFilter('minPrice', e.target.value)}
                   />
                   <input
                     type="number"
                     placeholder="Max"
-                    className="flex-1 p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                    className="flex-1 homify-field-compact"
                     value={filters.maxPrice}
                     onChange={(e) => updateFilter('maxPrice', e.target.value)}
                   />
@@ -618,7 +617,7 @@ export default function HomeScreen() {
                     type="number"
                     min="0"
                     placeholder="Ex: 2"
-                    className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                    className="w-full homify-field-compact"
                     value={filters.bedrooms}
                     onChange={(e) => updateFilter('bedrooms', e.target.value)}
                   />
@@ -629,7 +628,7 @@ export default function HomeScreen() {
                     type="number"
                     min="0"
                     placeholder="Ex: 1"
-                    className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                    className="w-full homify-field-compact"
                     value={filters.bathrooms}
                     onChange={(e) => updateFilter('bathrooms', e.target.value)}
                   />
@@ -642,7 +641,7 @@ export default function HomeScreen() {
                   type="number"
                   min="0"
                   placeholder="Ex: 40"
-                  className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                  className="w-full homify-field-compact"
                   value={filters.minSurface}
                   onChange={(e) => updateFilter('minSurface', e.target.value)}
                 />
@@ -651,7 +650,7 @@ export default function HomeScreen() {
               <div>
                 <label className="block text-sm font-semibold text-homify-text mb-2">Meublé</label>
                 <select
-                  className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm text-homify-text"
+                  className={`w-full ${selectClass}`}
                   value={filters.furnished}
                   onChange={(e) => updateFilter('furnished', e.target.value)}
                 >
@@ -666,7 +665,7 @@ export default function HomeScreen() {
                 <input
                   type="text"
                   placeholder="Ex: Yaoundé, Douala..."
-                  className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                  className="w-full homify-field-compact"
                   value={filters.city}
                   onChange={(e) => updateFilter('city', e.target.value)}
                 />
@@ -677,7 +676,7 @@ export default function HomeScreen() {
                 <input
                   type="text"
                   placeholder="Ex: Bastos, Akwa..."
-                  className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm"
+                  className="w-full homify-field-compact"
                   value={filters.district}
                   onChange={(e) => updateFilter('district', e.target.value)}
                 />
@@ -711,7 +710,7 @@ export default function HomeScreen() {
                       type="number"
                       min="1"
                       max="50"
-                      className="w-full p-2.5 bg-homify-card rounded-btn border border-homify-border text-sm"
+                      className="w-full homify-field-compact p-2.5 bg-homify-card"
                       value={filters.radiusKm}
                       onChange={(e) => updateFilter('radiusKm', e.target.value)}
                     />
@@ -722,7 +721,7 @@ export default function HomeScreen() {
               <div>
                 <label className="block text-sm font-semibold text-homify-text mb-2">Trier par</label>
                 <select
-                  className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border outline-none focus:ring-2 focus:ring-homify-primary/20 text-sm text-homify-text"
+                  className={`w-full ${selectClass}`}
                   value={filters.ordering}
                   onChange={(e) => updateFilter('ordering', e.target.value)}
                 >

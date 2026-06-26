@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Calculator } from 'lucide-react';
 
+import { inputClassCompact, selectClass } from '@/lib/formStyles';
+
 /** Calculateur de budget loyer — Cameroun (FCFA) */
 export default function RentCalculator() {
   const [income, setIncome] = useState('');
@@ -34,7 +36,7 @@ export default function RentCalculator() {
             placeholder="Ex: 450 000"
             value={income}
             onChange={(e) => setIncome(e.target.value)}
-            className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border text-sm outline-none focus:ring-2 focus:ring-homify-primary/20"
+            className={inputClassCompact}
           />
         </div>
         <div>
@@ -42,7 +44,7 @@ export default function RentCalculator() {
           <select
             value={ratio}
             onChange={(e) => setRatio(e.target.value)}
-            className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border text-sm"
+            className={selectClass}
           >
             <option value="25">25 % — prudent</option>
             <option value="30">30 % — recommandé</option>
@@ -56,7 +58,7 @@ export default function RentCalculator() {
             placeholder="Eau, électricité, gardien..."
             value={charges}
             onChange={(e) => setCharges(e.target.value)}
-            className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border text-sm outline-none focus:ring-2 focus:ring-homify-primary/20"
+            className={inputClassCompact}
           />
         </div>
         <div>
@@ -64,7 +66,7 @@ export default function RentCalculator() {
           <select
             value={depositMonths}
             onChange={(e) => setDepositMonths(e.target.value)}
-            className="w-full p-3 bg-homify-surface rounded-btn border border-homify-border text-sm"
+            className={selectClass}
           >
             <option value="1">1 mois</option>
             <option value="2">2 mois</option>
