@@ -7,6 +7,7 @@ import { API_ROUTES } from '../../api/routes';
 import Carosel from './Carosel';
 import MobileCarousel from './MobileCarossel';
 import { SocialButtons, authInputClass } from './SocialButtons';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 const HomifiSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -77,6 +78,9 @@ const HomifiSignUp = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-homify-surface">
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       <Carosel />
 
       <div className="flex-1 lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-8">

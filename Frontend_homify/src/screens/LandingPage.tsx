@@ -11,6 +11,7 @@ import { CAROUSEL_IMAGES } from '@/components/Authentification/carouselData';
 import { searchProperties } from '@/services/propertyService';
 import { Hotel } from '@/types';
 import { PropertyImage } from '@/components/PropertyImage';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 const FEATURES = [
   { icon: Search, title: 'Recherche intelligente', description: 'Filtrez par ville, quartier, budget et type de bien en quelques clics.' },
@@ -158,6 +159,7 @@ export default function LandingPage() {
           <span className="text-xl font-extrabold text-white">Homify</span>
         </div>
         <nav className="flex items-center gap-3">
+          <ThemeToggle variant="overlay" />
           <Link to="/signin" className="hidden sm:inline-flex px-4 py-2 text-sm font-semibold text-white/90 hover:text-white transition-colors">Se connecter</Link>
           <Link to="/signup" className="inline-flex items-center gap-1.5 rounded-btn bg-homify-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-homify-accent-hover transition-colors">
             S'inscrire <ArrowRight className="h-4 w-4" />

@@ -13,7 +13,8 @@
     "map": "Map",
     "min": "Min",
     "max": "Max",
-    "or": "or"
+    "or": "or",
+    "themeToggleAria": "Theme: {{theme}}"
   },
   "nav": {
     "tagline": "Find your home",

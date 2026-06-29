@@ -13,7 +13,8 @@
     "map": "Carte",
     "min": "Min",
     "max": "Max",
-    "or": "ou"
+    "or": "ou",
+    "themeToggleAria": "Thème : {{theme}}"
   },
   "nav": {
     "tagline": "Trouvez votre chez-vous",
