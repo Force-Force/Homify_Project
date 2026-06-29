@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 
+from apps.billing.services import BillingService
 from apps.core.exceptions import BusinessLogicError
 from apps.core.utils import business_error_response
 from apps.core.services import PropertyLifecycleService, PropertyMediaService, PropertyViewService, NotificationService
@@ -49,6 +50,15 @@ class PropertyViewSet(viewsets.ModelViewSet):
         return Property.objects.filter(status='PUBLISHED').select_related(
             'address', 'landlord'
         ).prefetch_related('photos', 'amenities')
+
+    def filter_queryset(self, queryset):
+        qs = super().filter_queryset(queryset)
+        if self.action != 'list':
+            return qs
+        ordering = self.request.query_params.get('ordering', '-created_at')
+        if ordering in ('-created_at', 'created_at', ''):
+            return BillingService.apply_boost_ordering(qs)
+        return qs
 
     def get_serializer_class(self):
         if self.action == 'list':

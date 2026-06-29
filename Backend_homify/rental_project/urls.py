@@ -40,6 +40,7 @@ urlpatterns = [
     path('api/amenities/', include('apps.amenities.urls')),
     path('api/reports/', include('apps.reports.urls')),
     path('api/notifications/', include('apps.notifications.urls')),
+    path('api/billing/', include('apps.billing.urls')),
 ]
 
 if settings.DEBUG:

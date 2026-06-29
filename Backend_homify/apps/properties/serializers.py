@@ -3,8 +3,11 @@ Serializers for Property models.
 """
 from rest_framework import serializers
 
+from django.utils import timezone
+
 from apps.core.exceptions import PropertyLifecycleError
 from apps.core.services import PropertyLifecycleService
+from apps.billing.services import BillingService, BillingError
 
 from .models import Property, Address, Photo
 from apps.users.serializers import UserSerializer, LandlordPublicSerializer
@@ -55,12 +58,16 @@ class PropertyListSerializer(serializers.ModelSerializer):
     address = AddressSerializer(read_only=True)
     primary_photo = serializers.SerializerMethodField()
     is_favorite = serializers.SerializerMethodField()
+    is_boosted = serializers.SerializerMethodField()
     
     class Meta:
         model = Property
         fields = ('id', 'title', 'type', 'monthly_rent', 'surface', 'number_of_rooms',
                   'number_of_bedrooms', 'number_of_bathrooms', 'address', 'primary_photo',
-                  'furnished', 'published_at', 'is_favorite', 'status')
+                  'furnished', 'published_at', 'is_favorite', 'status', 'is_boosted', 'boost_until')
+    
+    def get_is_boosted(self, obj):
+        return bool(obj.boost_until and obj.boost_until > timezone.now())
     
     def get_primary_photo(self, obj):
         """Get primary photo."""
@@ -95,7 +102,11 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
                   'number_of_bedrooms', 'number_of_bathrooms', 'floor', 'furnished',
                   'monthly_rent', 'charges', 'charges_included', 'deposit', 'agency_fees',
                   'address', 'photos', 'amenities', 'landlord', 'view_count', 'status',
-                  'rejection_reason', 'published_at', 'updated_at', 'is_favorite')
+                  'rejection_reason', 'published_at', 'updated_at', 'is_favorite',
+                  'is_boosted', 'boost_until')
+
+    def get_is_boosted(self, obj):
+        return bool(obj.boost_until and obj.boost_until > timezone.now())
 
     def get_landlord(self, obj):
         """Full contact for owner/admin; masked phone for public viewers."""
@@ -159,6 +170,12 @@ class PropertyCreateUpdateSerializer(serializers.ModelSerializer):
         address_data = validated_data.pop('address')
         amenity_ids = validated_data.pop('amenity_ids', [])
         user = self.context['request'].user
+
+        if user.role == 'LANDLORD':
+            try:
+                BillingService.ensure_can_create_listing(user)
+            except BillingError as exc:
+                raise serializers.ValidationError({'non_field_errors': [exc.message]}) from exc
 
         requested_status = validated_data.pop('status', None)
         validated_data['status'] = PropertyLifecycleService.resolve_initial_status(

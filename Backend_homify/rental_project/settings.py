@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'apps.reports',
     'apps.amenities',
     'apps.notifications',
+    'apps.billing',
 ]
 
 MIDDLEWARE = [
@@ -230,6 +231,22 @@ CELERY_TASK_ALWAYS_EAGER = os.getenv(
     'True' if DEBUG else 'False',
 ).lower() in ('1', 'true', 'yes')
 CELERY_TASK_EAGER_PROPAGATES = CELERY_TASK_ALWAYS_EAGER
+
+# Billing / monetization
+BILLING_MOCK_PAYMENTS = os.getenv('BILLING_MOCK_PAYMENTS', 'True').lower() in ('1', 'true', 'yes')
+HOMIFY_FREE_PLAN_MAX_LISTINGS = int(os.getenv('HOMIFY_FREE_PLAN_MAX_LISTINGS', '2'))
+
+# Aangaraa Pay (Mobile Money CM)
+AANGARAAPAY_APP_KEY = os.getenv('AANGARAAPAY_APP_KEY', '')
+AANGARAAPAY_API_BASE_URL = os.getenv(
+    'AANGARAAPAY_API_BASE_URL',
+    'https://api-production.aangaraa-pay.com',
+)
+AANGARAAPAY_CHECKOUT_BASE_URL = os.getenv(
+    'AANGARAAPAY_CHECKOUT_BASE_URL',
+    'https://aangaraa-pay.com',
+)
+BACKEND_PUBLIC_URL = os.getenv('BACKEND_PUBLIC_URL', 'http://localhost:8000')
 
 # Production hardening
 if not DEBUG:

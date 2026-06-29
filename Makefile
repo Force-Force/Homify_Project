@@ -15,7 +15,7 @@ VENV_PIP     := $(VENV)/bin/pip
         dev dev-local dev-frontend dev-backend dev-backend-local \
         backend backend-detached backend-local backend-logs backend-stop backend-down \
         frontend frontend-build \
-        migrate migrate-local superuser superuser-local seed-demo seed-demo-local shell logs stop stop-local clean \
+        seed-demo seed-demo-local seed-billing-local shell logs stop stop-local clean \
         test test-backend test-frontend lint ci smoke prod-up prod-down
 
 # ─── Aide ────────────────────────────────────────────────────────────────────
@@ -37,6 +37,7 @@ help:
 	@echo "  make backend-local    Backend Django local  → http://localhost:$(BACKEND_PORT)"
 	@echo "  make migrate-local    Migrations Django (local)"
 	@echo "  make seed-demo-local  Données demo (utilisateurs + annonces)"
+	@echo "  make seed-billing-local  Produits billing (boost + abo Pro)"
 	@echo "  make stop-local       Arrête le backend local (si lancé en arrière-plan)"
 	@echo ""
 	@echo "  Frontend"
@@ -151,6 +152,10 @@ superuser-local:
 seed-demo-local:
 	@test -d $(VENV) || (echo "❌ Venv absent. Lancez: make install-local" && exit 1)
 	cd $(BACKEND_DIR) && $(VENV_PYTHON) manage.py seed_demo
+
+seed-billing-local:
+	@test -d $(VENV) || (echo "❌ Venv absent. Lancez: make install-local" && exit 1)
+	cd $(BACKEND_DIR) && $(VENV_PYTHON) manage.py seed_billing_products
 
 seed-demo:
 	cd $(BACKEND_DIR) && docker compose exec web python manage.py seed_demo

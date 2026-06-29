@@ -18,6 +18,17 @@ class IsLandlord(permissions.BasePermission):
         return request.user and request.user.is_authenticated and request.user.role == 'LANDLORD'
 
 
+class IsLandlordOrAdmin(permissions.BasePermission):
+    """Landlord or admin (billing, property management)."""
+
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and request.user.role in ('LANDLORD', 'ADMIN')
+        )
+
+
 class IsOwnerOrAdmin(permissions.BasePermission):
     """Permission for object owner or admin."""
     

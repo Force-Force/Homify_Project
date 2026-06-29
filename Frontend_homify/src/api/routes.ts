@@ -79,4 +79,11 @@ export const API_ROUTES = {
     rejectProperty: (id: number | string) =>
       `${API_BASE_URL}/properties/admin/properties/${id}/reject/`,
   },
+  billing: {
+    products: `${API_BASE_URL}/billing/products/`,
+    me: `${API_BASE_URL}/billing/me/`,
+    boost: `${API_BASE_URL}/billing/boost/`,
+    subscribe: `${API_BASE_URL}/billing/subscribe/`,
+    order: (id: number | string) => `${API_BASE_URL}/billing/orders/${id}/`,
+  },
 } as const;

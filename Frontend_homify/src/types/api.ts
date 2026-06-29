@@ -60,6 +60,8 @@ export interface ApiProperty {
   published_at: string;
   is_favorite: boolean;
   status?: string;
+  is_boosted?: boolean;
+  boost_until?: string | null;
 }
 
 export interface ApiPropertyDetail extends ApiProperty {

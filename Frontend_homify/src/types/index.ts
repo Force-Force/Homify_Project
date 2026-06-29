@@ -42,4 +42,5 @@ export interface Hotel {
   deposit?: string;
   status?: string;
   rejectionReason?: string;
+  isBoosted?: boolean;
 }

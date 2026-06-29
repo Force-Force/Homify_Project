@@ -45,6 +45,7 @@ export const transformApiToHotel = (apiProp: ApiProperty): Hotel => {
     isFavorite: apiProp.is_favorite,
     furnished: apiProp.furnished,
     status: (apiProp as ApiProperty & { status?: string }).status,
+    isBoosted: apiProp.is_boosted ?? false,
   };
 };
 

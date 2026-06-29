@@ -48,6 +48,11 @@ export const RecommendedCard = ({
           {hotel.type}
         </span>
       )}
+      {hotel.isBoosted && (
+        <span className="absolute top-2.5 right-12 bg-homify-accent text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 shadow-sm">
+          Boost
+        </span>
+      )}
     </div>
 
     <div className="p-3.5">
