@@ -252,6 +252,7 @@
     "returnFailed": "Payment was not confirmed or was cancelled.",
     "returnPending": "Payment still pending. Check your phone.",
     "returnRetry": "Check again",
+    "paymentTimeout": "USSD timeout (1 min). Payment cancelled.",
     "summaryTitle": "Your plan",
     "managePlan": "Manage plan",
     "quotaWarning": "Limit reached ({{current}}/{{max}}). Upgrade to Pro to publish more listings.",

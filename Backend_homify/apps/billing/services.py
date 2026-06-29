@@ -1,6 +1,8 @@
 """
 Billing business rules — quotas, boosts, subscriptions.
 """
+import threading
+import time
 import uuid
 from datetime import timedelta
 
@@ -204,6 +206,89 @@ class BillingService:
         return order
 
     @classmethod
+    def abandon_pending_order(cls, order: PaymentOrder) -> PaymentOrder:
+        """USSD not confirmed in time — cancel the pending payment."""
+        if order.status != 'PENDING':
+            return order
+        order.status = 'CANCELLED'
+        order.save(update_fields=['status'])
+        return order
+
+    @classmethod
+    def _poll_interval(cls) -> int:
+        return max(2, int(getattr(settings, 'BILLING_PAYMENT_POLL_INTERVAL_SECONDS', 5)))
+
+    @classmethod
+    def _poll_timeout(cls) -> int:
+        return max(cls._poll_interval(), int(getattr(settings, 'BILLING_PAYMENT_POLL_TIMEOUT_SECONDS', 60)))
+
+    @classmethod
+    def apply_provider_status(cls, order: PaymentOrder, provider_status: str) -> PaymentOrder:
+        mapped = map_webhook_status(provider_status)
+        if mapped == 'COMPLETED':
+            cls._fulfill_order(order)
+        elif mapped in ('FAILED', 'CANCELLED'):
+            cls._mark_order_failed(order, mapped)
+        return order
+
+    @classmethod
+    def run_payment_status_poll(cls, order_id: int) -> PaymentOrder | None:
+        """
+        Poll Aangaraa Pay and persist result in DB (no webhook required).
+        Stops when payment succeeds, fails, or USSD timeout is reached.
+        """
+        interval = cls._poll_interval()
+        deadline = time.monotonic() + cls._poll_timeout()
+
+        while time.monotonic() < deadline:
+            try:
+                order = PaymentOrder.objects.select_related('product', 'property').get(pk=order_id)
+            except PaymentOrder.DoesNotExist:
+                return None
+
+            if order.status != 'PENDING':
+                return order
+
+            if not order.pay_token:
+                return order
+
+            cls.sync_order_status(order)
+            order.refresh_from_db()
+            if order.status != 'PENDING':
+                return order
+
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            time.sleep(min(interval, remaining))
+
+        try:
+            order = PaymentOrder.objects.get(pk=order_id)
+        except PaymentOrder.DoesNotExist:
+            return None
+
+        if order.status == 'PENDING':
+            return cls.abandon_pending_order(order)
+        return order
+
+    @classmethod
+    def schedule_payment_polling(cls, order_id: int):
+        """Start background polling (thread in dev, Celery in prod)."""
+        if getattr(settings, 'CELERY_TASK_ALWAYS_EAGER', True):
+            thread = threading.Thread(
+                target=cls.run_payment_status_poll,
+                args=(order_id,),
+                daemon=True,
+                name=f'homify-payment-poll-{order_id}',
+            )
+            thread.start()
+            return
+
+        from .tasks import poll_payment_order_task
+
+        poll_payment_order_task.delay(order_id)
+
+    @classmethod
     def _initiate_aangaraapay(cls, order: PaymentOrder, user, payment: dict) -> dict:
         client = AangaraaPayClient()
         if not client.configured:
@@ -317,6 +402,8 @@ class BillingService:
             cls._fulfill_order(order)
         else:
             payment_info = cls._initiate_aangaraapay(order, user, payment or {})
+            if order.status == 'PENDING' and order.pay_token:
+                cls.schedule_payment_polling(order.pk)
 
         return order, payment_info
 
@@ -330,7 +417,7 @@ class BillingService:
 
     @classmethod
     def sync_order_status(cls, order: PaymentOrder) -> PaymentOrder:
-        """Poll Aangaraa Pay and fulfill order when successful."""
+        """Single check against Aangaraa Pay → update order in DB."""
         if order.status != 'PENDING' or not order.pay_token:
             return order
 
@@ -340,12 +427,7 @@ class BillingService:
         except AangaraaPayError:
             return order
 
-        mapped = map_webhook_status(result.status)
-        if mapped == 'COMPLETED':
-            cls._fulfill_order(order)
-        elif mapped in ('FAILED', 'CANCELLED'):
-            cls._mark_order_failed(order, mapped)
-        return order
+        return cls.apply_provider_status(order, result.status)
 
     @classmethod
     def handle_webhook(cls, payload: dict) -> PaymentOrder | None:
@@ -368,10 +450,4 @@ class BillingService:
             order.provider_reference = payload['txnid']
             order.save(update_fields=['provider_reference'])
 
-        mapped = map_webhook_status(payload.get('status', ''))
-        if mapped == 'COMPLETED':
-            cls._fulfill_order(order)
-        elif mapped in ('FAILED', 'CANCELLED'):
-            cls._mark_order_failed(order, mapped)
-
-        return order
+        return cls.apply_provider_status(order, payload.get('status', ''))

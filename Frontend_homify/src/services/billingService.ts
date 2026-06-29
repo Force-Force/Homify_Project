@@ -114,7 +114,7 @@ export async function subscribeToPlan(
 
 export async function pollOrderUntilDone(
   orderId: number,
-  { intervalMs = 3000, maxAttempts = 40 } = {},
+  { intervalMs = 2000, maxAttempts = 35 } = {},
 ): Promise<{ order: PaymentOrder; billing: BillingSummary }> {
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const res = await getOrder(orderId);

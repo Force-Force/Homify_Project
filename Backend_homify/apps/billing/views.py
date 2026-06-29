@@ -112,7 +112,6 @@ class BillingOrderDetailView(APIView):
     def get(self, request, order_id):
         try:
             order = BillingService.get_order_for_user(request.user, order_id)
-            order = BillingService.sync_order_status(order)
         except BusinessLogicError as exc:
             return business_error_response(exc)
         return Response({

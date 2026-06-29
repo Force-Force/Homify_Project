@@ -83,7 +83,11 @@ export default function LandlordBillingScreen() {
           setMessage(t('billing.subscribeSuccess'));
           return;
         }
-        setError(t('billing.subscribeError'));
+        setError(
+          polled.order.status === 'CANCELLED'
+            ? t('billing.paymentTimeout')
+            : t('billing.subscribeError'),
+        );
         return;
       }
 

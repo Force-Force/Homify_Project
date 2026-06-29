@@ -205,5 +205,5 @@ def map_webhook_status(status: str) -> str:
     if normalized == 'SUCCESSFUL':
         return 'COMPLETED'
     if normalized in ('FAILED', 'CANCELLED', 'EXPIRED'):
-        return normalized if normalized != 'EXPIRED' else 'FAILED'
+        return 'CANCELLED' if normalized in ('CANCELLED', 'EXPIRED') else 'FAILED'
     return 'PENDING'

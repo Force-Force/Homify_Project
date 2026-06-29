@@ -78,7 +78,11 @@ function BoostModal({
           onClose();
           return;
         }
-        setError(t('billing.boostError'));
+        setError(
+          polled.order.status === 'CANCELLED'
+            ? t('billing.paymentTimeout')
+            : t('billing.boostError'),
+        );
         return;
       }
 
