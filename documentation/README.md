@@ -10,6 +10,7 @@ Welcome to the Homify project documentation. This documentation covers the archi
 4. [Routes & Navigation](routes.md) - API endpoints and Frontend routing
 5. [Frontend Workflow](frontend_workflow.md) - React architecture, components, and state
 6. [Integrations & Setup](integrations.md) - External services and environment setup
+7. [Business & Monétisation](business_monetisation.md) - Logique métier et perspectives de revenus
 
 ## Project Overview
 
