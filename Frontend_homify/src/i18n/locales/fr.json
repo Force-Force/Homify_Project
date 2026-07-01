@@ -253,6 +253,14 @@
     "returnPending": "Paiement toujours en attente. Vérifiez votre téléphone.",
     "returnRetry": "Revérifier",
     "paymentTimeout": "Délai USSD dépassé (1 min). Paiement annulé.",
+    "historyTitle": "Historique des paiements",
+    "historyEmpty": "Aucun paiement enregistré.",
+    "orderStatus": {
+      "COMPLETED": "Payé",
+      "PENDING": "En attente",
+      "FAILED": "Échoué",
+      "CANCELLED": "Annulé"
+    },
     "summaryTitle": "Votre plan",
     "managePlan": "Gérer mon plan",
     "quotaWarning": "Limite atteinte ({{current}}/{{max}}). Passez au Pro pour publier plus d'annonces.",
@@ -263,6 +271,11 @@
     "boostError": "Impossible d'activer le boost.",
     "boostActive": "Boost actif",
     "boostBadge": "Boost"
+  },
+  "propertyForm": {
+    "quotaTitle": "Limite du plan gratuit atteinte",
+    "quotaHint": "Passez au plan Pro pour publier plus d'annonces.",
+    "saveError": "Erreur lors de l'enregistrement."
   },
   "myProperties": {
     "greeting": "Espace propriétaire",

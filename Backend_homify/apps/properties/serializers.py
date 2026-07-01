@@ -175,7 +175,10 @@ class PropertyCreateUpdateSerializer(serializers.ModelSerializer):
             try:
                 BillingService.ensure_can_create_listing(user)
             except BillingError as exc:
-                raise serializers.ValidationError({'non_field_errors': [exc.message]}) from exc
+                raise serializers.ValidationError({
+                    'non_field_errors': [exc.message],
+                    'code': exc.code,
+                }) from exc
 
         requested_status = validated_data.pop('status', None)
         validated_data['status'] = PropertyLifecycleService.resolve_initial_status(

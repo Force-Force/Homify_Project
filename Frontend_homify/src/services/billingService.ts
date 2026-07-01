@@ -63,10 +63,15 @@ export interface OrderResponse {
 const BILLING = {
   products: `${API_BASE_URL}/billing/products/`,
   me: `${API_BASE_URL}/billing/me/`,
+  orders: `${API_BASE_URL}/billing/orders/`,
   boost: `${API_BASE_URL}/billing/boost/`,
   subscribe: `${API_BASE_URL}/billing/subscribe/`,
   order: (id: number) => `${API_BASE_URL}/billing/orders/${id}/`,
 } as const;
+
+export async function getPaymentOrders(): Promise<PaymentOrder[]> {
+  return apiFetch<PaymentOrder[]>(BILLING.orders);
+}
 
 export async function getBillingProducts(): Promise<BillingProduct[]> {
   return apiFetch<BillingProduct[]>(BILLING.products);

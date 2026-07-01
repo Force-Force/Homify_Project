@@ -1,18 +1,20 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Crown, Loader2, Sparkles, Check, ArrowLeft } from 'lucide-react';
+import { Crown, Loader2, Sparkles, Check, ArrowLeft, Receipt } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useAuth } from '@/context/AuthContext';
 import {
   getBillingProducts,
   getBillingSummary,
+  getPaymentOrders,
   subscribeToPlan,
   pollOrderUntilDone,
   formatFcfa,
   isMockPayments,
   BillingProduct,
   BillingSummary,
+  PaymentOrder,
 } from '@/services/billingService';
 import { MobileMoneyFields, MobileMoneyFormValues } from '@/components/billing/MobileMoneyFields';
 import { cn } from '@/lib/utils';
@@ -22,6 +24,7 @@ export default function LandlordBillingScreen() {
   const { user } = useAuth();
   const [summary, setSummary] = useState<BillingSummary | null>(null);
   const [products, setProducts] = useState<BillingProduct[]>([]);
+  const [orders, setOrders] = useState<PaymentOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionCode, setActionCode] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -36,9 +39,14 @@ export default function LandlordBillingScreen() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, p] = await Promise.all([getBillingSummary(), getBillingProducts()]);
+      const [s, p, o] = await Promise.all([
+        getBillingSummary(),
+        getBillingProducts(),
+        getPaymentOrders(),
+      ]);
       setSummary(s);
       setProducts(p.filter((x) => x.product_type === 'SUBSCRIPTION'));
+      setOrders(o);
     } finally {
       setLoading(false);
     }
@@ -93,6 +101,7 @@ export default function LandlordBillingScreen() {
 
       if (res.billing) setSummary(res.billing);
       setMessage(t('billing.subscribeSuccess'));
+      setOrders(await getPaymentOrders());
     } catch {
       setError(t('billing.subscribeError'));
     } finally {
@@ -236,6 +245,45 @@ export default function LandlordBillingScreen() {
                 )}
               </div>
             ))}
+          </div>
+
+          <div className="mt-10">
+            <h2 className="font-bold text-homify-text flex items-center gap-2 mb-4">
+              <Receipt className="w-5 h-5 text-homify-primary" />
+              {t('billing.historyTitle')}
+            </h2>
+            {orders.length === 0 ? (
+              <p className="text-sm text-homify-muted bg-homify-card rounded-modal border border-homify-border p-5">
+                {t('billing.historyEmpty')}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="flex items-center justify-between gap-3 bg-homify-card rounded-btn border border-homify-border p-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm text-homify-text truncate">{order.product_name}</p>
+                      <p className="text-xs text-homify-muted">
+                        {new Date(order.created_at).toLocaleString('fr-FR')}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-bold text-homify-primary">{formatFcfa(order.amount_fcfa)}</p>
+                      <p className={cn(
+                        'text-[10px] font-semibold uppercase',
+                        order.status === 'COMPLETED' && 'text-emerald-600',
+                        order.status === 'PENDING' && 'text-amber-600',
+                        (order.status === 'FAILED' || order.status === 'CANCELLED') && 'text-red-600',
+                      )}>
+                        {t(`billing.orderStatus.${order.status}`, { defaultValue: order.status })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </>
       )}

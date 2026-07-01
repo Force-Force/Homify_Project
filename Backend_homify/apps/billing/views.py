@@ -120,6 +120,14 @@ class BillingOrderDetailView(APIView):
         })
 
 
+class BillingOrdersListView(APIView):
+    permission_classes = (IsAuthenticated, IsLandlordOrAdmin)
+
+    def get(self, request):
+        orders = BillingService.list_orders(request.user)
+        return Response(PaymentOrderSerializer(orders, many=True).data)
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class AangaraaPayWebhookView(APIView):
     """Aangaraa Pay notify_url callback."""

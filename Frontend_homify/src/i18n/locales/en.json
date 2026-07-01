@@ -253,6 +253,14 @@
     "returnPending": "Payment still pending. Check your phone.",
     "returnRetry": "Check again",
     "paymentTimeout": "USSD timeout (1 min). Payment cancelled.",
+    "historyTitle": "Payment history",
+    "historyEmpty": "No payments recorded yet.",
+    "orderStatus": {
+      "COMPLETED": "Paid",
+      "PENDING": "Pending",
+      "FAILED": "Failed",
+      "CANCELLED": "Cancelled"
+    },
     "summaryTitle": "Your plan",
     "managePlan": "Manage plan",
     "quotaWarning": "Limit reached ({{current}}/{{max}}). Upgrade to Pro to publish more listings.",
@@ -263,6 +271,11 @@
     "boostError": "Could not activate boost.",
     "boostActive": "Boost active",
     "boostBadge": "Boost"
+  },
+  "propertyForm": {
+    "quotaTitle": "Free plan limit reached",
+    "quotaHint": "Upgrade to Pro to publish more listings.",
+    "saveError": "Could not save the listing."
   },
   "myProperties": {
     "greeting": "Landlord space",

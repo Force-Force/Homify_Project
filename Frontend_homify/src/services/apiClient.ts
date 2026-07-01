@@ -76,10 +76,12 @@ async function parseResponse<T>(response: Response): Promise<T> {
 
   if (!response.ok) {
     const message =
+      (Array.isArray(data?.non_field_errors) && data.non_field_errors[0]) ||
       data?.error ||
       data?.detail ||
       (typeof data === 'object' ? JSON.stringify(data) : 'Erreur serveur');
-    throw new ApiError(message, response.status, data?.code, data);
+    const code = data?.code as string | undefined;
+    throw new ApiError(message, response.status, code, data);
   }
 
   return data as T;

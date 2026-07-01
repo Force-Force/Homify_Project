@@ -197,7 +197,62 @@ class BillingService:
         order.status = 'COMPLETED'
         order.completed_at = now
         order.save(update_fields=['status', 'completed_at'])
+        cls._notify_payment_success(order)
         return order
+
+    @classmethod
+    def _notify_payment_success(cls, order: PaymentOrder):
+        from apps.notifications.services import NotificationDispatchService
+
+        product = order.product
+        amount = int(order.amount_fcfa)
+
+        if product.product_type == 'BOOST':
+            title = 'Boost activé'
+            body = (
+                f'Votre boost « {product.name} » est actif pour l\'annonce '
+                f'#{order.property_id}. Montant : {amount:,} FCFA.'.replace(',', ' ')
+            )
+            email_subject = 'Homify — Boost activé'
+            email_body = (
+                f'Bonjour,\n\nVotre paiement de {amount} FCFA pour « {product.name} » '
+                f'a été confirmé. Votre annonce bénéficie d\'une visibilité prioritaire.\n\n'
+                f'— L\'équipe Homify'
+            )
+        else:
+            title = 'Abonnement Pro activé'
+            body = (
+                f'Votre abonnement « {product.name} » est actif. '
+                f'Vous pouvez publier sans limite d\'annonces. Montant : {amount:,} FCFA.'.replace(',', ' ')
+            )
+            email_subject = 'Homify — Abonnement Pro activé'
+            email_body = (
+                f'Bonjour,\n\nVotre paiement de {amount} FCFA pour « {product.name} » '
+                f'a été confirmé. Votre plan Pro est maintenant actif.\n\n— L\'équipe Homify'
+            )
+
+        NotificationDispatchService.notify(
+            order.user,
+            'SYSTEM',
+            title,
+            body,
+            property_obj=order.property,
+            metadata={
+                'payment_order_id': order.id,
+                'product_code': product.code,
+                'product_type': product.product_type,
+            },
+            email_subject=email_subject,
+            email_body=email_body,
+        )
+
+    @classmethod
+    def list_orders(cls, user, *, limit: int = 50):
+        return (
+            PaymentOrder.objects.filter(user=user)
+            .select_related('product', 'property')
+            .order_by('-created_at')[:limit]
+        )
 
     @classmethod
     def _mark_order_failed(cls, order: PaymentOrder, status: str = 'FAILED'):

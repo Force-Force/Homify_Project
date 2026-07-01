@@ -5,6 +5,7 @@ from .views import (
     BillingBoostOrderView,
     BillingMeView,
     BillingOrderDetailView,
+    BillingOrdersListView,
     BillingProductsView,
     BillingSubscribeView,
 )
@@ -12,6 +13,7 @@ from .views import (
 urlpatterns = [
     path('products/', BillingProductsView.as_view(), name='billing-products'),
     path('me/', BillingMeView.as_view(), name='billing-me'),
+    path('orders/', BillingOrdersListView.as_view(), name='billing-orders-list'),
     path('boost/', BillingBoostOrderView.as_view(), name='billing-boost'),
     path('subscribe/', BillingSubscribeView.as_view(), name='billing-subscribe'),
     path('orders/<int:order_id>/', BillingOrderDetailView.as_view(), name='billing-order-detail'),

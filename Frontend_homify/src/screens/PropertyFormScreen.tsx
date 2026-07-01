@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, Upload, X, MapPin } from 'lucide-react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft, Loader2, Upload, X, MapPin, Crown } from 'lucide-react';
 import { getAmenities } from '@/services/amenityService';
 import {
   createProperty,
@@ -11,6 +12,8 @@ import {
   deletePropertyPhoto,
   PropertyFormPayload,
 } from '@/services/propertyService';
+import { getBillingSummary, BillingSummary } from '@/services/billingService';
+import { useAuth } from '@/context/AuthContext';
 import { AmenityItem } from '@/types/api';
 import { ApiError } from '@/services/apiClient';
 import { PropertyImage } from '@/components/PropertyImage';
@@ -24,7 +27,9 @@ const PROPERTY_TYPES = [
 ];
 
 export default function PropertyFormScreen() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { id } = useParams();
   const editId = id ? Number(id) : null;
   const isEdit = editId !== null && !Number.isNaN(editId);
@@ -37,6 +42,8 @@ export default function PropertyFormScreen() {
   const [initialLoading, setInitialLoading] = useState(isEdit);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
+  const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -64,6 +71,16 @@ export default function PropertyFormScreen() {
   useEffect(() => {
     getAmenities().then(setAmenities).catch(() => setAmenities([]));
   }, []);
+
+  useEffect(() => {
+    if (isEdit || user?.role !== 'LANDLORD') return;
+    getBillingSummary()
+      .then((summary) => {
+        setBilling(summary);
+        if (!summary.can_create_listing) setQuotaExceeded(true);
+      })
+      .catch(() => {});
+  }, [isEdit, user?.role]);
 
   useEffect(() => {
     if (!isEdit || !editId) return;
@@ -203,7 +220,12 @@ export default function PropertyFormScreen() {
       }
       navigate('/my-properties');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur lors de l\'enregistrement.');
+      if (err instanceof ApiError && err.code === 'listing_quota_exceeded') {
+        setQuotaExceeded(true);
+        setError(err.message);
+      } else {
+        setError(err instanceof ApiError ? err.message : t('propertyForm.saveError'));
+      }
     } finally {
       setLoading(false);
     }
@@ -235,6 +257,31 @@ export default function PropertyFormScreen() {
       {rejectionReason && (
         <div className="mb-4 p-3 bg-amber-50 text-amber-800 rounded-btn text-sm border border-amber-200">
           <strong>Motif de rejet :</strong> {rejectionReason}
+        </div>
+      )}
+
+      {quotaExceeded && (
+        <div className="mb-4 p-4 rounded-modal border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700/50">
+          <div className="flex items-start gap-3">
+            <Crown className="w-5 h-5 text-homify-accent shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-homify-text text-sm">{t('propertyForm.quotaTitle')}</p>
+              <p className="text-sm text-homify-muted mt-1">
+                {billing
+                  ? t('billing.quotaWarning', {
+                      current: billing.active_listings_count,
+                      max: billing.max_listings ?? 2,
+                    })
+                  : t('propertyForm.quotaHint')}
+              </p>
+              <Link
+                to="/landlord/billing"
+                className="inline-block mt-3 text-sm font-semibold text-homify-accent hover:underline"
+              >
+                {t('billing.managePlan')}
+              </Link>
+            </div>
+          </div>
         </div>
       )}
 
@@ -384,7 +431,7 @@ export default function PropertyFormScreen() {
           <div className="flex gap-3">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (!isEdit && quotaExceeded)}
               className="flex-1 bg-homify-primary text-white font-bold py-3.5 rounded-btn flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -393,7 +440,7 @@ export default function PropertyFormScreen() {
             {(status === 'DRAFT' || status === 'REJECTED') && (
               <button
                 type="button"
-                disabled={loading}
+                disabled={loading || (!isEdit && quotaExceeded)}
                 onClick={(e) => handleSubmit(e, true)}
                 className="flex-1 bg-homify-accent text-white font-bold py-3.5 rounded-btn disabled:opacity-50"
               >
@@ -404,7 +451,7 @@ export default function PropertyFormScreen() {
         ) : (
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || quotaExceeded}
             className="w-full bg-homify-accent text-white font-bold py-3.5 rounded-btn flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
