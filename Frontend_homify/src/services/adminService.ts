@@ -1,6 +1,8 @@
 import { API_ROUTES } from '../api/routes';
 import { ApiPropertyDetail, PaginatedResponse } from '../types/api';
 import { apiFetch } from './apiClient';
+import { getReports } from './reportService';
+import { getAdminVerifications } from './verificationService';
 
 export async function getPendingProperties(): Promise<ApiPropertyDetail[]> {
   const data = await apiFetch<PaginatedResponse<ApiPropertyDetail> | ApiPropertyDetail[]>(
@@ -62,4 +64,60 @@ export async function suspendUser(id: number): Promise<void> {
 
 export async function activateUser(id: number): Promise<void> {
   await apiFetch(API_ROUTES.admin.activateUser(id), { method: 'POST' });
+}
+
+export interface AdminDashboardStats {
+  pendingProperties: number;
+  approvedProperties: number;
+  pendingReports: number;
+  pendingKyc: number;
+  totalUsers: number;
+  suspendedUsers: number;
+}
+
+export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
+  const [pending, approved, reports, verifications, users] = await Promise.all([
+    getPendingProperties(),
+    getApprovedProperties(),
+    getReports(),
+    getAdminVerifications('PENDING'),
+    getAdminUsers(),
+  ]);
+
+  return {
+    pendingProperties: pending.length,
+    approvedProperties: approved.length,
+    pendingReports: reports.filter((r) => r.status === 'PENDING' || r.status === 'REVIEWED').length,
+    pendingKyc: verifications.length,
+    totalUsers: users.length,
+    suspendedUsers: users.filter((u) => u.status === 'SUSPENDED' || !u.is_active).length,
+  };
+}
+
+export interface AdminBillingOverview {
+  completed_orders: number;
+  total_revenue_fcfa: string;
+  active_pro_subscriptions: number;
+  pending_commissions: number;
+  pending_commissions_amount_fcfa: string;
+  recent_orders: Array<{
+    id: number;
+    product_name: string;
+    user_email: string;
+    amount_fcfa: string;
+    status: string;
+    completed_at: string | null;
+  }>;
+  recent_commissions: Array<{
+    id: number;
+    property_title: string;
+    landlord_email: string;
+    amount_fcfa: string;
+    status: string;
+    created_at: string;
+  }>;
+}
+
+export async function getAdminBillingOverview(): Promise<AdminBillingOverview> {
+  return apiFetch<AdminBillingOverview>(API_ROUTES.billing.adminOverview);
 }

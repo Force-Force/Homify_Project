@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     AangaraaPayWebhookView,
+    AdminBillingOverviewView,
     BillingBoostOrderView,
     BillingCommissionsListView,
     BillingMeView,
@@ -18,6 +19,7 @@ urlpatterns = [
     path('orders/', BillingOrdersListView.as_view(), name='billing-orders-list'),
     path('stats/', BillingStatsView.as_view(), name='billing-stats'),
     path('commissions/', BillingCommissionsListView.as_view(), name='billing-commissions'),
+    path('admin/overview/', AdminBillingOverviewView.as_view(), name='billing-admin-overview'),
     path('boost/', BillingBoostOrderView.as_view(), name='billing-boost'),
     path('subscribe/', BillingSubscribeView.as_view(), name='billing-subscribe'),
     path('orders/<int:order_id>/', BillingOrderDetailView.as_view(), name='billing-order-detail'),

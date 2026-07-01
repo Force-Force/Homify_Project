@@ -1,6 +1,7 @@
 """
 Billing API views.
 """
+from django.db.models import Sum
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework import status
@@ -10,9 +11,12 @@ from rest_framework.views import APIView
 
 from apps.core.exceptions import BusinessLogicError
 from apps.core.utils import business_error_response
-from apps.users.permissions import IsLandlordOrAdmin
+from apps.users.permissions import IsAdmin, IsLandlordOrAdmin
 
+from .models import LandlordSubscription, PaymentOrder, RentCommission
 from .serializers import (
+    AdminPaymentOrderSerializer,
+    AdminRentCommissionSerializer,
     BillingProductSerializer,
     CreateBoostOrderSerializer,
     CreateSubscriptionOrderSerializer,
@@ -146,6 +150,36 @@ class BillingCommissionsListView(APIView):
     def get(self, request):
         commissions = BillingService.list_commissions(request.user)
         return Response(RentCommissionSerializer(commissions, many=True).data)
+
+
+class AdminBillingOverviewView(APIView):
+    permission_classes = (IsAuthenticated, IsAdmin)
+
+    def get(self, request):
+        completed = PaymentOrder.objects.filter(status='COMPLETED').select_related('product', 'user')
+        commissions = RentCommission.objects.select_related('property', 'landlord')
+        pending_commissions = commissions.filter(status='PENDING')
+
+        return Response({
+            'completed_orders': completed.count(),
+            'total_revenue_fcfa': str(completed.aggregate(total=Sum('amount_fcfa'))['total'] or 0),
+            'active_pro_subscriptions': LandlordSubscription.objects.filter(
+                is_active=True,
+                plan_code='PRO',
+            ).count(),
+            'pending_commissions': pending_commissions.count(),
+            'pending_commissions_amount_fcfa': str(
+                pending_commissions.aggregate(total=Sum('amount_fcfa'))['total'] or 0,
+            ),
+            'recent_orders': AdminPaymentOrderSerializer(
+                completed.order_by('-completed_at')[:10],
+                many=True,
+            ).data,
+            'recent_commissions': AdminRentCommissionSerializer(
+                commissions.order_by('-created_at')[:10],
+                many=True,
+            ).data,
+        })
 
 
 @method_decorator(csrf_exempt, name='dispatch')

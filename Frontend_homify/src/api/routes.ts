@@ -88,5 +88,6 @@ export const API_ROUTES = {
     boost: `${API_BASE_URL}/billing/boost/`,
     subscribe: `${API_BASE_URL}/billing/subscribe/`,
     order: (id: number | string) => `${API_BASE_URL}/billing/orders/${id}/`,
+    adminOverview: `${API_BASE_URL}/billing/admin/overview/`,
   },
 } as const;

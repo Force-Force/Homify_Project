@@ -109,8 +109,8 @@
     "myFavoritesSub": "{{count}} saved listing(s)",
     "myListings": "My listings",
     "myListingsSub": "Create, edit and track your properties",
-    "adminModeration": "Admin moderation",
-    "adminModerationSub": "Listings, reports, users",
+    "adminModeration": "Homify Administration",
+    "adminModerationSub": "Dashboard, moderation, KYC and billing",
     "sectionHelp": "Help",
     "homifyAssistant": "Homify Assistant",
     "homifyAssistantSub": "Rent calculator, market analysis, FAQ",
@@ -327,5 +327,97 @@
     "delete": "Delete",
     "deleteConfirm": "Delete this listing?",
     "submitError": "Could not submit. Make sure you have at least 3 photos."
+  },
+  "admin": {
+    "greeting": "Administration",
+    "backToApp": "Back to app",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "loadError": "Could not load data.",
+    "nav": {
+      "dashboard": "Dashboard",
+      "properties": "Listings",
+      "kyc": "KYC",
+      "reports": "Reports",
+      "users": "Users",
+      "billing": "Billing"
+    },
+    "dashboard": {
+      "title": "Overview",
+      "subtitle": "Queue monitoring and quick access to admin sections.",
+      "pendingProperties": "Pending listings",
+      "pendingKyc": "Pending KYC",
+      "pendingReports": "Active reports",
+      "totalUsers": "Users",
+      "moderationTitle": "Moderation",
+      "awaitingReview": "Awaiting review",
+      "awaitingPublish": "Approved — to publish",
+      "openModeration": "Open moderation",
+      "billingTitle": "Billing",
+      "billingHint": "Revenue, Pro subscriptions and rental commissions.",
+      "openBilling": "View billing"
+    },
+    "properties": {
+      "title": "Listing moderation",
+      "subtitle": "Pro listings are prioritized in the queue.",
+      "empty": "No listings to moderate",
+      "pending": "Pending ({{count}})",
+      "approved": "Approved — to publish ({{count}})",
+      "approvePublish": "Approve and publish",
+      "reject": "Reject",
+      "publish": "Publish",
+      "rejectTitle": "Rejection reason",
+      "rejectPlaceholder": "Explain to the landlord...",
+      "confirmReject": "Confirm",
+      "rejectMinLength": "Rejection reason must be at least 10 characters.",
+      "publishError": "Could not publish.",
+      "rejectError": "Could not reject."
+    },
+    "kyc": {
+      "title": "Landlord verification (KYC)",
+      "subtitle": "Validate landlord identity to enable the verified badge.",
+      "empty": "No pending KYC requests",
+      "adminNotePlaceholder": "Admin note (optional)",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveError": "Could not approve.",
+      "rejectError": "Could not reject."
+    },
+    "reports": {
+      "title": "Reports",
+      "subtitle": "Review and resolve listing reports.",
+      "empty": "No reports",
+      "review": "Review",
+      "resolve": "Resolve",
+      "dismiss": "Dismiss report",
+      "resolveTitle": "Resolve report",
+      "noExtraAction": "No additional action",
+      "rejectProperty": "Reject listing",
+      "unpublishProperty": "Unpublish listing",
+      "suspendUser": "Suspend user",
+      "actionError": "Action failed."
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Manage accounts and suspensions.",
+      "empty": "No users",
+      "listings": "listing(s)",
+      "activate": "Activate",
+      "suspend": "Suspend",
+      "actionError": "Action failed."
+    },
+    "billing": {
+      "title": "Billing",
+      "subtitle": "Revenue, Pro subscriptions and rental commissions.",
+      "revenue": "Total revenue",
+      "completedOrders": "Completed payments",
+      "activePro": "Active Pro subscriptions",
+      "pendingCommissions": "Pending commissions",
+      "pendingCount": "{{count}} record(s)",
+      "recentOrders": "Recent payments",
+      "recentCommissions": "Recent commissions",
+      "noOrders": "No payments yet.",
+      "noCommissions": "No commissions yet."
+    }
   }
 }

@@ -109,8 +109,8 @@
     "myFavoritesSub": "{{count}} annonce(s) sauvegardée(s)",
     "myListings": "Mes annonces",
     "myListingsSub": "Créer, modifier et suivre vos biens",
-    "adminModeration": "Modération admin",
-    "adminModerationSub": "Annonces, signalements, utilisateurs",
+    "adminModeration": "Administration Homify",
+    "adminModerationSub": "Dashboard, modération, KYC et monétisation",
     "sectionHelp": "Aide",
     "homifyAssistant": "Assistant Homify",
     "homifyAssistantSub": "Calculateur loyer, analyse marché, FAQ",
@@ -327,5 +327,97 @@
     "delete": "Supprimer",
     "deleteConfirm": "Supprimer cette annonce ?",
     "submitError": "Soumission impossible. Vérifiez que vous avez au moins 3 photos."
+  },
+  "admin": {
+    "greeting": "Administration",
+    "backToApp": "Retour à l'application",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "loadError": "Chargement impossible.",
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "properties": "Annonces",
+      "kyc": "KYC",
+      "reports": "Signalements",
+      "users": "Utilisateurs",
+      "billing": "Monétisation"
+    },
+    "dashboard": {
+      "title": "Vue d'ensemble",
+      "subtitle": "Suivi des files d'attente et accès rapide aux sections.",
+      "pendingProperties": "Annonces en attente",
+      "pendingKyc": "KYC en attente",
+      "pendingReports": "Signalements actifs",
+      "totalUsers": "Utilisateurs",
+      "moderationTitle": "Modération",
+      "awaitingReview": "En attente de validation",
+      "awaitingPublish": "Approuvées à publier",
+      "openModeration": "Ouvrir la modération",
+      "billingTitle": "Monétisation",
+      "billingHint": "Revenus, abonnements Pro et commissions location.",
+      "openBilling": "Voir la monétisation"
+    },
+    "properties": {
+      "title": "Modération des annonces",
+      "subtitle": "Les annonces Pro sont priorisées dans la file d'attente.",
+      "empty": "Aucune annonce à modérer",
+      "pending": "En attente ({{count}})",
+      "approved": "Approuvées — à publier ({{count}})",
+      "approvePublish": "Approuver et publier",
+      "reject": "Rejeter",
+      "publish": "Publier",
+      "rejectTitle": "Motif de rejet",
+      "rejectPlaceholder": "Expliquez au propriétaire...",
+      "confirmReject": "Confirmer",
+      "rejectMinLength": "Le motif de rejet doit contenir au moins 10 caractères.",
+      "publishError": "Publication impossible.",
+      "rejectError": "Rejet impossible."
+    },
+    "kyc": {
+      "title": "Vérification propriétaires (KYC)",
+      "subtitle": "Validez l'identité des propriétaires pour activer le badge vérifié.",
+      "empty": "Aucune demande KYC en attente",
+      "adminNotePlaceholder": "Note admin (optionnel)",
+      "approve": "Approuver",
+      "reject": "Refuser",
+      "approveError": "Approbation impossible.",
+      "rejectError": "Rejet impossible."
+    },
+    "reports": {
+      "title": "Signalements",
+      "subtitle": "Examinez et traitez les signalements d'annonces.",
+      "empty": "Aucun signalement",
+      "review": "Examiner",
+      "resolve": "Résoudre",
+      "dismiss": "Rejeter le signalement",
+      "resolveTitle": "Résoudre le signalement",
+      "noExtraAction": "Aucune action supplémentaire",
+      "rejectProperty": "Rejeter l'annonce",
+      "unpublishProperty": "Dépublier l'annonce",
+      "suspendUser": "Suspendre l'utilisateur",
+      "actionError": "Action impossible."
+    },
+    "users": {
+      "title": "Utilisateurs",
+      "subtitle": "Gérez les comptes et les suspensions.",
+      "empty": "Aucun utilisateur",
+      "listings": "annonce(s)",
+      "activate": "Activer",
+      "suspend": "Suspendre",
+      "actionError": "Action impossible."
+    },
+    "billing": {
+      "title": "Monétisation",
+      "subtitle": "Revenus, abonnements Pro et commissions location.",
+      "revenue": "Revenus totaux",
+      "completedOrders": "Paiements confirmés",
+      "activePro": "Abonnements Pro actifs",
+      "pendingCommissions": "Commissions en attente",
+      "pendingCount": "{{count}} dossier(s)",
+      "recentOrders": "Derniers paiements",
+      "recentCommissions": "Dernières commissions",
+      "noOrders": "Aucun paiement pour le moment.",
+      "noCommissions": "Aucune commission pour le moment."
+    }
   }
 }

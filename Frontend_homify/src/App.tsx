@@ -11,7 +11,13 @@ import LandlordVerificationScreen from './screens/LandlordVerificationScreen';
 import BillingReturnScreen from './screens/BillingReturnScreen';
 import MessagesLayout from './screens/MessagesLayout';
 import MessagesChatRoute from './screens/MessagesChatRoute';
-import AdminModerationScreen from './screens/AdminModerationScreen';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminDashboardScreen from './screens/admin/AdminDashboardScreen';
+import AdminPropertiesScreen from './screens/admin/AdminPropertiesScreen';
+import AdminKycScreen from './screens/admin/AdminKycScreen';
+import AdminReportsScreen from './screens/admin/AdminReportsScreen';
+import AdminUsersScreen from './screens/admin/AdminUsersScreen';
+import AdminBillingScreen from './screens/admin/AdminBillingScreen';
 import ProfileHubScreen from './screens/profile/ProfileHubScreen';
 import PersonalInfoScreen from './screens/profile/PersonalInfoScreen';
 import SecurityScreen from './screens/profile/SecurityScreen';
@@ -71,6 +77,7 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const activeTab = tabFromPath(location.pathname);
+  const isAdminRoute = location.pathname.startsWith('/admin');
   const isMessagesChatPath = /^\/messages\/\d+/.test(location.pathname);
   const isMessagesRoute = location.pathname.startsWith('/messages');
   const isChatRoute = location.pathname.includes('/chat');
@@ -88,12 +95,34 @@ export default function App() {
   return (
     <FavoritesProvider>
       <div className="min-h-screen bg-homify-surface font-sans">
-        <BottomNav
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          suppressMobileDock={isMessagesChatPath}
-        />
+        {!isAdminRoute && (
+          <BottomNav
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            suppressMobileDock={isMessagesChatPath}
+          />
+        )}
 
+        {isAdminRoute ? (
+          <Routes>
+            <Route
+              path="/admin/*"
+              element={
+                <RoleGuard roles={['ADMIN']}>
+                  <AdminLayout />
+                </RoleGuard>
+              }
+            >
+              <Route index element={<AdminDashboardScreen />} />
+              <Route path="properties" element={<AdminPropertiesScreen />} />
+              <Route path="kyc" element={<AdminKycScreen />} />
+              <Route path="reports" element={<AdminReportsScreen />} />
+              <Route path="users" element={<AdminUsersScreen />} />
+              <Route path="billing" element={<AdminBillingScreen />} />
+              <Route path="*" element={<Navigate to="/admin" replace />} />
+            </Route>
+          </Routes>
+        ) : (
         <main
           className={
             isHomeLayout && !isDetailRoute
@@ -127,7 +156,6 @@ export default function App() {
               <Route path=":propertyId" element={<MessagesChatRoute />} />
             </Route>
             <Route path="/notifications" element={<NotificationsInboxScreen />} />
-            <Route path="/admin" element={<RoleGuard roles={['ADMIN']}><AdminModerationScreen /></RoleGuard>} />
             <Route path="/property/new" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><PropertyFormScreen /></RoleGuard>} />
             <Route path="/property/:id/edit" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><PropertyFormScreen /></RoleGuard>} />
             <Route path="/property/:id" element={<PropertyDetailRoute />} />
@@ -135,6 +163,7 @@ export default function App() {
             <Route path="*" element={<NotFoundScreen />} />
           </Routes>
         </main>
+        )}
       </div>
     </FavoritesProvider>
   );

@@ -79,3 +79,17 @@ class RentCommissionSerializer(serializers.ModelSerializer):
             'created_at',
             'paid_at',
         )
+
+
+class AdminPaymentOrderSerializer(PaymentOrderSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+
+    class Meta(PaymentOrderSerializer.Meta):
+        fields = PaymentOrderSerializer.Meta.fields + ('user_email',)
+
+
+class AdminRentCommissionSerializer(RentCommissionSerializer):
+    landlord_email = serializers.EmailField(source='landlord.email', read_only=True)
+
+    class Meta(RentCommissionSerializer.Meta):
+        fields = RentCommissionSerializer.Meta.fields + ('landlord_email',)
