@@ -272,6 +272,40 @@
     "boostActive": "Boost actif",
     "boostBadge": "Boost"
   },
+  "stats": {
+    "greeting": "Performance",
+    "title": "Statistiques Pro",
+    "shortLink": "Statistiques",
+    "proRequired": "Statistiques réservées au plan Pro.",
+    "views": "Vues",
+    "favorites": "Favoris",
+    "messages": "Messages",
+    "leads": "Leads",
+    "byListing": "Par annonce"
+  },
+  "verification": {
+    "greeting": "Confiance",
+    "title": "Vérification propriétaire",
+    "shortLink": "Vérification KYC",
+    "description": "Obtenez le badge « Propriétaire vérifié » après validation de votre identité par notre équipe.",
+    "idLabel": "Numéro de pièce d'identité",
+    "noteLabel": "Message (optionnel)",
+    "notePlaceholder": "Informations complémentaires...",
+    "submitCta": "Envoyer la demande",
+    "submitSuccess": "Demande envoyée. Examen sous 48h.",
+    "submitError": "Impossible d'envoyer la demande.",
+    "verified": "Propriétaire vérifié",
+    "pendingTitle": "Demande en cours",
+    "pendingHint": "Notre équipe examine votre dossier."
+  },
+  "commission": {
+    "rentTitle": "Marquer comme loué",
+    "rentQuestion": "La location a-t-elle été conclue via Homify ?",
+    "viaHomify": "Oui, via Homify",
+    "outsideHomify": "Non, en dehors",
+    "recorded": "Commission enregistrée : {{amount}} FCFA",
+    "historyTitle": "Commissions location"
+  },
   "propertyForm": {
     "quotaTitle": "Limite du plan gratuit atteinte",
     "quotaHint": "Passez au plan Pro pour publier plus d'annonces.",

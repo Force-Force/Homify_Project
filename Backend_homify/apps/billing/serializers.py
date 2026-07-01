@@ -3,7 +3,7 @@ Serializers for billing API.
 """
 from rest_framework import serializers
 
-from .models import BillingProduct, PaymentOrder
+from .models import BillingProduct, PaymentOrder, RentCommission
 
 
 class BillingProductSerializer(serializers.ModelSerializer):
@@ -61,3 +61,21 @@ class CreateBoostOrderSerializer(PaymentInitSerializer):
 
 class CreateSubscriptionOrderSerializer(PaymentInitSerializer):
     product_code = serializers.CharField(max_length=40)
+
+
+class RentCommissionSerializer(serializers.ModelSerializer):
+    property_title = serializers.CharField(source='property.title', read_only=True)
+
+    class Meta:
+        model = RentCommission
+        fields = (
+            'id',
+            'property',
+            'property_title',
+            'monthly_rent_fcfa',
+            'commission_rate_percent',
+            'amount_fcfa',
+            'status',
+            'created_at',
+            'paid_at',
+        )

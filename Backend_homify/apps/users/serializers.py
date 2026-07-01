@@ -7,7 +7,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from apps.core.services import AuthService
 
-from .models import User
+from .models import User, LandlordVerificationRequest
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -72,12 +72,12 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'email', 'first_name', 'last_name', 'full_name', 'phone',
-            'role', 'pending_role', 'status', 'email_verified', 'created_at', 'last_login_at',
-            'properties_count',
+            'role', 'pending_role', 'status', 'email_verified', 'landlord_verified',
+            'created_at', 'last_login_at', 'properties_count',
         )
         read_only_fields = (
             'id', 'email', 'role', 'pending_role', 'status', 'email_verified',
-            'created_at', 'last_login_at',
+            'landlord_verified', 'created_at', 'last_login_at',
         )
 
     def get_properties_count(self, obj):
@@ -96,12 +96,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'email', 'first_name', 'last_name', 'full_name', 'phone',
-            'role', 'pending_role', 'status', 'email_verified', 'created_at', 'last_login_at',
-            'properties_count',
+            'role', 'pending_role', 'status', 'email_verified', 'landlord_verified',
+            'created_at', 'last_login_at', 'properties_count',
         )
         read_only_fields = (
             'id', 'email', 'role', 'pending_role', 'status', 'email_verified',
-            'created_at', 'last_login_at', 'properties_count',
+            'landlord_verified', 'created_at', 'last_login_at', 'properties_count',
         )
 
     def get_properties_count(self, obj):
@@ -118,7 +118,7 @@ class LandlordPublicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'full_name', 'masked_phone', 'role')
+        fields = ('id', 'first_name', 'last_name', 'full_name', 'masked_phone', 'role', 'landlord_verified')
         read_only_fields = fields
 
 
@@ -243,3 +243,33 @@ class AdminUserSerializer(serializers.ModelSerializer):
                 },
             )
         return instance
+
+
+class LandlordVerificationSubmitSerializer(serializers.Serializer):
+    id_number = serializers.CharField(max_length=80, required=False, allow_blank=True)
+    note = serializers.CharField(required=False, allow_blank=True)
+
+
+class LandlordVerificationRequestSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    user_name = serializers.CharField(source='user.get_full_name', read_only=True)
+
+    class Meta:
+        model = LandlordVerificationRequest
+        fields = (
+            'id',
+            'user',
+            'user_email',
+            'user_name',
+            'id_number',
+            'note',
+            'status',
+            'admin_note',
+            'created_at',
+            'reviewed_at',
+        )
+        read_only_fields = fields
+
+
+class LandlordVerificationReviewSerializer(serializers.Serializer):
+    admin_note = serializers.CharField(required=False, allow_blank=True)

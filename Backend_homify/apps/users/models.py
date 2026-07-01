@@ -62,6 +62,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE', verbose_name='Statut')
     email_verified = models.BooleanField(default=False, verbose_name='Email vérifié')
+    landlord_verified = models.BooleanField(
+        default=False,
+        verbose_name='Propriétaire vérifié (KYC)',
+    )
+    landlord_verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Vérification KYC le',
+    )
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -169,3 +178,42 @@ class UserAuditLog(models.Model):
 
     def __str__(self):
         return f"{self.action} → {self.target.email} par {self.actor_id}"
+
+
+class LandlordVerificationRequest(models.Model):
+    """KYC request submitted by a landlord."""
+
+    STATUS_CHOICES = [
+        ('PENDING', 'En attente'),
+        ('APPROVED', 'Approuvé'),
+        ('REJECTED', 'Rejeté'),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='landlord_verification_requests',
+        verbose_name='Propriétaire',
+    )
+    id_number = models.CharField(max_length=80, blank=True, default='', verbose_name='N° pièce')
+    note = models.TextField(blank=True, default='', verbose_name='Message du propriétaire')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING', verbose_name='Statut')
+    admin_note = models.TextField(blank=True, default='', verbose_name='Note admin')
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='landlord_verifications_reviewed',
+        verbose_name='Revu par',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Soumis le')
+    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='Revu le')
+
+    class Meta:
+        verbose_name = 'Demande vérification propriétaire'
+        verbose_name_plural = 'Demandes vérification propriétaire'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'KYC {self.user.email} — {self.status}'

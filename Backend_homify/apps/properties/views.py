@@ -6,8 +6,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef
+from django.utils import timezone
 
+from apps.billing.models import LandlordSubscription
 from apps.billing.services import BillingService
 from apps.core.exceptions import BusinessLogicError
 from apps.core.utils import business_error_response
@@ -133,11 +135,24 @@ class PropertyViewSet(viewsets.ModelViewSet):
             PropertyLifecycleService.mark_rented(property_obj)
         except BusinessLogicError as exc:
             return business_error_response(exc)
+
+        rented_via_homify = bool(request.data.get('rented_via_homify'))
+        commission = BillingService.record_rent_commission(
+            property_obj,
+            rented_via_homify=rented_via_homify,
+        )
         serializer = PropertyDetailSerializer(property_obj, context={'request': request})
-        return Response({
+        body = {
             'message': 'Annonce marquée comme louée.',
             'property': serializer.data,
-        })
+        }
+        if commission:
+            body['commission'] = {
+                'id': commission.id,
+                'amount_fcfa': str(commission.amount_fcfa),
+                'status': commission.status,
+            }
+        return Response(body)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def upload_photos(self, request, pk=None):
@@ -219,7 +234,19 @@ class AdminPropertyViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def pending(self, request):
-        pending_properties = self.get_queryset().filter(status='PENDING')
+        now = timezone.now()
+        pro_sub = LandlordSubscription.objects.filter(
+            user_id=OuterRef('landlord_id'),
+            is_active=True,
+            plan_code='PRO',
+        ).filter(Q(expires_at__isnull=True) | Q(expires_at__gt=now))
+
+        pending_properties = (
+            self.get_queryset()
+            .filter(status='PENDING')
+            .annotate(is_pro_landlord=Exists(pro_sub))
+            .order_by('-is_pro_landlord', 'created_at')
+        )
 
         page = self.paginate_queryset(pending_properties)
         if page is not None:

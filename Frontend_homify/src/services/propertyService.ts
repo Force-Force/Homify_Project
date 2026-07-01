@@ -46,6 +46,7 @@ export const transformApiToHotel = (apiProp: ApiProperty): Hotel => {
     furnished: apiProp.furnished,
     status: (apiProp as ApiProperty & { status?: string }).status,
     isBoosted: apiProp.is_boosted ?? false,
+    landlordVerified: apiProp.landlord_verified ?? false,
   };
 };
 
@@ -73,7 +74,9 @@ export const transformDetailToHotel = (detail: ApiPropertyDetail): Hotel => {
       name: detail.landlord.full_name || `${detail.landlord.first_name} ${detail.landlord.last_name}`,
       maskedPhone: 'masked_phone' in detail.landlord ? detail.landlord.masked_phone : undefined,
       phone: 'phone' in detail.landlord ? detail.landlord.phone : undefined,
+      verified: detail.landlord.landlord_verified ?? detail.landlord_verified ?? false,
     },
+    landlordVerified: detail.landlord_verified ?? detail.landlord.landlord_verified ?? false,
     viewCount: detail.view_count,
     charges: detail.charges,
     deposit: detail.deposit,
@@ -202,8 +205,14 @@ export const submitPropertyForReview = async (propertyId: number): Promise<void>
   await apiFetch(API_ROUTES.properties.submitForReview(propertyId), { method: 'POST' });
 };
 
-export const markPropertyRented = async (propertyId: number): Promise<void> => {
-  await apiFetch(API_ROUTES.properties.markRented(propertyId), { method: 'POST' });
+export const markPropertyRented = async (
+  propertyId: number,
+  rentedViaHomify = false,
+): Promise<{ commission?: { id: number; amount_fcfa: string; status: string } }> => {
+  return apiFetch(API_ROUTES.properties.markRented(propertyId), {
+    method: 'POST',
+    body: JSON.stringify({ rented_via_homify: rentedViaHomify }),
+  });
 };
 
 export const deleteProperty = async (propertyId: number): Promise<void> => {

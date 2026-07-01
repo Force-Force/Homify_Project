@@ -8,6 +8,7 @@ import {
   getBillingProducts,
   getBillingSummary,
   getPaymentOrders,
+  getRentCommissions,
   subscribeToPlan,
   pollOrderUntilDone,
   formatFcfa,
@@ -15,6 +16,7 @@ import {
   BillingProduct,
   BillingSummary,
   PaymentOrder,
+  RentCommission,
 } from '@/services/billingService';
 import { MobileMoneyFields, MobileMoneyFormValues } from '@/components/billing/MobileMoneyFields';
 import { cn } from '@/lib/utils';
@@ -25,6 +27,7 @@ export default function LandlordBillingScreen() {
   const [summary, setSummary] = useState<BillingSummary | null>(null);
   const [products, setProducts] = useState<BillingProduct[]>([]);
   const [orders, setOrders] = useState<PaymentOrder[]>([]);
+  const [commissions, setCommissions] = useState<RentCommission[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionCode, setActionCode] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -39,14 +42,16 @@ export default function LandlordBillingScreen() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, p, o] = await Promise.all([
+      const [s, p, o, c] = await Promise.all([
         getBillingSummary(),
         getBillingProducts(),
         getPaymentOrders(),
+        getRentCommissions(),
       ]);
       setSummary(s);
       setProducts(p.filter((x) => x.product_type === 'SUBSCRIPTION'));
       setOrders(o);
+      setCommissions(c);
     } finally {
       setLoading(false);
     }
@@ -182,6 +187,17 @@ export default function LandlordBillingScreen() {
             </div>
           </div>
 
+          <div className="flex flex-wrap gap-2 mb-6">
+            {summary.is_pro && (
+              <Link to="/landlord/stats" className="text-xs font-semibold px-3 py-2 rounded-btn bg-homify-primary/10 text-homify-primary">
+                {t('stats.shortLink')}
+              </Link>
+            )}
+            <Link to="/landlord/verification" className="text-xs font-semibold px-3 py-2 rounded-btn bg-homify-surface text-homify-muted">
+              {summary.landlord_verified ? t('verification.verified') : t('verification.shortLink')}
+            </Link>
+          </div>
+
           {!mockPayments && !summary.is_pro && (
             <div className="bg-homify-card rounded-modal border border-homify-border p-5 mb-6">
               <h3 className="font-semibold text-homify-text mb-3">{t('billing.paymentMethod')}</h3>
@@ -285,6 +301,26 @@ export default function LandlordBillingScreen() {
               </div>
             )}
           </div>
+
+          {commissions.length > 0 && (
+            <div className="mt-10">
+              <h2 className="font-bold text-homify-text mb-4">{t('commission.historyTitle')}</h2>
+              <div className="space-y-2">
+                {commissions.map((c) => (
+                  <div key={c.id} className="flex justify-between gap-3 bg-homify-card rounded-btn border border-homify-border p-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-homify-text truncate">{c.property_title}</p>
+                      <p className="text-xs text-homify-muted">{new Date(c.created_at).toLocaleDateString('fr-FR')}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-bold text-homify-primary">{formatFcfa(c.amount_fcfa)}</p>
+                      <p className="text-[10px] uppercase font-semibold text-amber-600">{c.status}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

@@ -8,10 +8,16 @@ from .views import (
     CustomTokenObtainPairView, AdminUserViewSet, LogoutView,
     EmailVerifyView, ResendVerificationView, ForgotPasswordView,
     ResetPasswordView, AccountDeleteView, CustomTokenRefreshView,
+    LandlordVerificationMeView, AdminLandlordVerificationViewSet,
 )
 
 router = DefaultRouter()
 router.register(r'admin/users', AdminUserViewSet, basename='admin-users')
+router.register(
+    r'admin/landlord-verifications',
+    AdminLandlordVerificationViewSet,
+    basename='admin-landlord-verifications',
+)
 
 urlpatterns = [
     # Authentication
@@ -28,6 +34,7 @@ urlpatterns = [
     path('me/', UserProfileView.as_view(), name='user-profile'),
     path('me/password/', PasswordChangeView.as_view(), name='password-change'),
     path('me/delete/', AccountDeleteView.as_view(), name='account-delete'),
+    path('me/landlord-verification/', LandlordVerificationMeView.as_view(), name='landlord-verification'),
 
     # Admin routes
     path('', include(router.urls)),

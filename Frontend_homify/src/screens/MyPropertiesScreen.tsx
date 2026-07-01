@@ -177,6 +177,7 @@ export default function MyPropertiesScreen() {
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<number | null>(null);
   const [boostProperty, setBoostProperty] = useState<Hotel | null>(null);
+  const [rentProperty, setRentProperty] = useState<Hotel | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -212,13 +213,18 @@ export default function MyPropertiesScreen() {
     }
   };
 
-  const handleMarkRented = async (id: number) => {
+  const handleMarkRented = async (id: number, rentedViaHomify: boolean) => {
     setActionId(id);
     try {
-      await markPropertyRented(id);
+      const res = await markPropertyRented(id, rentedViaHomify);
+      if (res.commission) {
+        setToast(t('commission.recorded', { amount: res.commission.amount_fcfa }));
+        setTimeout(() => setToast(null), 5000);
+      }
       await load();
     } finally {
       setActionId(null);
+      setRentProperty(null);
     }
   };
 
@@ -285,6 +291,12 @@ export default function MyPropertiesScreen() {
                 </p>
               </div>
             </div>
+            <Link
+              to="/landlord/stats"
+              className="text-xs font-semibold text-homify-primary hover:underline shrink-0 mr-3"
+            >
+              {t('stats.shortLink')}
+            </Link>
             <Link
               to="/landlord/billing"
               className="text-xs font-semibold text-homify-accent hover:underline shrink-0"
@@ -404,7 +416,7 @@ export default function MyPropertiesScreen() {
                         )}
                         <button
                           disabled={actionId === p.id}
-                          onClick={() => handleMarkRented(p.id)}
+                          onClick={() => setRentProperty(p)}
                           className="flex items-center gap-1 text-xs font-medium text-emerald-600 disabled:opacity-50"
                         >
                           <Home className="w-3 h-3" />
@@ -427,6 +439,37 @@ export default function MyPropertiesScreen() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {rentProperty && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md bg-homify-card rounded-modal border border-homify-border shadow-xl p-5">
+            <h3 className="font-bold text-homify-text mb-2">{t('commission.rentTitle')}</h3>
+            <p className="text-sm text-homify-muted mb-4">{rentProperty.name}</p>
+            <p className="text-sm text-homify-text mb-4">{t('commission.rentQuestion')}</p>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                disabled={actionId === rentProperty.id}
+                onClick={() => handleMarkRented(rentProperty.id, true)}
+                className="w-full py-3 rounded-btn bg-homify-primary text-white font-semibold disabled:opacity-50"
+              >
+                {t('commission.viaHomify')}
+              </button>
+              <button
+                type="button"
+                disabled={actionId === rentProperty.id}
+                onClick={() => handleMarkRented(rentProperty.id, false)}
+                className="w-full py-3 rounded-btn border border-homify-border text-homify-text font-semibold disabled:opacity-50"
+              >
+                {t('commission.outsideHomify')}
+              </button>
+              <button type="button" onClick={() => setRentProperty(null)} className="text-sm text-homify-muted py-2">
+                {t('common.cancel')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

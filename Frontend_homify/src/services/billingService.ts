@@ -23,6 +23,42 @@ export interface BillingSummary {
   boosted_listings_count: number;
   mock_payments?: boolean;
   payment_provider?: 'MOCK' | 'AANGARAAPAY';
+  landlord_verified?: boolean;
+}
+
+export interface LandlordPropertyStats {
+  id: number;
+  title: string;
+  status: string;
+  views: number;
+  favorites: number;
+  messages: number;
+  leads: number;
+  is_boosted: boolean;
+}
+
+export interface LandlordStats {
+  is_pro: boolean;
+  landlord_verified: boolean;
+  totals: {
+    views: number;
+    favorites: number;
+    messages: number;
+    leads: number;
+  };
+  properties: LandlordPropertyStats[];
+}
+
+export interface RentCommission {
+  id: number;
+  property: number;
+  property_title: string;
+  monthly_rent_fcfa: string;
+  commission_rate_percent: string;
+  amount_fcfa: string;
+  status: string;
+  created_at: string;
+  paid_at: string | null;
 }
 
 export interface PaymentOrder {
@@ -64,6 +100,8 @@ const BILLING = {
   products: `${API_BASE_URL}/billing/products/`,
   me: `${API_BASE_URL}/billing/me/`,
   orders: `${API_BASE_URL}/billing/orders/`,
+  stats: `${API_BASE_URL}/billing/stats/`,
+  commissions: `${API_BASE_URL}/billing/commissions/`,
   boost: `${API_BASE_URL}/billing/boost/`,
   subscribe: `${API_BASE_URL}/billing/subscribe/`,
   order: (id: number) => `${API_BASE_URL}/billing/orders/${id}/`,
@@ -71,6 +109,14 @@ const BILLING = {
 
 export async function getPaymentOrders(): Promise<PaymentOrder[]> {
   return apiFetch<PaymentOrder[]>(BILLING.orders);
+}
+
+export async function getLandlordStats(): Promise<LandlordStats> {
+  return apiFetch<LandlordStats>(BILLING.stats);
+}
+
+export async function getRentCommissions(): Promise<RentCommission[]> {
+  return apiFetch<RentCommission[]>(BILLING.commissions);
 }
 
 export async function getBillingProducts(): Promise<BillingProduct[]> {

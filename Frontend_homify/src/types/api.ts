@@ -31,6 +31,7 @@ export interface LandlordPublic {
   full_name: string;
   masked_phone: string;
   role?: string;
+  landlord_verified?: boolean;
 }
 
 export interface LandlordFull extends LandlordPublic {
@@ -62,6 +63,7 @@ export interface ApiProperty {
   status?: string;
   is_boosted?: boolean;
   boost_until?: string | null;
+  landlord_verified?: boolean;
 }
 
 export interface ApiPropertyDetail extends ApiProperty {
@@ -80,6 +82,8 @@ export interface ApiPropertyDetail extends ApiProperty {
   status: string;
   updated_at: string;
   rejection_reason?: string;
+  landlord_is_pro?: boolean;
+  landlord_verified?: boolean;
 }
 
 export interface PaginatedResponse<T = ApiProperty> {

@@ -129,3 +129,55 @@ class PaymentOrder(models.Model):
 
     def __str__(self):
         return f'Order #{self.pk} — {self.status}'
+
+
+class RentCommission(models.Model):
+    """Success fee when a property is rented via Homify."""
+
+    STATUS_CHOICES = [
+        ('PENDING', 'En attente'),
+        ('PAID', 'Payée'),
+        ('WAIVED', 'Annulée'),
+    ]
+
+    property = models.ForeignKey(
+        'properties.Property',
+        on_delete=models.CASCADE,
+        related_name='rent_commissions',
+        verbose_name='Annonce',
+    )
+    landlord = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='rent_commissions',
+        verbose_name='Propriétaire',
+    )
+    monthly_rent_fcfa = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        validators=[MinValueValidator(0)],
+        verbose_name='Loyer mensuel (FCFA)',
+    )
+    commission_rate_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        verbose_name='Taux (%)',
+    )
+    amount_fcfa = models.DecimalField(
+        max_digits=12,
+        decimal_places=0,
+        validators=[MinValueValidator(0)],
+        verbose_name='Commission (FCFA)',
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING', verbose_name='Statut')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Créée le')
+    paid_at = models.DateTimeField(null=True, blank=True, verbose_name='Payée le')
+
+    class Meta:
+        verbose_name = 'Commission location'
+        verbose_name_plural = 'Commissions location'
+        ordering = ('-created_at',)
+
+    def __str__(self):
+        return f'Commission #{self.pk} — {self.amount_fcfa} FCFA'

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ArrowLeft, Share2, Heart, MapPin, Bath, BedDouble, Maximize2,
-  MessageCircle, MessageSquare, Loader2, Eye, Flag,
+  MessageCircle, MessageSquare, Loader2, Eye, Flag, BadgeCheck,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Hotel } from '../types';
@@ -192,10 +192,17 @@ export default function PropertyDetailsScreen({ propertyId, onBack, onOpenChat }
           </p>
 
           {hotel.landlord && (
-            <p className="text-sm text-homify-muted mb-6">
-              Propriétaire : <span className="font-medium text-homify-text">{hotel.landlord.name}</span>
-              {hotel.landlord.maskedPhone && (
-                <span className="ml-2">· {hotel.landlord.maskedPhone}</span>
+            <p className="text-sm text-homify-muted mb-6 flex flex-wrap items-center gap-2">
+              <span>
+                Propriétaire : <span className="font-medium text-homify-text">{hotel.landlord.name}</span>
+                {hotel.landlord.maskedPhone && (
+                  <span className="ml-2">· {hotel.landlord.maskedPhone}</span>
+                )}
+              </span>
+              {(hotel.landlord.verified || hotel.landlordVerified) && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                  <BadgeCheck className="w-3.5 h-3.5" /> Propriétaire vérifié
+                </span>
               )}
             </p>
           )}

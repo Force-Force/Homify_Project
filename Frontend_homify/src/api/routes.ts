@@ -83,6 +83,8 @@ export const API_ROUTES = {
     products: `${API_BASE_URL}/billing/products/`,
     me: `${API_BASE_URL}/billing/me/`,
     orders: `${API_BASE_URL}/billing/orders/`,
+    stats: `${API_BASE_URL}/billing/stats/`,
+    commissions: `${API_BASE_URL}/billing/commissions/`,
     boost: `${API_BASE_URL}/billing/boost/`,
     subscribe: `${API_BASE_URL}/billing/subscribe/`,
     order: (id: number | string) => `${API_BASE_URL}/billing/orders/${id}/`,

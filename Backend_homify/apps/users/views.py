@@ -20,8 +20,12 @@ from .serializers import (
     PasswordChangeSerializer, AdminUserSerializer, PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer, EmailVerifySerializer, ResendVerificationSerializer,
     LogoutSerializer, AccountDeleteSerializer, CustomTokenObtainPairSerializer,
+    LandlordVerificationSubmitSerializer, LandlordVerificationRequestSerializer,
+    LandlordVerificationReviewSerializer,
 )
 from .permissions import IsAdmin
+from .verification import LandlordVerificationService, VerificationError
+from .models import LandlordVerificationRequest
 
 User = get_user_model()
 
@@ -268,3 +272,84 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         logs = UserAuditLog.objects.select_related('actor', 'target').all()[:100]
         serializer = AuditLogSerializer(logs, many=True)
         return Response(serializer.data)
+
+
+class LandlordVerificationMeView(APIView):
+    """Landlord KYC — submit and check status."""
+
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        if request.user.role not in ('LANDLORD', 'ADMIN'):
+            return Response({'error': 'Réservé aux propriétaires.'}, status=status.HTTP_403_FORBIDDEN)
+        latest = LandlordVerificationService.get_latest_request(request.user)
+        return Response({
+            'landlord_verified': request.user.landlord_verified,
+            'request': LandlordVerificationRequestSerializer(latest).data if latest else None,
+        })
+
+    def post(self, request):
+        if request.user.role not in ('LANDLORD', 'ADMIN'):
+            return Response({'error': 'Réservé aux propriétaires.'}, status=status.HTTP_403_FORBIDDEN)
+        serializer = LandlordVerificationSubmitSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            req = LandlordVerificationService.submit(
+                request.user,
+                id_number=serializer.validated_data.get('id_number', ''),
+                note=serializer.validated_data.get('note', ''),
+            )
+        except VerificationError as exc:
+            return business_error_response(exc)
+        return Response(
+            {
+                'message': 'Demande de vérification envoyée.',
+                'request': LandlordVerificationRequestSerializer(req).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class AdminLandlordVerificationViewSet(viewsets.ReadOnlyModelViewSet):
+    """Admin review of landlord KYC requests."""
+
+    queryset = LandlordVerificationRequest.objects.select_related('user', 'reviewed_by')
+    serializer_class = LandlordVerificationRequestSerializer
+    permission_classes = (IsAuthenticated, IsAdmin)
+    filterset_fields = ('status',)
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        req = self.get_object()
+        serializer = LandlordVerificationReviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            LandlordVerificationService.approve(
+                req,
+                request.user,
+                admin_note=serializer.validated_data.get('admin_note', ''),
+            )
+        except VerificationError as exc:
+            return business_error_response(exc)
+        return Response({
+            'message': 'Propriétaire vérifié.',
+            'request': self.get_serializer(req).data,
+        })
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        req = self.get_object()
+        serializer = LandlordVerificationReviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            LandlordVerificationService.reject(
+                req,
+                request.user,
+                admin_note=serializer.validated_data.get('admin_note', ''),
+            )
+        except VerificationError as exc:
+            return business_error_response(exc)
+        return Response({
+            'message': 'Demande refusée.',
+            'request': self.get_serializer(req).data,
+        })

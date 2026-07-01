@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.billing.aangaraapay import PaymentInitResult, PaymentStatusResult
-from apps.billing.models import BillingProduct, LandlordSubscription, PaymentOrder
+from apps.billing.models import BillingProduct, LandlordSubscription, PaymentOrder, RentCommission
 from apps.billing.services import BillingService
 from apps.notifications.models import Notification
 from apps.properties.models import Address, Property
@@ -292,3 +292,124 @@ class BillingApiTests(APITestCase):
         response = self.client.get('/api/billing/me/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['mock_payments'])
+
+
+@override_settings(BILLING_MOCK_PAYMENTS=True, HOMIFY_RENT_COMMISSION_PERCENT=5)
+class BillingStatsAndCommissionTests(APITestCase):
+    def setUp(self):
+        self.landlord = User.objects.create_user(
+            email='stats-landlord@test.cm',
+            password='SecurePass1!',
+            role='LANDLORD',
+            email_verified=True,
+        )
+        self.client.force_authenticate(user=self.landlord)
+        self.property = Property.objects.create(
+            landlord=self.landlord,
+            title='Studio stats',
+            description='Test property for stats',
+            type='STUDIO',
+            surface=30,
+            number_of_rooms=1,
+            number_of_bedrooms=1,
+            number_of_bathrooms=1,
+            monthly_rent=Decimal('200000'),
+            status='PUBLISHED',
+            view_count=12,
+        )
+        Address.objects.create(
+            property=self.property,
+            street_address='Rue 1',
+            city='Douala',
+            postal_code='00237',
+            district='Akwa',
+        )
+
+    def test_stats_requires_pro_plan(self):
+        response = self.client.get('/api/billing/stats/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data.get('code'), 'pro_required')
+
+    def test_stats_returns_metrics_for_pro_landlord(self):
+        LandlordSubscription.objects.create(
+            user=self.landlord,
+            plan_code='PRO',
+            is_active=True,
+            expires_at=timezone.now() + timezone.timedelta(days=30),
+        )
+        response = self.client.get('/api/billing/stats/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['is_pro'])
+        self.assertEqual(response.data['totals']['views'], 12)
+        self.assertEqual(len(response.data['properties']), 1)
+        self.assertEqual(response.data['properties'][0]['title'], 'Studio stats')
+
+    def test_mark_rented_records_commission_when_via_homify(self):
+        response = self.client.post(
+            f'/api/properties/{self.property.id}/mark_rented/',
+            {'rented_via_homify': True},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('commission', response.data)
+        self.assertEqual(response.data['commission']['amount_fcfa'], '10000')
+        self.assertEqual(RentCommission.objects.filter(landlord=self.landlord).count(), 1)
+
+        commissions = self.client.get('/api/billing/commissions/')
+        self.assertEqual(commissions.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(commissions.data), 1)
+        self.assertEqual(commissions.data[0]['property_title'], 'Studio stats')
+
+    def test_mark_rented_skips_commission_outside_homify(self):
+        response = self.client.post(
+            f'/api/properties/{self.property.id}/mark_rented/',
+            {'rented_via_homify': False},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn('commission', response.data)
+        self.assertEqual(RentCommission.objects.count(), 0)
+
+
+class LandlordVerificationApiTests(APITestCase):
+    def setUp(self):
+        self.landlord = User.objects.create_user(
+            email='kyc-landlord@test.cm',
+            password='SecurePass1!',
+            role='LANDLORD',
+            email_verified=True,
+        )
+        self.admin = User.objects.create_user(
+            email='kyc-admin@test.cm',
+            password='SecurePass1!',
+            role='ADMIN',
+            email_verified=True,
+        )
+
+    def test_landlord_can_submit_verification_request(self):
+        self.client.force_authenticate(user=self.landlord)
+        response = self.client.post(
+            '/api/auth/me/landlord-verification/',
+            {'id_number': 'CI-12345', 'note': 'Carte nationale'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['request']['status'], 'PENDING')
+
+    def test_admin_can_approve_verification(self):
+        from apps.users.models import LandlordVerificationRequest
+
+        req = LandlordVerificationRequest.objects.create(
+            user=self.landlord,
+            id_number='CI-999',
+            status='PENDING',
+        )
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.post(
+            f'/api/auth/admin/landlord-verifications/{req.id}/approve/',
+            {'admin_note': 'OK'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.landlord.refresh_from_db()
+        self.assertTrue(self.landlord.landlord_verified)

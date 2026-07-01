@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Loader2, Check, X, Building2, Flag, Users, Ban, UserCheck } from 'lucide-react';
+import { Loader2, Check, X, Building2, Flag, Users, Ban, UserCheck, ShieldCheck, Crown } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -23,9 +23,15 @@ import {
 import { ApiPropertyDetail, ApiReport } from '@/types/api';
 import { PropertyImage } from '@/components/PropertyImage';
 import { ApiError } from '@/services/apiClient';
+import {
+  getAdminVerifications,
+  approveVerification,
+  rejectVerification,
+  AdminVerificationRequest,
+} from '@/services/verificationService';
 import { selectClass, textareaClass } from '@/lib/formStyles';
 
-type AdminTab = 'properties' | 'reports' | 'users';
+type AdminTab = 'properties' | 'reports' | 'users' | 'verifications';
 
 const REPORT_STATUS: Record<string, string> = {
   PENDING: 'En attente',
@@ -48,12 +54,15 @@ export default function AdminModerationScreen() {
   const [approvedProperties, setApprovedProperties] = useState<ApiPropertyDetail[]>([]);
   const [reports, setReports] = useState<ApiReport[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [verifications, setVerifications] = useState<AdminVerificationRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<number | null>(null);
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [resolveId, setResolveId] = useState<number | null>(null);
   const [resolveAction, setResolveAction] = useState<ResolveAction | ''>('');
+  const [verifyNotes, setVerifyNotes] = useState<Record<number, string>>({});
+  const [verifyBusyId, setVerifyBusyId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadProperties = useCallback(async () => {
@@ -73,19 +82,24 @@ export default function AdminModerationScreen() {
     setUsers(await getAdminUsers());
   }, []);
 
+  const loadVerifications = useCallback(async () => {
+    setVerifications(await getAdminVerifications('PENDING'));
+  }, []);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       if (tab === 'properties') await loadProperties();
       else if (tab === 'reports') await loadReports();
-      else await loadUsers();
+      else if (tab === 'users') await loadUsers();
+      else await loadVerifications();
     } catch {
       setError('Chargement impossible.');
     } finally {
       setLoading(false);
     }
-  }, [tab, loadProperties, loadReports, loadUsers]);
+  }, [tab, loadProperties, loadReports, loadUsers, loadVerifications]);
 
   useEffect(() => {
     if (user?.role === 'ADMIN') load();
@@ -192,6 +206,40 @@ export default function AdminModerationScreen() {
     }
   };
 
+  const handleApproveVerification = async (id: number) => {
+    setVerifyBusyId(id);
+    try {
+      await approveVerification(id, verifyNotes[id] ?? '');
+      setVerifyNotes((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      await loadVerifications();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Approbation impossible.');
+    } finally {
+      setVerifyBusyId(null);
+    }
+  };
+
+  const handleRejectVerification = async (id: number) => {
+    setVerifyBusyId(id);
+    try {
+      await rejectVerification(id, verifyNotes[id] ?? '');
+      setVerifyNotes((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      await loadVerifications();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Rejet impossible.');
+    } finally {
+      setVerifyBusyId(null);
+    }
+  };
+
   if (user?.role !== 'ADMIN') {
     return (
       <div className="px-5 pt-8 text-center text-homify-muted">
@@ -202,6 +250,7 @@ export default function AdminModerationScreen() {
 
   const tabs: { id: AdminTab; label: string; icon: typeof Building2 }[] = [
     { id: 'properties', label: 'Annonces', icon: Building2 },
+    { id: 'verifications', label: 'KYC', icon: ShieldCheck },
     { id: 'reports', label: 'Signalements', icon: Flag },
     { id: 'users', label: 'Utilisateurs', icon: Users },
   ];
@@ -258,6 +307,18 @@ export default function AdminModerationScreen() {
                         )}
                         <div className="flex-1 min-w-0">
                           <h3 className="font-bold text-homify-text truncate">{p.title}</h3>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {p.landlord_is_pro && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-homify-accent/15 text-homify-accent inline-flex items-center gap-1">
+                                <Crown className="w-3 h-3" /> Pro
+                              </span>
+                            )}
+                            {p.landlord_verified && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                                Vérifié
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-homify-muted">{p.address?.city}</p>
                           <p className="text-sm font-semibold text-homify-primary mt-1">
                             {parseInt(p.monthly_rent, 10).toLocaleString('fr-FR')} FCFA/mois
@@ -318,6 +379,45 @@ export default function AdminModerationScreen() {
                 })}
               </div>
             )}
+          </div>
+        )
+      ) : tab === 'verifications' ? (
+        verifications.length === 0 ? (
+          <EmptyState icon={ShieldCheck} text="Aucune demande KYC en attente" />
+        ) : (
+          <div className="space-y-3 max-w-2xl mx-auto">
+            {verifications.map((v) => (
+              <div key={v.id} className="bg-homify-card rounded-card border border-homify-border p-4">
+                <p className="font-semibold text-homify-text">{v.user_name || v.user_email}</p>
+                <p className="text-xs text-homify-muted">{v.user_email}</p>
+                {v.id_number && <p className="text-sm text-homify-muted mt-2">Pièce : {v.id_number}</p>}
+                {v.note && <p className="text-sm text-homify-text mt-2">{v.note}</p>}
+                <textarea
+                  className={`w-full mt-3 ${textareaClass}`}
+                  placeholder="Note admin (optionnel)"
+                  value={verifyNotes[v.id] ?? ''}
+                  onChange={(e) => setVerifyNotes((prev) => ({ ...prev, [v.id]: e.target.value }))}
+                />
+                <div className="flex gap-2 mt-3">
+                  <button
+                    type="button"
+                    disabled={verifyBusyId === v.id}
+                    onClick={() => handleApproveVerification(v.id)}
+                    className="flex-1 py-2.5 rounded-btn bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50"
+                  >
+                    Approuver
+                  </button>
+                  <button
+                    type="button"
+                    disabled={verifyBusyId === v.id}
+                    onClick={() => handleRejectVerification(v.id)}
+                    className="flex-1 py-2.5 rounded-btn bg-red-50 text-red-600 border border-red-200 text-sm font-semibold disabled:opacity-50"
+                  >
+                    Refuser
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )
       ) : tab === 'reports' ? (

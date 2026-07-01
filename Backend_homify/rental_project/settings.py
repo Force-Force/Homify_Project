@@ -249,6 +249,7 @@ AANGARAAPAY_CHECKOUT_BASE_URL = os.getenv(
     'https://aangaraa-pay.com',
 )
 BACKEND_PUBLIC_URL = os.getenv('BACKEND_PUBLIC_URL', 'http://localhost:8000')
+HOMIFY_RENT_COMMISSION_PERCENT = float(os.getenv('HOMIFY_RENT_COMMISSION_PERCENT', '5'))
 
 # Production hardening
 if not DEBUG:

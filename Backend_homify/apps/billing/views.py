@@ -17,8 +17,10 @@ from .serializers import (
     CreateBoostOrderSerializer,
     CreateSubscriptionOrderSerializer,
     PaymentOrderSerializer,
+    RentCommissionSerializer,
 )
 from .services import BillingService
+from .stats import LandlordStatsService
 
 
 def _order_response_message(order, payment_info):
@@ -126,6 +128,24 @@ class BillingOrdersListView(APIView):
     def get(self, request):
         orders = BillingService.list_orders(request.user)
         return Response(PaymentOrderSerializer(orders, many=True).data)
+
+
+class BillingStatsView(APIView):
+    permission_classes = (IsAuthenticated, IsLandlordOrAdmin)
+
+    def get(self, request):
+        try:
+            return Response(LandlordStatsService.get_stats(request.user))
+        except BusinessLogicError as exc:
+            return business_error_response(exc, http_status=status.HTTP_403_FORBIDDEN)
+
+
+class BillingCommissionsListView(APIView):
+    permission_classes = (IsAuthenticated, IsLandlordOrAdmin)
+
+    def get(self, request):
+        commissions = BillingService.list_commissions(request.user)
+        return Response(RentCommissionSerializer(commissions, many=True).data)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

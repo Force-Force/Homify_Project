@@ -59,15 +59,20 @@ class PropertyListSerializer(serializers.ModelSerializer):
     primary_photo = serializers.SerializerMethodField()
     is_favorite = serializers.SerializerMethodField()
     is_boosted = serializers.SerializerMethodField()
+    landlord_verified = serializers.SerializerMethodField()
     
     class Meta:
         model = Property
         fields = ('id', 'title', 'type', 'monthly_rent', 'surface', 'number_of_rooms',
                   'number_of_bedrooms', 'number_of_bathrooms', 'address', 'primary_photo',
-                  'furnished', 'published_at', 'is_favorite', 'status', 'is_boosted', 'boost_until')
+                  'furnished', 'published_at', 'is_favorite', 'status', 'is_boosted', 'boost_until',
+                  'landlord_verified')
     
     def get_is_boosted(self, obj):
         return bool(obj.boost_until and obj.boost_until > timezone.now())
+
+    def get_landlord_verified(self, obj):
+        return getattr(obj.landlord, 'landlord_verified', False)
     
     def get_primary_photo(self, obj):
         """Get primary photo."""
@@ -95,6 +100,9 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
     landlord = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
     is_favorite = serializers.SerializerMethodField()
+    is_boosted = serializers.SerializerMethodField()
+    landlord_is_pro = serializers.SerializerMethodField()
+    landlord_verified = serializers.SerializerMethodField()
     
     class Meta:
         model = Property
@@ -103,7 +111,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
                   'monthly_rent', 'charges', 'charges_included', 'deposit', 'agency_fees',
                   'address', 'photos', 'amenities', 'landlord', 'view_count', 'status',
                   'rejection_reason', 'published_at', 'updated_at', 'is_favorite',
-                  'is_boosted', 'boost_until')
+                  'is_boosted', 'boost_until', 'landlord_is_pro', 'landlord_verified')
 
     def get_is_boosted(self, obj):
         return bool(obj.boost_until and obj.boost_until > timezone.now())
@@ -127,6 +135,12 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj.favorites.filter(user=request.user).exists()
         return False
+
+    def get_landlord_is_pro(self, obj):
+        return BillingService.is_pro_landlord(obj.landlord)
+
+    def get_landlord_verified(self, obj):
+        return getattr(obj.landlord, 'landlord_verified', False)
 
 
 class PropertyCreateUpdateSerializer(serializers.ModelSerializer):

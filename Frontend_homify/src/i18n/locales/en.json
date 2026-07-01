@@ -272,6 +272,40 @@
     "boostActive": "Boost active",
     "boostBadge": "Boost"
   },
+  "stats": {
+    "greeting": "Performance",
+    "title": "Pro statistics",
+    "shortLink": "Statistics",
+    "proRequired": "Statistics are available on the Pro plan only.",
+    "views": "Views",
+    "favorites": "Favorites",
+    "messages": "Messages",
+    "leads": "Leads",
+    "byListing": "By listing"
+  },
+  "verification": {
+    "greeting": "Trust",
+    "title": "Landlord verification",
+    "shortLink": "KYC verification",
+    "description": "Get the verified landlord badge after our team validates your identity.",
+    "idLabel": "ID document number",
+    "noteLabel": "Message (optional)",
+    "notePlaceholder": "Additional information...",
+    "submitCta": "Submit request",
+    "submitSuccess": "Request submitted. Review within 48h.",
+    "submitError": "Could not submit the request.",
+    "verified": "Verified landlord",
+    "pendingTitle": "Request pending",
+    "pendingHint": "Our team is reviewing your application."
+  },
+  "commission": {
+    "rentTitle": "Mark as rented",
+    "rentQuestion": "Was the rental concluded through Homify?",
+    "viaHomify": "Yes, via Homify",
+    "outsideHomify": "No, outside Homify",
+    "recorded": "Commission recorded: {{amount}} FCFA",
+    "historyTitle": "Rental commissions"
+  },
   "propertyForm": {
     "quotaTitle": "Free plan limit reached",
     "quotaHint": "Upgrade to Pro to publish more listings.",

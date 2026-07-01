@@ -9,6 +9,7 @@ export interface LandlordInfo {
   name: string;
   maskedPhone?: string;
   phone?: string;
+  verified?: boolean;
 }
 
 export interface Hotel {
@@ -43,4 +44,5 @@ export interface Hotel {
   status?: string;
   rejectionReason?: string;
   isBoosted?: boolean;
+  landlordVerified?: boolean;
 }

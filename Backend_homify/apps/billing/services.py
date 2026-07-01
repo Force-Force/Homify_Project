@@ -14,7 +14,7 @@ from apps.core.exceptions import BusinessLogicError
 from apps.properties.models import Property
 
 from .aangaraapay import AangaraaPayClient, AangaraaPayError, map_webhook_status
-from .models import BillingProduct, LandlordSubscription, PaymentOrder
+from .models import BillingProduct, LandlordSubscription, PaymentOrder, RentCommission
 
 
 class BillingError(BusinessLogicError):
@@ -140,7 +140,53 @@ class BillingService:
             'boosted_listings_count': boosted_count,
             'mock_payments': cls.mock_payments_enabled(),
             'payment_provider': 'MOCK' if cls.mock_payments_enabled() else 'AANGARAAPAY',
+            'landlord_verified': getattr(user, 'landlord_verified', False),
         }
+
+    @classmethod
+    def is_property_boosted(cls, property_obj: Property) -> bool:
+        return bool(property_obj.boost_until and property_obj.boost_until > timezone.now())
+
+    @classmethod
+    def record_rent_commission(cls, property_obj: Property, *, rented_via_homify: bool):
+        if not rented_via_homify:
+            return None
+        rate = getattr(settings, 'HOMIFY_RENT_COMMISSION_PERCENT', 5)
+        rent = int(property_obj.monthly_rent)
+        amount = int(rent * rate / 100)
+        if amount <= 0:
+            return None
+        commission = RentCommission.objects.create(
+            property=property_obj,
+            landlord=property_obj.landlord,
+            monthly_rent_fcfa=rent,
+            commission_rate_percent=rate,
+            amount_fcfa=amount,
+            status='PENDING',
+        )
+        from apps.notifications.services import NotificationDispatchService
+
+        NotificationDispatchService.notify(
+            property_obj.landlord,
+            'SYSTEM',
+            'Commission location Homify',
+            (
+                f'Location via Homify enregistrée pour « {property_obj.title} ». '
+                f'Commission due : {amount:,} FCFA ({rate}% du 1er mois).'.replace(',', ' ')
+            ),
+            property_obj=property_obj,
+            metadata={'rent_commission_id': commission.id, 'amount_fcfa': amount},
+            email_subject='Homify — Commission location',
+            email_body=(
+                f'Bonjour,\n\nMerci d\'avoir conclu la location via Homify.\n'
+                f'Commission due : {amount} FCFA ({rate}% du loyer mensuel).\n\n— L\'équipe Homify'
+            ),
+        )
+        return commission
+
+    @classmethod
+    def list_commissions(cls, user):
+        return RentCommission.objects.filter(landlord=user).select_related('property').order_by('-created_at')
 
     @classmethod
     def apply_boost_ordering(cls, queryset):

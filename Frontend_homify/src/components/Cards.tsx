@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Star, MapPin, Bath, BedDouble, Maximize2 } from 'lucide-react';
+import { Heart, Star, MapPin, Bath, BedDouble, Maximize2, BadgeCheck } from 'lucide-react';
 import { Hotel } from '../types';
 import { PropertyImage } from './PropertyImage';
 import SpotlightCard from '@/components/ui/SpotlightCard/SpotlightCard';
@@ -51,6 +51,11 @@ export const RecommendedCard = ({
       {hotel.isBoosted && (
         <span className="absolute top-2.5 right-12 bg-homify-accent text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 shadow-sm">
           Boost
+        </span>
+      )}
+      {hotel.landlordVerified && (
+        <span className="absolute bottom-2.5 left-2.5 bg-emerald-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10 inline-flex items-center gap-1">
+          <BadgeCheck className="w-3 h-3" /> Vérifié
         </span>
       )}
     </div>

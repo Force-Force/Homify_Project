@@ -6,6 +6,8 @@ import PropertyDetailsScreen from './screens/PropertyDetailsScreen';
 import PropertyFormScreen from './screens/PropertyFormScreen';
 import MyPropertiesScreen from './screens/MyPropertiesScreen';
 import LandlordBillingScreen from './screens/LandlordBillingScreen';
+import LandlordStatsScreen from './screens/LandlordStatsScreen';
+import LandlordVerificationScreen from './screens/LandlordVerificationScreen';
 import BillingReturnScreen from './screens/BillingReturnScreen';
 import MessagesLayout from './screens/MessagesLayout';
 import MessagesChatRoute from './screens/MessagesChatRoute';
@@ -36,7 +38,7 @@ function tabFromPath(pathname: string): string {
   if (pathname.includes('/chat')) return 'Messages';
   if (pathname.startsWith('/notifications')) return 'Notifications';
   if (pathname.startsWith('/admin')) return 'Admin';
-  if (pathname.startsWith('/my-properties') || pathname.startsWith('/landlord/billing') || pathname.startsWith('/property/new') || pathname.includes('/edit')) return 'MyProperties';
+  if (pathname.startsWith('/my-properties') || pathname.startsWith('/landlord/') || pathname.startsWith('/property/new') || pathname.includes('/edit')) return 'MyProperties';
   if (pathname.startsWith('/favorites')) return 'Favorites';
   if (pathname.startsWith('/assist')) return 'Assist';
   if (pathname.startsWith('/profile')) return 'Profile';
@@ -119,6 +121,8 @@ export default function App() {
             <Route path="/my-properties" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><MyPropertiesScreen /></RoleGuard>} />
             <Route path="/landlord/billing" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><LandlordBillingScreen /></RoleGuard>} />
             <Route path="/landlord/billing/return" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><BillingReturnScreen /></RoleGuard>} />
+            <Route path="/landlord/stats" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><LandlordStatsScreen /></RoleGuard>} />
+            <Route path="/landlord/verification" element={<RoleGuard roles={['LANDLORD', 'ADMIN']}><LandlordVerificationScreen /></RoleGuard>} />
             <Route path="/messages" element={<MessagesLayout />}>
               <Route path=":propertyId" element={<MessagesChatRoute />} />
             </Route>
