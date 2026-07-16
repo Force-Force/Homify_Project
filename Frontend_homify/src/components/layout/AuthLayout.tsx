@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Home } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Aurora from '@/components/ui/Aurora/Aurora';
+import { HomifyLogo } from '@/components/brand/HomifyLogo';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -26,12 +27,7 @@ export default function AuthLayout({
           <div className="absolute inset-0 bg-gradient-to-t from-homify-primary/80 via-homify-primary/20 to-transparent" />
         </div>
         <div className="relative z-10 text-white max-w-md">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-              <Home className="h-5 w-5" />
-            </div>
-            <span className="text-2xl font-extrabold">Homify</span>
-          </div>
+          <HomifyLogo size="lg" onDark className="mb-6" />
           <h2 className="text-3xl font-extrabold leading-snug mb-3">
             Votre prochain logement vous attend
           </h2>
@@ -52,12 +48,8 @@ export default function AuthLayout({
             {backLabel}
           </Link>
 
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-6">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-homify-primary text-white">
-              <Home className="h-5 w-5" />
-            </div>
-            <span className="text-xl font-extrabold text-homify-primary">Homify</span>
+          <div className="lg:hidden mb-6">
+            <HomifyLogo size="md" to="/" />
           </div>
 
           <div className="bg-homify-card rounded-modal shadow-card border border-homify-border p-6 sm:p-8">

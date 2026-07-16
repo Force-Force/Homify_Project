@@ -11,10 +11,10 @@ import {
   ArrowLeft,
   Menu,
   X,
-  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import { HomifyLogo } from '@/components/brand/HomifyLogo';
 
 const NAV_ITEMS = [
   { to: '/admin', labelKey: 'admin.nav.dashboard', icon: LayoutDashboard, end: true },
@@ -32,13 +32,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <>
       <div className="px-4 py-6 border-b border-homify-border">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-homify-primary/10">
-            <Shield className="w-5 h-5 text-homify-primary" />
-          </div>
+        <div className="flex items-center gap-3">
+          <HomifyLogo size="sm" />
           <div>
-            <p className="font-bold text-homify-text leading-tight">Homify Admin</p>
-            <p className="text-[11px] text-homify-muted truncate max-w-[160px]">{user?.email}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-homify-accent">Admin</p>
+            <p className="text-[11px] text-homify-muted truncate max-w-[140px]">{user?.email}</p>
           </div>
         </div>
       </div>
@@ -120,7 +118,7 @@ export default function AdminLayout() {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <span className="font-bold text-homify-text">Homify Admin</span>
+          <HomifyLogo size="xs" />
         </header>
 
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8 max-w-6xl w-full mx-auto">

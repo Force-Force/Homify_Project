@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Search, Bot, Heart, MapPin, Shield, ArrowRight, Home,
+  Search, Bot, Heart, MapPin, Shield, ArrowRight,
   ChevronLeft, ChevronRight, Building2, Users, Star, CheckCircle,
   MessageCircle, TrendingUp, Key,
 } from 'lucide-react';
@@ -12,6 +12,7 @@ import { searchProperties } from '@/services/propertyService';
 import { Hotel } from '@/types';
 import { PropertyImage } from '@/components/PropertyImage';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { HomifyLogo } from '@/components/brand/HomifyLogo';
 
 const FEATURES = [
   { icon: Search, title: 'Recherche intelligente', description: 'Filtrez par ville, quartier, budget et type de bien en quelques clics.' },
@@ -152,12 +153,7 @@ export default function LandingPage() {
     <div className="bg-homify-surface">
       {/* Nav fixe */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 bg-homify-primary/90 backdrop-blur-md border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20">
-            <Home className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-xl font-extrabold text-white">Homify</span>
-        </div>
+        <HomifyLogo size="sm" onDark to="/" />
         <nav className="flex items-center gap-3">
           <ThemeToggle variant="overlay" />
           <Link to="/signin" className="hidden sm:inline-flex px-4 py-2 text-sm font-semibold text-white/90 hover:text-white transition-colors">Se connecter</Link>
@@ -367,11 +363,8 @@ export default function LandingPage() {
       </section>
 
       <footer className="border-t border-homify-border py-8 px-6 text-center">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-homify-primary">
-            <Home className="h-4 w-4 text-white" />
-          </div>
-          <span className="font-bold text-homify-primary">Homify</span>
+        <div className="flex justify-center mb-3">
+          <HomifyLogo size="sm" to="/" />
         </div>
         <p className="text-xs text-homify-muted">© {new Date().getFullYear()} Homify — Location immobilière au Cameroun</p>
         <div className="flex justify-center gap-6 mt-4 text-xs text-homify-muted">

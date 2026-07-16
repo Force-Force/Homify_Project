@@ -15,6 +15,7 @@ import { StaggeredItem } from '@/components/ui/StaggeredItem';
 import { useFavorites } from '@/context/FavoritesContext';
 import { selectClass } from '@/lib/formStyles';
 import { useSettings } from '@/context/SettingsContext';
+import { HomifyLogo } from '@/components/brand/HomifyLogo';
 
 interface Filters {
   type: string;
@@ -279,9 +280,7 @@ export default function HomeScreen() {
       {headerCompact && (
         <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-homify-card border-b border-homify-border shadow-sm">
           <div className="flex items-center gap-2 px-4 py-2.5">
-            <span className="text-base font-extrabold tracking-tight text-homify-primary shrink-0">
-              Homify
-            </span>
+            <HomifyLogo size="xs" to="/home" className="shrink-0" />
             <button
               type="button"
               onClick={expandMobileHeader}

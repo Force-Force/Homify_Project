@@ -1,15 +1,15 @@
 import { ExternalLink, Mail, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SettingsLayout, SettingsPanel } from '@/components/settings/SettingsLayout';
+import { HomifyLogo } from '@/components/brand/HomifyLogo';
 
 export default function AboutScreen() {
   return (
     <SettingsLayout title="À propos" subtitle="Homify — location immobilière au Cameroun.">
       <SettingsPanel className="mb-6 text-center">
-        <div className="w-16 h-16 mx-auto rounded-2xl bg-homify-primary flex items-center justify-center mb-4">
-          <span className="text-2xl font-extrabold text-white">H</span>
+        <div className="flex justify-center mb-4">
+          <HomifyLogo size="lg" />
         </div>
-        <h2 className="text-lg font-bold text-homify-text">Homify</h2>
         <p className="text-sm text-homify-muted mt-1">Version 1.0.0</p>
         <p className="text-xs text-homify-muted mt-3 leading-relaxed">
           Plateforme de location à Yaoundé, Douala et dans tout le Cameroun.

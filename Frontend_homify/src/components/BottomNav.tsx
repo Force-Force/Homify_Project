@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Home, Heart, Bot, User, Building2, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Dock from '@/components/ui/Dock/Dock';
+import { HomifyLogo } from '@/components/brand/HomifyLogo';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { getUnreadCount } from '@/services/messageService';
@@ -63,9 +64,9 @@ export const BottomNav = ({ activeTab, onTabChange, suppressMobileDock = false }
       {!suppressMobileDock && <Dock items={dockItems} />}
 
       <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-64 md:flex-col md:border-r md:border-homify-border md:bg-homify-card md:px-4 md:pt-10 md:shadow-sm">
-        <div className="mb-8 px-3">
-          <h1 className="text-2xl font-extrabold tracking-tight text-homify-primary">Homify</h1>
-          <p className="mt-0.5 text-xs text-homify-muted">{t('nav.tagline')}</p>
+        <div className="mb-8 px-1">
+          <HomifyLogo size="md" to="/home" />
+          <p className="mt-2 text-[11px] text-homify-muted leading-snug pl-0.5">{t('nav.tagline')}</p>
         </div>
 
         <nav className="flex flex-col gap-1.5">
