@@ -65,7 +65,7 @@ export const BottomNav = ({ activeTab, onTabChange, suppressMobileDock = false }
 
       <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-64 md:flex-col md:border-r md:border-homify-border md:bg-homify-card md:px-4 md:pt-10 md:shadow-sm">
         <div className="mb-8 px-1">
-          <HomifyLogo size="md" to="/home" />
+          <HomifyLogo size="md" variant="light" to="/home" />
           <p className="mt-2 text-[11px] text-homify-muted leading-snug pl-0.5">{t('nav.tagline')}</p>
         </div>
 

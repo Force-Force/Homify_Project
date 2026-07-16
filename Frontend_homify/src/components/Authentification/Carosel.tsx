@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Home, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CAROUSEL_IMAGES } from './carouselData';
+import { HomifyLogo } from '@/components/brand/HomifyLogo';
 
 const Carosel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -27,16 +28,8 @@ const Carosel = () => {
             zIndex: currentSlide === index ? 1 : 0,
           }}
         >
-          <div className="absolute top-8 right-8">
-            <div className="flex items-center gap-2">
-              <div className="bg-homify-primary p-2 rounded-xl">
-                <Home className="w-8 h-8 text-white" />
-              </div>
-              <div className="text-white">
-                <div className="font-bold text-2xl">HOMIFY</div>
-                <div className="text-xs tracking-wider opacity-80">CHAQUE MAISON COMPTE</div>
-              </div>
-            </div>
+          <div className="absolute top-8 left-8 z-10">
+            <HomifyLogo size="lg" variant="dark" to="/" />
           </div>
 
           <div className="absolute bottom-24 left-8 right-8">

@@ -8,7 +8,7 @@ export default function AboutScreen() {
     <SettingsLayout title="À propos" subtitle="Homify — location immobilière au Cameroun.">
       <SettingsPanel className="mb-6 text-center">
         <div className="flex justify-center mb-4">
-          <HomifyLogo size="lg" />
+          <HomifyLogo size="lg" variant="light" />
         </div>
         <p className="text-sm text-homify-muted mt-1">Version 1.0.0</p>
         <p className="text-xs text-homify-muted mt-3 leading-relaxed">

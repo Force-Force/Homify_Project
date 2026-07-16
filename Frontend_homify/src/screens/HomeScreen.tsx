@@ -280,7 +280,7 @@ export default function HomeScreen() {
       {headerCompact && (
         <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-homify-card border-b border-homify-border shadow-sm">
           <div className="flex items-center gap-2 px-4 py-2.5">
-            <HomifyLogo size="xs" to="/home" className="shrink-0" />
+            <HomifyLogo size="xs" variant="light" to="/home" className="shrink-0" />
             <button
               type="button"
               onClick={expandMobileHeader}

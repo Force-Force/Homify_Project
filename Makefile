@@ -89,6 +89,11 @@ dev: backend-detached
 dev-frontend:
 	cd $(FRONTEND_DIR) && npm run dev -- --host
 
+# Si Vite plante avec EMFILE (too many open files), utiliser :
+#   make dev-frontend-poll
+dev-frontend-poll:
+	cd $(FRONTEND_DIR) && VITE_USE_POLLING=1 npm run dev -- --host
+
 dev-backend:
 	cd $(BACKEND_DIR) && docker compose up
 
@@ -132,6 +137,7 @@ dev-local:
 	@echo "→ Backend : http://localhost:$(BACKEND_PORT)/api/"
 	@echo "→ Swagger : http://localhost:$(BACKEND_PORT)/api/docs/"
 	@echo "→ Frontend: http://localhost:$(FRONTEND_PORT)"
+	@echo "→ Si EMFILE sur Vite : make dev-frontend-poll (dans un autre terminal)"
 	@$(MAKE) -j2 dev-backend-local dev-frontend
 
 dev-backend-local: backend-local

@@ -153,7 +153,7 @@ export default function LandingPage() {
     <div className="bg-homify-surface">
       {/* Nav fixe */}
       <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 md:px-12 bg-homify-primary/90 backdrop-blur-md border-b border-white/10">
-        <HomifyLogo size="sm" onDark to="/" />
+        <HomifyLogo size="sm" variant="dark" to="/" />
         <nav className="flex items-center gap-3">
           <ThemeToggle variant="overlay" />
           <Link to="/signin" className="hidden sm:inline-flex px-4 py-2 text-sm font-semibold text-white/90 hover:text-white transition-colors">Se connecter</Link>
@@ -364,7 +364,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-homify-border py-8 px-6 text-center">
         <div className="flex justify-center mb-3">
-          <HomifyLogo size="sm" to="/" />
+          <HomifyLogo size="sm" variant="light" to="/" />
         </div>
         <p className="text-xs text-homify-muted">© {new Date().getFullYear()} Homify — Location immobilière au Cameroun</p>
         <div className="flex justify-center gap-6 mt-4 text-xs text-homify-muted">

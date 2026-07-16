@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CAROUSEL_IMAGES } from './carouselData';
+import { HomifyLogo } from '@/components/brand/HomifyLogo';
 
 const MobileCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -35,6 +36,9 @@ const MobileCarousel = () => {
               opacity: currentSlide === index ? 1 : 0,
             }}
           >
+            <div className="absolute top-3 left-3 z-10">
+              <HomifyLogo size="xs" variant="dark" to="/" />
+            </div>
             <div className="absolute bottom-4 left-4 right-4">
               <p className="text-white text-lg font-semibold leading-tight">{image.title}</p>
             </div>

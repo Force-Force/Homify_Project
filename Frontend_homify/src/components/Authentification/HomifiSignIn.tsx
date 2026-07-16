@@ -8,6 +8,7 @@ import Carosel from './Carosel';
 import MobileCarousel from './MobileCarossel';
 import { SocialButtons, authInputClass } from './SocialButtons';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { HomifyLogo } from '@/components/brand/HomifyLogo';
 
 const HomifiSignIn = () => {
   const { t } = useTranslation();
@@ -66,11 +67,15 @@ const HomifiSignIn = () => {
 
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-homify-muted hover:text-homify-primary mb-6 text-sm font-medium transition"
+            className="inline-flex items-center gap-2 text-homify-muted hover:text-homify-primary mb-4 text-sm font-medium transition"
           >
             <ArrowLeft className="w-4 h-4" />
             {t('auth.back')}
           </Link>
+
+          <div className="flex justify-center mb-6">
+            <HomifyLogo size="lg" variant="light" to="/" />
+          </div>
 
           <div className="bg-homify-card rounded-modal shadow-card p-8 border border-homify-border">
             <h2 className="text-2xl font-bold text-homify-text mb-1">{t('auth.welcomeBack')}</h2>

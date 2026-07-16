@@ -8,6 +8,7 @@ import Carosel from './Carosel';
 import MobileCarousel from './MobileCarossel';
 import { SocialButtons, authInputClass } from './SocialButtons';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { HomifyLogo } from '@/components/brand/HomifyLogo';
 
 const HomifiSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -91,11 +92,15 @@ const HomifiSignUp = () => {
 
           <Link
             to="/"
-            className="hidden lg:flex items-center gap-2 text-homify-muted mb-6 hover:text-homify-primary transition-colors"
+            className="hidden lg:flex items-center gap-2 text-homify-muted mb-4 hover:text-homify-primary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm">Retour à l'accueil</span>
           </Link>
+
+          <div className="flex justify-center mb-6">
+            <HomifyLogo size="lg" variant="light" to="/" />
+          </div>
 
           <div className="bg-homify-card/90 backdrop-blur-sm rounded-modal shadow-card p-6 sm:p-8 border border-homify-border">
             <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 text-homify-text">

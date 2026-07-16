@@ -33,7 +33,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     <>
       <div className="px-4 py-6 border-b border-homify-border">
         <div className="flex items-center gap-3">
-          <HomifyLogo size="sm" />
+          <HomifyLogo size="sm" variant="light" />
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wide text-homify-accent">Admin</p>
             <p className="text-[11px] text-homify-muted truncate max-w-[140px]">{user?.email}</p>
@@ -118,7 +118,7 @@ export default function AdminLayout() {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <HomifyLogo size="xs" />
+          <HomifyLogo size="xs" variant="light" />
         </header>
 
         <main className="flex-1 px-4 py-6 md:px-8 md:py-8 max-w-6xl w-full mx-auto">

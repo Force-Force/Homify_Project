@@ -14,22 +14,30 @@ type HomifyLogoProps = {
   size?: keyof typeof SIZE_CLASS;
   className?: string;
   to?: string;
-  onDark?: boolean;
+  /** light = fond clair (sidebar, formulaires) · dark = fond sombre (carousel, header vert) */
+  variant?: 'light' | 'dark';
 };
 
-export function HomifyLogo({ size = 'md', className, to, onDark = false }: HomifyLogoProps) {
+export function HomifyLogo({
+  size = 'md',
+  className,
+  to,
+  variant = 'light',
+}: HomifyLogoProps) {
   const image = (
-    <img
-      src={homifyLogo}
-      alt="Homify — Votre Escapade, Votre Maison"
-      className={cn(
-        'w-auto object-contain object-left select-none',
-        SIZE_CLASS[size],
-        onDark && 'rounded-lg bg-white/95 px-1.5 py-0.5 shadow-sm',
-        className,
-      )}
-      draggable={false}
-    />
+    <span className={cn('inline-flex shrink-0', className)}>
+      <img
+        src={homifyLogo}
+        alt="Homify — Votre Escapade, Votre Maison"
+        className={cn(
+          'w-auto object-contain object-left select-none',
+          SIZE_CLASS[size],
+          variant === 'light' && 'mix-blend-multiply',
+          variant === 'dark' && 'mix-blend-screen brightness-110 contrast-110 drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]',
+        )}
+        draggable={false}
+      />
+    </span>
   );
 
   if (to) {
